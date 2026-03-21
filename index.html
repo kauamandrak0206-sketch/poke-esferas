@@ -790,58 +790,84 @@
 
 
   /* ===== MÚSICA ===== */
-  .music-container {
-    padding: 24px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
+  .music-container { padding: 24px; max-width: 860px; margin: 0 auto; }
   .music-title {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 22px; font-weight: 900;
-    letter-spacing: 4px; color: #C8960C;
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
     text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
-    margin-bottom: 24px; text-transform: uppercase;
+    margin-bottom: 20px; text-transform: uppercase;
   }
   .music-player-wrap {
-    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    background: #000;
     border: 2px solid #C8960C;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    min-height: 200px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .music-player-wrap iframe {
-    width: 100%;
-    border-radius: 10px;
-    display: block;
+  .music-player-wrap #yt-player { width: 100%; }
+
+  /* Música tocando agora */
+  .music-now-playing {
+    text-align: center;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px; color: rgba(200,150,12,0.8);
+    margin-bottom: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+
+  /* Barra de controles */
+  .music-controls-bar {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(160deg, #1A1035, #2D1B5E);
+    border: 2px solid #C8960C; border-radius: 14px;
+    padding: 14px 20px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .mc-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid #C8960C;
+    background: rgba(200,150,12,0.15);
+    color: #C8960C; font-size: 18px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mc-btn:hover { background: #C8960C; color: #1A1035; transform: scale(1.1); }
+  .mc-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .mc-play { width: 56px; height: 56px; font-size: 22px; }
+  .mc-volume-wrap {
+    display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px;
+  }
+  .mc-vol-icon { font-size: 18px; }
+  .mc-volume {
+    flex: 1; height: 6px;
+    -webkit-appearance: none; appearance: none;
+    background: linear-gradient(to right, #C8960C 80%, rgba(255,255,255,0.2) 80%);
+    border-radius: 3px; outline: none; cursor: pointer;
+  }
+  .mc-volume::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: #C8960C;
+    border: 2px solid #fff; cursor: pointer;
+    box-shadow: 0 0 6px rgba(200,150,12,0.5);
+  }
+  .mc-vol-val { font-size: 12px; color: #C8960C; font-family: 'Cinzel', serif; min-width: 36px; }
+
+  /* Master panel */
   .music-master-only {
-    background: rgba(74,44,138,0.3);
-    border: 1px solid rgba(106,61,184,0.5);
-    border-radius: 12px;
-    padding: 18px;
-    margin-top: 16px;
+    background: rgba(74,44,138,0.3); border: 1px solid rgba(106,61,184,0.5);
+    border-radius: 12px; padding: 18px; margin-top: 6px;
   }
   .music-master-title {
-    font-family: 'Cinzel', serif;
-    font-size: 12px; color: #C8960C;
-    letter-spacing: 2px; text-transform: uppercase;
-    margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
+    font-family: 'Cinzel', serif; font-size: 12px; color: #C8960C;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;
   }
-  .music-input-row {
-    display: flex; gap: 10px; flex-wrap: wrap;
-  }
+  .music-input-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .music-url-input {
     flex: 1; min-width: 200px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,180,0,0.3);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: #fff;
-    font-family: 'Exo 2', sans-serif;
-    font-size: 13px; outline: none;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,180,0,0.3);
+    border-radius: 8px; padding: 10px 14px; color: #fff;
+    font-family: 'Exo 2', sans-serif; font-size: 13px; outline: none;
     transition: border-color 0.2s;
   }
   .music-url-input:focus { border-color: #C8960C; }
@@ -850,56 +876,32 @@
     padding: 10px 20px;
     background: linear-gradient(135deg, #C46A00, #C8960C);
     color: #1A1035; border: none; border-radius: 8px;
-    font-family: 'Cinzel', serif; font-size: 12px;
-    font-weight: 900; letter-spacing: 1px;
-    cursor: pointer; transition: all 0.2s;
-    white-space: nowrap;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 900;
+    letter-spacing: 1px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
   }
   .music-load-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(200,150,12,0.4); }
-  .music-status {
-    font-size: 12px; color: rgba(200,150,12,0.6);
-    margin-top: 10px; text-align: center;
-    font-family: 'Exo 2', sans-serif;
-  }
-  .music-saved-list {
-    margin-top: 14px;
-  }
-  .music-saved-title {
-    font-family: 'Cinzel', serif; font-size: 11px;
-    color: #C8960C; letter-spacing: 1px;
-    text-transform: uppercase; margin-bottom: 8px;
-  }
+  .music-status { font-size: 12px; color: rgba(200,150,12,0.6); margin-top: 10px; text-align: center; font-family: 'Exo 2', sans-serif; }
+  .music-saved-list { margin-top: 14px; }
+  .music-saved-title { font-family: 'Cinzel', serif; font-size: 11px; color: #C8960C; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
   .music-saved-item {
     display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px; border-radius: 8px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(200,150,12,0.15);
-    margin-bottom: 6px; cursor: pointer;
-    transition: all 0.2s;
+    padding: 9px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(200,150,12,0.15);
+    margin-bottom: 6px; cursor: pointer; transition: all 0.2s;
   }
   .music-saved-item:hover { background: rgba(200,150,12,0.1); border-color: #C8960C; }
   .music-saved-item.active { background: rgba(74,44,138,0.4); border-color: #6A3DB8; }
-  .music-saved-name {
-    flex: 1; font-size: 13px; color: #E8D5A8;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .music-saved-del {
-    background: transparent; border: none;
-    color: rgba(255,100,100,0.5); font-size: 16px;
-    cursor: pointer; padding: 2px 6px;
-    transition: color 0.2s; line-height: 1;
-  }
+  .music-saved-name { flex: 1; font-size: 13px; color: #E8D5A8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .music-saved-del { background: transparent; border: none; color: rgba(255,100,100,0.5); font-size: 16px; cursor: pointer; padding: 2px 6px; transition: color 0.2s; line-height: 1; }
   .music-saved-del:hover { color: #e53935; }
-  .music-viewer-info {
-    text-align: center; padding: 16px;
-    font-size: 13px; color: rgba(200,150,12,0.6);
-    font-family: 'Exo 2', sans-serif;
-  }
+  .music-viewer-info { text-align: center; padding: 10px; font-size: 13px; color: rgba(200,150,12,0.5); font-family: 'Exo 2', sans-serif; }
 
   @media (max-width: 900px) {
-    .music-container { padding: 14px; }
+    .music-container { padding: 12px; }
     .music-input-row { flex-direction: column; }
     .music-load-btn { width: 100%; }
+    .mc-volume-wrap { min-width: 120px; }
+    .music-controls-bar { gap: 8px; padding: 12px; }
   }
 
   @media print {
@@ -1272,24 +1274,33 @@
     <div class="music-container">
       <div class="music-title">🎵 Playlist da Campanha</div>
 
-      <!-- Player YouTube -->
+      <!-- Player YouTube IFrame API -->
       <div class="music-player-wrap">
-        <iframe
-          id="yt-player"
-          height="400"
-          src="https://www.youtube.com/embed/sTelrncNFbU?list=WL&autoplay=0&rel=0&modestbranding=1"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
+        <div id="yt-player"></div>
       </div>
 
-      <!-- Info para jogadores -->
+      <!-- Nome da música tocando -->
+      <div class="music-now-playing" id="music-now-playing">🎵 Nenhuma música carregada</div>
+
+      <!-- Controles de playback — visíveis para TODOS -->
+      <div class="music-controls-bar">
+        <button class="mc-btn" id="mc-prev"  onclick="musicPrev()"  title="Anterior">⏮</button>
+        <button class="mc-btn mc-play" id="mc-play" onclick="musicPlayPause()" title="Play/Pause">▶</button>
+        <button class="mc-btn" id="mc-next"  onclick="musicNext()"  title="Próxima">⏭</button>
+        <div class="mc-volume-wrap">
+          <span class="mc-vol-icon">🔊</span>
+          <input type="range" class="mc-volume" id="mc-volume" min="0" max="100" value="80"
+            oninput="musicVolume(this.value)" />
+          <span class="mc-vol-val" id="mc-vol-val">80%</span>
+        </div>
+      </div>
+
+      <!-- Info jogador -->
       <div class="music-viewer-info" id="music-viewer-info" style="display:none;">
-        🎵 Só o Mestre pode controlar a música
+        👁 Você pode ver e ouvir — só o Mestre controla o que toca
       </div>
 
-      <!-- Controles do Mestre -->
+      <!-- Painel do Mestre -->
       <div class="music-master-only" id="music-master-panel">
         <div class="music-master-title">👑 Controles do Mestre</div>
 
@@ -1297,11 +1308,10 @@
           <input class="music-url-input" id="music-url-input"
             placeholder="Cole um link do YouTube (vídeo ou playlist)..."
             onkeydown="if(event.key==='Enter') carregarMusica()" />
-          <button class="music-load-btn" onclick="carregarMusica()">▶ Carregar</button>
+          <button class="music-load-btn" onclick="carregarMusica()">+ Adicionar</button>
         </div>
         <div class="music-status" id="music-status"></div>
 
-        <!-- Lista salva -->
         <div class="music-saved-list">
           <div class="music-saved-title">📂 Músicas salvas</div>
           <div id="music-saved-list-items">
@@ -2043,141 +2053,231 @@ async function lancarDados() {
 // ============================================================
 
 // ============================================================
-// MÚSICA — controle pelo Mestre via Firebase
+// MÚSICA — YouTube IFrame API + Firebase sincronizado
 // ============================================================
-function iniciarListenerMusica() {
-  db.ref('musica').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (!data || !data.embedUrl) return;
-    const iframe = document.getElementById('yt-player');
-    if (iframe && iframe.src !== data.embedUrl) {
-      iframe.src = data.embedUrl;
+let ytPlayer       = null;
+let ytReady        = false;
+let musicPlaying   = false;
+let currentVideoId = null;
+let musicSaved     = [];
+
+// Carrega a API do YouTube IFrame
+function carregarYTScript() {
+  if (document.getElementById('yt-api-script')) return;
+  const tag = document.createElement('script');
+  tag.id  = 'yt-api-script';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+// Callback obrigatório da API do YouTube
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  if (currentVideoId) criarPlayer(currentVideoId);
+};
+
+function criarPlayer(videoId) {
+  if (!ytReady) { currentVideoId = videoId; return; }
+  if (ytPlayer) { ytPlayer.destroy(); }
+  ytPlayer = new YT.Player('yt-player', {
+    height: '340',
+    width:  '100%',
+    videoId: videoId,
+    playerVars: {
+      autoplay:       1,
+      rel:            0,
+      modestbranding: 1,
+      controls:       1,
+      fs:             1,
+    },
+    events: {
+      onReady:       onPlayerReady,
+      onStateChange: onPlayerStateChange,
     }
-    renderMusicList(data.saved || []);
   });
 }
 
-function youtubeToEmbed(url) {
-  if (!url) return null;
+function onPlayerReady(event) {
+  const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
+  event.target.setVolume(vol);
+  event.target.playVideo();
+  atualizarBotaoPlay(true);
+}
+
+function onPlayerStateChange(event) {
+  // 1 = playing, 2 = paused, 0 = ended
+  musicPlaying = (event.data === YT.PlayerState.PLAYING);
+  atualizarBotaoPlay(musicPlaying);
+  if (event.data === YT.PlayerState.PLAYING) {
+    try {
+      const info = ytPlayer.getVideoData();
+      if (info && info.title) {
+        document.getElementById('music-now-playing').textContent = '🎵 ' + info.title;
+      }
+    } catch(e) {}
+  }
+}
+
+function atualizarBotaoPlay(playing) {
+  const btn = document.getElementById('mc-play');
+  if (btn) btn.textContent = playing ? '⏸' : '▶';
+}
+
+// ---- Controles ----
+function musicPlayPause() {
+  if (!ytPlayer) return;
+  if (musicPlaying) {
+    ytPlayer.pauseVideo();
+    if (isMaster) db.ref('musica/estado').update({ paused: true });
+  } else {
+    ytPlayer.playVideo();
+    if (isMaster) db.ref('musica/estado').update({ paused: false });
+  }
+}
+
+function musicNext() {
+  if (!ytPlayer) return;
+  ytPlayer.nextVideo ? ytPlayer.nextVideo() : ytPlayer.playVideo();
+}
+
+function musicPrev() {
+  if (!ytPlayer) return;
+  ytPlayer.previousVideo ? ytPlayer.previousVideo() : ytPlayer.playVideo();
+}
+
+function musicVolume(val) {
+  if (ytPlayer) ytPlayer.setVolume(parseInt(val));
+  document.getElementById('mc-vol-val').textContent = val + '%';
+  // Atualiza gradiente do slider
+  const slider = document.getElementById('mc-volume');
+  if (slider) slider.style.background = `linear-gradient(to right, #C8960C ${val}%, rgba(255,255,255,0.2) ${val}%)`;
+}
+
+// ---- Carregar música nova (mestre) ----
+function extrairVideoId(url) {
   url = url.trim();
-
-  // Já é embed
-  if (url.includes('youtube.com/embed/')) return url;
-
-  // Extrai video ID e list
-  let videoId = null, listId = null;
   try {
     const u = new URL(url);
-    videoId = u.searchParams.get('v');
-    listId  = u.searchParams.get('list');
-    // youtu.be/ID
-    if (!videoId && u.hostname === 'youtu.be') {
-      videoId = u.pathname.replace('/', '');
-    }
-  } catch(e) {}
-
-  if (!videoId && !listId) return null;
-
-  let embed = 'https://www.youtube.com/embed/';
-  if (videoId) embed += videoId;
-  embed += '?rel=0&modestbranding=1&autoplay=1';
-  if (listId) embed += '&list=' + listId + (videoId ? '' : '&listType=playlist&index=1');
-  return embed;
+    let v = u.searchParams.get('v');
+    if (!v && u.hostname === 'youtu.be') v = u.pathname.slice(1);
+    return v || null;
+  } catch { return null; }
 }
 
 async function carregarMusica() {
+  if (!isMaster) return;
   const input  = document.getElementById('music-url-input');
   const status = document.getElementById('music-status');
   const url    = input.value.trim();
   if (!url) { status.textContent = '⚠️ Cole um link do YouTube!'; return; }
 
-  const embedUrl = youtubeToEmbed(url);
-  if (!embedUrl) { status.textContent = '❌ Link inválido. Use um link do YouTube.'; return; }
+  const videoId = extrairVideoId(url);
+  if (!videoId) { status.textContent = '❌ Link inválido. Use um link de vídeo do YouTube.'; return; }
 
   status.textContent = '⏳ Carregando...';
 
-  // Pega o título da URL para exibir
-  const nome = url.includes('list=') ? '🎵 Playlist' : '🎵 Vídeo';
-  const label = nome + ' — ' + url.substring(url.lastIndexOf('/') + 1).substring(0, 40);
+  // Pega título via oEmbed (sem precisar de API key)
+  let label = '🎵 Música ' + (musicSaved.length + 1);
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (res.ok) { const j = await res.json(); label = j.title || label; }
+  } catch {}
 
-  // Carrega atual snapshot para pegar saved list
-  const snap = await db.ref('musica').once('value');
-  const data = snap.val() || {};
-  const saved = data.saved || [];
-
-  // Adiciona à lista se não existir
-  if (!saved.find(s => s.embedUrl === embedUrl)) {
-    saved.push({ label, embedUrl, url });
+  // Evita duplicatas
+  const jaExiste = musicSaved.find(s => s.videoId === videoId);
+  if (!jaExiste) {
+    musicSaved.push({ videoId, label, url });
+    await db.ref('musica/saved').set(musicSaved);
   }
 
-  await db.ref('musica').set({ embedUrl, saved });
+  // Define como música atual e toca
+  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+
   input.value = '';
-  status.textContent = '✅ Música carregada para todos!';
+  status.textContent = '✅ Carregado para todos!';
   setTimeout(() => status.textContent = '', 3000);
 }
 
-async function tocarSalva(embedUrl) {
+async function tocarSalva(videoId) {
   if (!isMaster) return;
-  const snap  = await db.ref('musica').once('value');
-  const data  = snap.val() || {};
-  await db.ref('musica').update({ embedUrl });
+  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
 }
 
-async function deletarMusica(embedUrl) {
+async function deletarMusica(videoId) {
   if (!isMaster) return;
-  const snap  = await db.ref('musica').once('value');
-  const data  = snap.val() || {};
-  const saved = (data.saved || []).filter(s => s.embedUrl !== embedUrl);
-  const newEmbed = (data.embedUrl === embedUrl)
-    ? (saved[0]?.embedUrl || 'https://www.youtube.com/embed/sTelrncNFbU?list=WL&rel=0&modestbranding=1')
-    : data.embedUrl;
-  await db.ref('musica').set({ embedUrl: newEmbed, saved });
+  musicSaved = musicSaved.filter(s => s.videoId !== videoId);
+  await db.ref('musica/saved').set(musicSaved.length > 0 ? musicSaved : null);
+  renderMusicList();
 }
 
-function renderMusicList(saved) {
+function renderMusicList() {
   const container = document.getElementById('music-saved-list-items');
   if (!container) return;
-  if (!saved || saved.length === 0) {
+  if (!musicSaved || musicSaved.length === 0) {
     container.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;">Nenhuma música salva ainda...</div>';
     return;
   }
-  const iframe = document.getElementById('yt-player');
-  const current = iframe ? iframe.src : '';
   container.innerHTML = '';
-  saved.forEach(s => {
+  musicSaved.forEach(s => {
     const item = document.createElement('div');
-    item.className = 'music-saved-item' + (current.includes(s.embedUrl.split('?')[0].split('/').pop()) ? ' active' : '');
+    item.className = 'music-saved-item' + (s.videoId === currentVideoId ? ' active' : '');
     item.innerHTML = `
-      <span class="music-saved-name" title="${s.url || s.embedUrl}">${s.label}</span>
-      ${isMaster ? `<button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.embedUrl.replace(/'/g,"\'")}')">×</button>` : ''}
+      <span class="music-saved-name" title="${s.label}">${s.label}</span>
+      ${isMaster ? `<button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')">×</button>` : ''}
     `;
-    if (isMaster) item.onclick = () => tocarSalva(s.embedUrl);
+    if (isMaster) item.onclick = () => tocarSalva(s.videoId);
     container.appendChild(item);
   });
 }
 
+// ---- Listener Firebase ----
+function iniciarListenerMusica() {
+  carregarYTScript();
+
+  // Listener da lista salva
+  db.ref('musica/saved').on('value', snap => {
+    musicSaved = snap.val() || [];
+    renderMusicList();
+  });
+
+  // Listener do estado (toca/pausa) — sincroniza todos
+  db.ref('musica/estado').on('value', snap => {
+    const estado = snap.val();
+    if (!estado) return;
+
+    // Se mudou o vídeo, cria/atualiza o player
+    if (estado.videoId && estado.videoId !== currentVideoId) {
+      currentVideoId = estado.videoId;
+      criarPlayer(currentVideoId);
+      renderMusicList();
+    }
+
+    // Sincroniza play/pause para jogadores (não mestre pra não conflitar)
+    if (!isMaster && ytPlayer && ytReady) {
+      try {
+        if (estado.paused) ytPlayer.pauseVideo();
+        else ytPlayer.playVideo();
+      } catch {}
+    }
+  });
+}
+
 function aplicarPermissoesMusica() {
-  const masterPanel  = document.getElementById('music-master-panel');
-  const viewerInfo   = document.getElementById('music-viewer-info');
+  const masterPanel = document.getElementById('music-master-panel');
+  const viewerInfo  = document.getElementById('music-viewer-info');
   if (!masterPanel || !viewerInfo) return;
-  if (isMaster) {
-    masterPanel.style.display = 'block';
-    viewerInfo.style.display  = 'none';
-  } else {
-    masterPanel.style.display = 'none';
-    viewerInfo.style.display  = 'block';
+  masterPanel.style.display = isMaster ? 'block' : 'none';
+  viewerInfo.style.display  = isMaster ? 'none'  : 'block';
+
+  // Jogadores podem ajustar volume mas não controlar o que toca
+  const mcPrev = document.getElementById('mc-prev');
+  const mcNext = document.getElementById('mc-next');
+  const mcPlay = document.getElementById('mc-play');
+  if (!isMaster) {
+    if (mcPrev) mcPrev.disabled = true;
+    if (mcNext) mcNext.disabled = true;
+    if (mcPlay) mcPlay.disabled = true;
   }
 }
 
-window.addEventListener('load', async () => {
-  const savedUser = localStorage.getItem('poke-logged-user');
-  const savedPass = localStorage.getItem('poke-logged-pass');
-  if (savedUser && savedPass) {
-    document.getElementById('login-username').value = savedUser;
-    document.getElementById('login-password').value = savedPass;
-    await doLogin();
-  }
-});
-</script>
-</body>
-</html>
+
