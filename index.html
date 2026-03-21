@@ -979,6 +979,138 @@
     .music-controls-bar { gap: 8px; padding: 12px; }
   }
 
+
+  /* ===== TABELA DE TIPOS ===== */
+  .tipos-container { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .tipos-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 8px; text-transform: uppercase;
+  }
+  .tipos-subtitle {
+    text-align: center; font-size: 13px; color: rgba(200,150,12,0.5);
+    font-family: 'Exo 2', sans-serif; margin-bottom: 24px;
+  }
+  .tipos-layout {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+  }
+  /* Tabela de efetividade */
+  .tipos-table-wrap {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C; border-radius: 14px; overflow: hidden;
+  }
+  .tipos-table-header {
+    padding: 12px 16px;
+    background: rgba(200,150,12,0.12);
+    border-bottom: 1px solid rgba(200,150,12,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .tipos-table-header-title {
+    font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+    color: #C8960C; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .tipos-copy-btn {
+    padding: 5px 14px; border-radius: 6px;
+    background: rgba(200,150,12,0.15); border: 1px solid #C8960C;
+    color: #C8960C; font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+  }
+  .tipos-copy-btn:hover { background: #C8960C; color: #1A1035; }
+  .tipos-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tipos-table {
+    border-collapse: collapse; font-size: 11px; width: 100%;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .tipos-table th, .tipos-table td {
+    padding: 5px 7px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.06);
+    white-space: nowrap;
+  }
+  .tipos-table thead th {
+    background: rgba(0,0,0,0.4); color: rgba(255,255,255,0.7);
+    font-size: 10px; font-weight: 600;
+  }
+  .tipos-table thead th:first-child {
+    color: #C8960C; font-family: 'Cinzel', serif; font-size: 10px;
+  }
+  .tipos-table tbody td:first-child {
+    font-weight: 700; font-size: 10px;
+    background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.8);
+    text-align: left; padding-left: 10px;
+  }
+  /* Efetividade cores */
+  .ef-2  { background: #1a4a1a; color: #5dfc5d; font-weight: 700; }
+  .ef-05 { background: #4a1a1a; color: #fc5d5d; font-size: 10px; }
+  .ef-0  { background: #222; color: #555; }
+  .ef-1  { background: transparent; color: rgba(255,255,255,0.2); font-size: 9px; }
+
+  /* Badges de tipo */
+  .tipo-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  /* Painel mestre — adicionar notas */
+  .tipos-notes-wrap {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C; border-radius: 14px; overflow: hidden;
+  }
+  .tipos-notes-header {
+    padding: 12px 16px;
+    background: rgba(200,150,12,0.12);
+    border-bottom: 1px solid rgba(200,150,12,0.2);
+    font-family: 'Cinzel', serif; font-size: 12px;
+    color: #C8960C; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .tipos-notes-body { padding: 16px; }
+  .tipos-note-item {
+    padding: 10px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #C8960C;
+    margin-bottom: 8px;
+  }
+  .tipos-note-title {
+    font-family: 'Cinzel', serif; font-size: 12px;
+    color: #C8960C; margin-bottom: 4px;
+  }
+  .tipos-note-text { font-size: 12px; color: #E8D5A8; line-height: 1.6; }
+  .tipos-master-panel { margin-top: 14px; }
+  .tipos-master-title {
+    font-family: 'Cinzel', serif; font-size: 11px; color: #C8960C;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .tipos-note-input {
+    width: 100%; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.3); border-radius: 8px;
+    padding: 8px 12px; color: #fff; font-family: 'Exo 2', sans-serif;
+    font-size: 12px; outline: none; margin-bottom: 6px;
+    transition: border-color 0.2s; resize: vertical; min-height: 60px;
+  }
+  .tipos-note-input:focus { border-color: #C8960C; }
+  .tipos-note-input::placeholder { color: rgba(255,255,255,0.3); }
+  .tipos-add-btn {
+    width: 100%; padding: 8px; border-radius: 8px;
+    background: linear-gradient(135deg, #C46A00, #C8960C);
+    color: #1A1035; border: none; font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 900; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tipos-add-btn:hover { transform: translateY(-1px); }
+  .tipos-del-btn {
+    float: right; background: transparent; border: none;
+    color: rgba(255,100,100,0.4); cursor: pointer;
+    font-size: 14px; padding: 0 4px; transition: color 0.2s;
+  }
+  .tipos-del-btn:hover { color: #e53935; }
+
+  @media (max-width: 900px) {
+    .tipos-container { padding: 12px; }
+    .tipos-layout { grid-template-columns: 1fr; }
+    .tipos-table { font-size: 9px; }
+    .tipos-table th, .tipos-table td { padding: 3px 4px; }
+  }
+
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
@@ -1081,6 +1213,7 @@
     <button class="nav-tab active" id="tab-fichas" onclick="showTab('fichas')">📋 Fichas</button>
     <button class="nav-tab" id="tab-dados" onclick="showTab('dados')">🎲 Dados</button>
     <button class="nav-tab" id="tab-musica" onclick="showTab('musica')">🎵 Música</button>
+    <button class="nav-tab" id="tab-tipos" onclick="showTab('tipos')">⚔️ Tipos</button>
   </div>
   <div id="section-fichas">
   <div class="users-bar">
@@ -1404,6 +1537,91 @@
     </div>
   </div><!-- end section-musica -->
 
+  <!-- ABA TIPOS -->
+  <div id="section-tipos" style="display:none;">
+    <div class="tipos-container">
+      <div class="tipos-title">⚔️ Tabela de Tipos Pokémon</div>
+      <div class="tipos-subtitle">🟢 2× Super Efetivo &nbsp;|&nbsp; 🔴 ½ Pouco Efetivo &nbsp;|&nbsp; ⚫ 0× Imune &nbsp;|&nbsp; · Normal</div>
+
+      <div class="tipos-layout">
+
+        <!-- TABELA PRINCIPAL -->
+        <div class="tipos-table-wrap">
+          <div class="tipos-table-header">
+            <div class="tipos-table-header-title">⚡ Ataque vs Defesa</div>
+            <button class="tipos-copy-btn" onclick="copiarTabela()">📋 Copiar Tabela</button>
+          </div>
+          <div class="tipos-scroll">
+            <table class="tipos-table" id="tipos-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding-left:10px;">ATK ↓ DEF →</th>
+                  <th>🔥</th><th>💧</th><th>🌿</th><th>⚡</th><th>❄️</th>
+                  <th>👊</th><th>☠️</th><th>🌍</th><th>✈️</th><th>🔮</th>
+                  <th>🐛</th><th>🪨</th><th>👻</th><th>🐉</th><th>🌑</th>
+                  <th>🔩</th><th>🧚</th>
+                </tr>
+              </thead>
+              <tbody id="tipos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COLUNA DIREITA: legenda + notas mestre -->
+        <div>
+          <!-- Legenda de tipos -->
+          <div class="tipos-notes-wrap" style="margin-bottom:16px;">
+            <div class="tipos-notes-header">📖 Legenda de Ícones</div>
+            <div class="tipos-notes-body" style="padding:12px;">
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span class="tipo-badge" style="background:#e53935;color:#fff;">🔥 Fogo</span>
+                <span class="tipo-badge" style="background:#1565c0;color:#fff;">💧 Água</span>
+                <span class="tipo-badge" style="background:#2e7d32;color:#fff;">🌿 Planta</span>
+                <span class="tipo-badge" style="background:#f9a825;color:#000;">⚡ Elétrico</span>
+                <span class="tipo-badge" style="background:#80deea;color:#000;">❄️ Gelo</span>
+                <span class="tipo-badge" style="background:#bf360c;color:#fff;">👊 Lutador</span>
+                <span class="tipo-badge" style="background:#6a1b9a;color:#fff;">☠️ Veneno</span>
+                <span class="tipo-badge" style="background:#795548;color:#fff;">🌍 Terra</span>
+                <span class="tipo-badge" style="background:#90a4ae;color:#000;">✈️ Voador</span>
+                <span class="tipo-badge" style="background:#ce93d8;color:#000;">🔮 Psíquico</span>
+                <span class="tipo-badge" style="background:#558b2f;color:#fff;">🐛 Inseto</span>
+                <span class="tipo-badge" style="background:#78909c;color:#fff;">🪨 Pedra</span>
+                <span class="tipo-badge" style="background:#4a148c;color:#fff;">👻 Fantasma</span>
+                <span class="tipo-badge" style="background:#0d47a1;color:#fff;">🐉 Dragão</span>
+                <span class="tipo-badge" style="background:#212121;color:#fff;">🌑 Sombrio</span>
+                <span class="tipo-badge" style="background:#b0bec5;color:#000;">🔩 Aço</span>
+                <span class="tipo-badge" style="background:#f48fb1;color:#000;">🧚 Fada</span>
+                <span class="tipo-badge" style="background:#a5d6a7;color:#000;">⚪ Normal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notas do Mestre -->
+          <div class="tipos-notes-wrap" id="tipos-notes-wrap">
+            <div class="tipos-notes-header">📝 Notas do Mestre</div>
+            <div class="tipos-notes-body">
+              <div id="tipos-notes-list">
+                <div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:8px;">
+                  Nenhuma nota ainda...
+                </div>
+              </div>
+              <!-- Só mestre vê o painel de adicionar -->
+              <div class="tipos-master-panel" id="tipos-master-panel" style="display:none;">
+                <div class="tipos-master-title">👑 Adicionar Nota</div>
+                <input class="tipos-note-input" id="tipos-note-titulo" placeholder="Título (ex: Dicas de Batalha)" style="min-height:unset;height:36px;resize:none;" />
+                <textarea class="tipos-note-input" id="tipos-note-texto" placeholder="Escreva sua nota aqui..."></textarea>
+                <button class="tipos-add-btn" onclick="adicionarNotaTipo()">+ Adicionar Nota</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- end section-tipos -->
+
+
+
 
 
 <div class="modal-overlay" id="delete-modal">
@@ -1601,6 +1819,8 @@ async function doLogin() {
   iniciarListeners(); // Firebase real-time
   iniciarListenerMusica();
   aplicarPermissoesMusica();
+  gerarTabelaTipos();
+  iniciarListenerTipos();
 }
 
 // ============================================================
@@ -2045,7 +2265,7 @@ async function atualizarFichas() {
 // NAVEGAÇÃO POR ABAS (Fichas / Dados)
 // ============================================================
 function showTab(tab) {
-  ['fichas','dados','musica'].forEach(t => {
+  ['fichas','dados','musica','tipos'].forEach(t => {
     const sec = document.getElementById('section-' + t);
     const btn = document.getElementById('tab-' + t);
     if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
@@ -2437,6 +2657,120 @@ function aplicarPermissoesMusica() {
 // ============================================================
 // AUTO-LOGIN ao carregar a página
 // ============================================================
+
+// ============================================================
+// TABELA DE TIPOS POKÉMON
+// ============================================================
+
+// 17 tipos: Fogo, Água, Planta, Elétrico, Gelo, Lutador, Veneno,
+//           Terra, Voador, Psíquico, Inseto, Pedra, Fantasma, Dragão, Sombrio, Aço, Fada
+const TIPOS_NOMES = [
+  'Fogo','Água','Planta','Elétrico','Gelo','Lutador','Veneno',
+  'Terra','Voador','Psíquico','Inseto','Pedra','Fantasma','Dragão','Sombrio','Aço','Fada'
+];
+
+// Matriz de efetividade [ataque][defesa]: 2=super, 0.5=pouco, 0=imune, 1=normal
+// Índices: 0=Fogo 1=Água 2=Planta 3=Elétrico 4=Gelo 5=Lutador 6=Veneno
+//          7=Terra 8=Voador 9=Psíquico 10=Inseto 11=Pedra 12=Fantasma 13=Dragão 14=Sombrio 15=Aço 16=Fada
+const EFETIVIDADE = [
+//  Fogo  Água  Plan  Elét  Gelo  Luta  Ven   Terr  Voé   Psiq  Inse  Pedr  Fant  Drag  Somb  Aço   Fada
+  [ 0.5,  0.5,  2,    1,    2,    1,    1,    1,    1,    1,    2,    0.5,  1,    0.5,  1,    2,    1   ], // Fogo
+  [ 2,    0.5,  0.5,  1,    1,    1,    1,    2,    1,    1,    1,    2,    1,    0.5,  1,    1,    1   ], // Água
+  [ 0.5,  2,    0.5,  1,    1,    1,    0.5,  2,    0.5,  1,    0.5,  2,    1,    0.5,  1,    0.5,  1   ], // Planta
+  [ 1,    2,    0.5,  0.5,  1,    1,    1,    0,    2,    1,    1,    1,    1,    0.5,  1,    1,    1   ], // Elétrico
+  [ 0.5,  0.5,  2,    1,    0.5,  1,    1,    2,    2,    1,    1,    1,    1,    2,    1,    0.5,  1   ], // Gelo
+  [ 1,    1,    1,    1,    2,    1,    0.5,  1,    0.5,  0.5,  0.5,  2,    0,    1,    2,    2,    0.5 ], // Lutador
+  [ 1,    1,    2,    1,    1,    1,    0.5,  0.5,  1,    2,    1,    0.5,  0.5,  1,    1,    0,    2   ], // Veneno
+  [ 2,    1,    0.5,  2,    1,    1,    2,    1,    0,    1,    0.5,  2,    1,    1,    1,    2,    1   ], // Terra
+  [ 1,    1,    2,    0.5,  1,    2,    1,    1,    1,    1,    2,    0.5,  1,    1,    1,    0.5,  1   ], // Voador
+  [ 1,    1,    1,    1,    1,    2,    2,    1,    1,    0.5,  1,    1,    1,    1,    0,    0.5,  1   ], // Psíquico
+  [ 0.5,  1,    2,    1,    1,    0.5,  0.5,  1,    0.5,  2,    1,    1,    0.5,  1,    2,    0.5,  0.5 ], // Inseto
+  [ 2,    1,    1,    1,    2,    0.5,  1,    0.5,  2,    1,    2,    1,    1,    1,    1,    0.5,  1   ], // Pedra
+  [ 1,    1,    1,    1,    1,    1,    1,    1,    1,    2,    1,    1,    2,    1,    0.5,  1,    1   ], // Fantasma
+  [ 1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    2,    1,    0.5,  0   ], // Dragão
+  [ 1,    1,    1,    1,    1,    0.5,  1,    1,    1,    2,    1,    1,    2,    1,    0.5,  1,    0.5 ], // Sombrio
+  [ 0.5,  0.5,  0.5,  0.5,  2,    0.5,  0,    1,    0.5,  1,    0.5,  2,    1,    0.5,  1,    0.5,  2   ], // Aço
+  [ 1,    1,    1,    1,    1,    2,    0.5,  1,    1,    1,    1,    1,    1,    2,    2,    0.5,  0.5 ], // Fada
+];
+
+function gerarTabelaTipos() {
+  const tbody = document.getElementById('tipos-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  TIPOS_NOMES.forEach((nomeAtk, i) => {
+    const tr = document.createElement('tr');
+    let cells = `<td style="text-align:left;padding-left:10px;">${nomeAtk}</td>`;
+    EFETIVIDADE[i].forEach(ef => {
+      if (ef === 2)   cells += `<td class="ef-2">2×</td>`;
+      else if (ef === 0.5) cells += `<td class="ef-05">½</td>`;
+      else if (ef === 0)   cells += `<td class="ef-0">0</td>`;
+      else                 cells += `<td class="ef-1">·</td>`;
+    });
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+  });
+}
+
+function copiarTabela() {
+  // Copia como texto formatado
+  let texto = 'TABELA DE TIPOS POKÉMON\n';
+  texto += 'ATK ↓ / DEF →\t' + TIPOS_NOMES.join('\t') + '\n';
+  EFETIVIDADE.forEach((linha, i) => {
+    texto += TIPOS_NOMES[i] + '\t' + linha.map(v => v === 1 ? '·' : (v === 0 ? '0' : v + '×')).join('\t') + '\n';
+  });
+  navigator.clipboard.writeText(texto).then(() => {
+    showToast('📋 Tabela copiada!');
+  }).catch(() => {
+    showToast('❌ Não foi possível copiar.', true);
+  });
+}
+
+// Notas do Mestre — Firebase
+function iniciarListenerTipos() {
+  // Mostra/esconde painel de adicionar notas
+  const mp = document.getElementById('tipos-master-panel');
+  if (mp) mp.style.display = isMaster ? 'block' : 'none';
+
+  db.ref('tipos_notas').on('value', (snap) => {
+    const notas = snap.val() || {};
+    const list = document.getElementById('tipos-notes-list');
+    if (!list) return;
+    const arr = Object.entries(notas);
+    if (arr.length === 0) {
+      list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:8px;">Nenhuma nota ainda...</div>';
+      return;
+    }
+    list.innerHTML = '';
+    arr.forEach(([key, nota]) => {
+      const div = document.createElement('div');
+      div.className = 'tipos-note-item';
+      div.innerHTML = `
+        ${isMaster ? `<button class="tipos-del-btn" onclick="deletarNotaTipo('${key}')" title="Remover">×</button>` : ''}
+        <div class="tipos-note-title">${nota.titulo || 'Nota'}</div>
+        <div class="tipos-note-text">${(nota.texto || '').replace(/\n/g,'<br>')}</div>
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+async function adicionarNotaTipo() {
+  if (!isMaster) return;
+  const titulo = document.getElementById('tipos-note-titulo').value.trim();
+  const texto  = document.getElementById('tipos-note-texto').value.trim();
+  if (!texto) { showToast('⚠️ Escreva o texto da nota!', true); return; }
+  await db.ref('tipos_notas').push({ titulo: titulo || 'Nota', texto });
+  document.getElementById('tipos-note-titulo').value = '';
+  document.getElementById('tipos-note-texto').value  = '';
+  showToast('✅ Nota adicionada!');
+}
+
+async function deletarNotaTipo(key) {
+  if (!isMaster) return;
+  await db.ref('tipos_notas/' + key).remove();
+  showToast('🗑️ Nota removida.');
+}
+
 window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
