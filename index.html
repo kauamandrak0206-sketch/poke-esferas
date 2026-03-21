@@ -231,8 +231,8 @@
     color: rgba(200,150,12,0.7); letter-spacing: 4px; margin-bottom: 24px;
   }
   .rules-body {
-    display: grid; grid-template-columns: 1fr 380px;
-    gap: 52px; align-items: start;
+    display: grid; grid-template-columns: 1fr 340px;
+    gap: 24px; align-items: start;
     background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
     border: 2px solid #C8960C; border-radius: 16px; padding: 28px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.5); margin-bottom: 28px;
@@ -388,6 +388,101 @@
   }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.error { background: #c62828; }
+  /* ===== RESPONSIVO MOBILE ===== */
+  @media (max-width: 768px) {
+
+    /* Login */
+    .login-box {
+      width: 95vw;
+      padding: 32px 22px;
+    }
+    .pokemon-real-img { max-width: 220px; }
+
+    /* Header */
+    .app-header { padding: 10px 14px; }
+    .app-header-title { font-size: 11px; letter-spacing: 1px; }
+    .header-pokemon-img { height: 36px; }
+    .header-user { font-size: 11px; gap: 8px; }
+    .btn-logout { padding: 5px 10px; font-size: 11px; }
+
+    /* Action bar */
+    .action-bar { padding: 8px 14px; gap: 6px; }
+    .btn-action { padding: 8px 12px; font-size: 12px; }
+
+    /* Users bar */
+    .users-bar { padding: 6px 14px; }
+
+    /* Regras */
+    .rules-container { padding: 16px 14px 0; }
+    .rules-obrigatorio { font-size: 22px; letter-spacing: 3px; }
+    .rules-obrigatorio-sub { font-size: 11px; letter-spacing: 2px; }
+    .rules-body {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 18px;
+    }
+    .rules-table-wrap { position: static; }
+
+    /* Howto */
+    .howto-container { padding: 0 14px; }
+    .howto-body {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 18px;
+    }
+    .howto-full { grid-column: 1; }
+
+    /* Ficha — layout empilhado */
+    .sheet-container { padding: 12px; }
+    #trainer-sheet { padding: 14px; }
+    .sheet-main-title { font-size: 14px; letter-spacing: 1px; margin-bottom: 14px; }
+
+    .sheet-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    /* Coluna esquerda */
+    .trainer-img-wrap { height: 220px; }
+    .trainer-img-wrap.modo-corpo { height: 340px; }
+
+    /* Tabela time */
+    .poke-table-wrap { overflow-x: auto; }
+    .poke-table { min-width: 300px; }
+    .poke-table thead th { font-size: 10px; padding: 6px 6px; }
+    .poke-table td input { font-size: 12px; padding: 6px 4px; }
+
+    /* Habilidades — 2 colunas no mobile */
+    #skills-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .skill-section { margin-bottom: 0; }
+    .skill-header { font-size: 10px; padding: 4px 8px; }
+    .skill-row { grid-template-columns: 90px 1fr; }
+    .skill-name { font-size: 10px; padding: 5px 6px; }
+    .skill-desc input { font-size: 11px; padding: 5px 6px; }
+
+    /* Tabela PC */
+    .pc-table-wrap { overflow-x: auto; }
+    .pc-table { min-width: 280px; }
+    .pc-table thead th { font-size: 10px; padding: 6px 4px; }
+    .pc-table td input { font-size: 12px; padding: 6px 4px; }
+
+    /* Historia */
+    .history-textarea { min-height: 100px; }
+  }
+
+  @media (max-width: 480px) {
+    .login-box { padding: 24px 16px; }
+    .welcome-title { font-size: 15px; }
+    .app-header-title { display: none; }
+    .rules-obrigatorio { font-size: 18px; }
+    #skills-container { grid-template-columns: 1fr; }
+    .sheet-main-title { font-size: 12px; }
+  }
+
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
