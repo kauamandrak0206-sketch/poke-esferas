@@ -10,23 +10,32 @@
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
 
   :root {
+    /* === TEMA SOL E LUA — ALOLA === */
+    --sol: #FF8C00;        /* laranja sol */
+    --sol-claro: #FFB347;  /* laranja claro */
+    --lua: #4A2C8A;        /* roxo noite */
+    --lua-escuro: #2D1B5E; /* roxo profundo */
+    --lua-medio: #6A3DB8;  /* roxo médio */
+    --ceu: #1A1035;        /* céu noturno */
+    --tropical: #00B4D8;   /* azul tropical */
+    --areia: #FFF3E0;      /* areia da praia */
+    --folha: #2E7D32;      /* verde tropical */
+    --gold: #FFD700;
     --red: #e53935;
-    --blue: #1565c0;
-    --gold: #f9a825;
-    --dark: #1a1a2e;
-    --light-bg: #f0f4ff;
-    --border: #c5cae9;
-    --table-header: #3949ab;
-    --text-dark: #1a237e;
+    --light-bg: #FFF8F0;
+    --border: #FFD180;
+    --table-header: #4A2C8A;
+    --text-dark: #2D1B5E;
     --cell-bg: #ffffff;
-    --desc-color: #e53935;
+    --desc-color: #FF8C00;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Exo 2', sans-serif;
-    background: #e8ecf5;
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 40%, #FF8C00 100%);
+    background-attachment: fixed;
     min-height: 100vh;
   }
 
@@ -36,28 +45,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(ellipse at 60% 40%, #1a237e 0%, #0d0d1a 100%);
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 45%, #7B3F00 80%, #FF8C00 100%);
     position: relative;
     overflow: hidden;
   }
 
+  /* Estrelas e sol no fundo */
   #login-page::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='25' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Ccircle cx='30' cy='30' r='15' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Cline x1='5' y1='30' x2='55' y2='30' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+    background:
+      radial-gradient(ellipse at 80% 15%, rgba(255,200,0,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse at 15% 80%, rgba(106,61,184,0.3) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='50' cy='25' r='1.5' fill='rgba(255,255,255,0.4)'/%3E%3Ccircle cx='70' cy='60' r='1' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='30' cy='65' r='1' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='60' cy='5' r='0.8' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E") repeat;
   }
 
   .login-box {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.15);
-    backdrop-filter: blur(20px);
+    background: rgba(26, 16, 53, 0.75);
+    border: 1px solid rgba(255, 180, 0, 0.3);
+    backdrop-filter: blur(24px);
     border-radius: 20px;
     padding: 50px 45px;
-    width: 380px;
+    width: 400px;
     text-align: center;
     position: relative;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 40px rgba(255,140,0,0.15);
   }
 
   .pokeball-icon {
@@ -65,6 +78,7 @@
     height: 70px;
     margin: 0 auto 20px;
     position: relative;
+    filter: drop-shadow(0 0 12px rgba(255,140,0,0.5));
   }
 
   .pokeball-icon svg { width: 100%; height: 100%; }
@@ -73,7 +87,7 @@
     font-family: 'Cinzel', serif;
     font-size: 13px;
     letter-spacing: 3px;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,200,100,0.6);
     text-transform: uppercase;
     margin-bottom: 6px;
   }
@@ -81,9 +95,10 @@
   .login-subtitle {
     font-family: 'Cinzel', serif;
     font-size: 18px;
-    color: #fff;
+    color: #FFD700;
     font-weight: 700;
     margin-bottom: 35px;
+    text-shadow: 0 0 12px rgba(255,215,0,0.5);
   }
 
   .login-label {
@@ -92,36 +107,39 @@
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,180,80,0.7);
     margin-bottom: 8px;
   }
 
   .login-input {
     width: 100%;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.25);
     border-radius: 10px;
     padding: 14px 18px;
     color: #fff;
     font-family: 'Exo 2', sans-serif;
     font-size: 15px;
     margin-bottom: 20px;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
     outline: none;
   }
 
-  .login-input:focus { border-color: var(--gold); }
+  .login-input:focus {
+    border-color: #FF8C00;
+    box-shadow: 0 0 12px rgba(255,140,0,0.3);
+  }
 
   .login-btn {
     width: 100%;
-    background: linear-gradient(135deg, #e53935, #c62828);
-    color: #fff;
+    background: linear-gradient(135deg, #FF8C00, #FFB347);
+    color: #1A1035;
     border: none;
     border-radius: 10px;
     padding: 15px;
     font-family: 'Cinzel', serif;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s;
@@ -129,10 +147,14 @@
     text-transform: uppercase;
   }
 
-  .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(229,57,53,0.4); }
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255,140,0,0.5);
+    background: linear-gradient(135deg, #FFB347, #FFD700);
+  }
 
   .login-error {
-    color: #ff6b6b;
+    color: #FF6B6B;
     font-size: 13px;
     margin-top: 12px;
     display: none;
@@ -150,14 +172,14 @@
     margin-bottom: 28px;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,180,0,0.25);
   }
 
   .login-tab {
     flex: 1;
     padding: 10px;
     background: transparent;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,180,80,0.6);
     border: none;
     font-family: 'Cinzel', serif;
     font-size: 12px;
@@ -167,8 +189,8 @@
   }
 
   .login-tab.active {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(255,140,0,0.25), rgba(255,180,0,0.15));
+    color: #FFD700;
   }
 
   .welcome-text {
@@ -179,7 +201,7 @@
   .welcome-greeting {
     font-family: 'Exo 2', sans-serif;
     font-size: 13px;
-    color: rgba(255,255,255,0.65);
+    color: rgba(255,200,100,0.7);
     letter-spacing: 2px;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -192,31 +214,31 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     color: #FFD700;
-    -webkit-text-stroke: 1.5px #1a1a00;
+    -webkit-text-stroke: 1.5px #7B3F00;
     text-shadow:
       2px 2px 0px #b8860b,
       -1px -1px 0px #b8860b,
       1px -1px 0px #b8860b,
       -1px  1px 0px #b8860b,
-      0 0 18px rgba(255, 215, 0, 0.5);
+      0 0 20px rgba(255,215,0,0.7);
     line-height: 1.3;
   }
 
   .welcome-title .highlight {
     color: #fff;
-    -webkit-text-stroke: 1.5px #1a1a2e;
+    -webkit-text-stroke: 1.5px #4A2C8A;
     text-shadow:
-      2px 2px 0px #3949ab,
-      -1px -1px 0px #3949ab,
-      1px -1px 0px #3949ab,
-      -1px  1px 0px #3949ab,
-      0 0 18px rgba(100, 130, 255, 0.5);
+      2px 2px 0px #4A2C8A,
+      -1px -1px 0px #4A2C8A,
+      1px -1px 0px #4A2C8A,
+      -1px  1px 0px #4A2C8A,
+      0 0 18px rgba(180,120,255,0.6);
   }
 
   .welcome-divider {
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, #e53935, #FFD700, #1565c0);
+    background: linear-gradient(90deg, #4A2C8A, #FF8C00, #FFD700);
     border-radius: 2px;
     margin: 10px auto 0;
   }
@@ -225,15 +247,16 @@
   #app-page { display: none; }
 
   .app-header {
-    background: linear-gradient(135deg, #1a237e, #283593);
+    background: linear-gradient(135deg, #2D1B5E 0%, #4A2C8A 50%, #FF8C00 100%);
     padding: 12px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 2px solid #FFD700;
   }
 
   .app-header-title {
@@ -265,8 +288,8 @@
   .btn-logout:hover { background: rgba(255,255,255,0.2); }
 
   .action-bar {
-    background: #fff;
-    border-bottom: 1px solid #dde;
+    background: linear-gradient(90deg, #FFF8F0, #FFF3E0);
+    border-bottom: 2px solid #FFD180;
     padding: 10px 30px;
     display: flex;
     gap: 10px;
@@ -290,26 +313,26 @@
   }
 
   .btn-save {
-    background: #1565c0;
+    background: linear-gradient(135deg, #4A2C8A, #6A3DB8);
     color: #fff;
   }
-  .btn-save:hover { background: #0d47a1; transform: translateY(-1px); }
+  .btn-save:hover { background: linear-gradient(135deg, #2D1B5E, #4A2C8A); transform: translateY(-1px); }
 
   .btn-pdf {
-    background: #c62828;
+    background: linear-gradient(135deg, #e53935, #c62828);
     color: #fff;
   }
-  .btn-pdf:hover { background: #b71c1c; transform: translateY(-1px); }
+  .btn-pdf:hover { background: linear-gradient(135deg, #c62828, #b71c1c); transform: translateY(-1px); }
 
   .btn-new {
-    background: #2e7d32;
+    background: linear-gradient(135deg, #FF8C00, #FFB347);
     color: #fff;
   }
-  .btn-new:hover { background: #1b5e20; }
+  .btn-new:hover { background: linear-gradient(135deg, #e67e00, #FF8C00); }
 
   .save-status {
     font-size: 12px;
-    color: #4caf50;
+    color: #FF8C00;
     display: none;
     align-items: center;
     gap: 5px;
@@ -317,8 +340,8 @@
 
   /* Users list sidebar */
   .users-bar {
-    background: #fff;
-    border-bottom: 2px solid #e0e0e0;
+    background: linear-gradient(90deg, #FFF8F0, #FFF3E0);
+    border-bottom: 2px solid #FFD180;
     padding: 8px 30px;
     display: flex;
     gap: 8px;
@@ -328,17 +351,18 @@
 
   .users-bar-label {
     font-size: 11px;
-    color: #888;
+    color: #FF8C00;
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-right: 5px;
+    font-weight: 700;
   }
 
   .user-chip {
     padding: 4px 14px;
     border-radius: 20px;
-    background: #e8eaf6;
-    color: #3949ab;
+    background: #F3E5FF;
+    color: #4A2C8A;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -346,8 +370,8 @@
     transition: all 0.2s;
   }
 
-  .user-chip.active { border-color: #3949ab; background: #3949ab; color: #fff; }
-  .user-chip:hover { background: #c5cae9; }
+  .user-chip.active { border-color: #4A2C8A; background: #4A2C8A; color: #fff; }
+  .user-chip:hover { background: #E1BEE7; }
 
   .user-chip-wrap {
     display: flex;
@@ -366,10 +390,10 @@
   }
 
   .chip-delete {
-    background: #e8eaf6;
+    background: #F3E5FF;
     border: 2px solid transparent;
-    border-left: 1px solid #c5cae9;
-    color: #999;
+    border-left: 1px solid #CE93D8;
+    color: #9C6FB8;
     padding: 4px 8px;
     border-radius: 0 20px 20px 0;
     cursor: pointer;
@@ -379,16 +403,16 @@
     font-weight: 700;
   }
 
-  .chip-delete:hover { background: #e53935; color: #fff; border-color: #e53935; }
+  .chip-delete:hover { background: #FF8C00; color: #fff; border-color: #FF8C00; }
 
   .user-chip-wrap.active .chip-delete {
-    background: #3949ab;
-    border-color: #3949ab;
+    background: #4A2C8A;
+    border-color: #4A2C8A;
     border-left-color: rgba(255,255,255,0.3);
     color: rgba(255,255,255,0.7);
   }
 
-  .user-chip-wrap.active .chip-delete:hover { background: #e53935; border-color: #e53935; color: #fff; }
+  .user-chip-wrap.active .chip-delete:hover { background: #FF8C00; border-color: #FF8C00; color: #fff; }
 
   /* Modal */
   .modal-overlay {
@@ -426,7 +450,7 @@
   .modal-title {
     font-family: 'Cinzel', serif;
     font-size: 16px;
-    color: #1a237e;
+    color: #4A2C8A;
     margin-bottom: 8px;
     font-weight: 700;
   }
@@ -467,21 +491,23 @@
 
   /* ===== THE FORM SHEET ===== */
   #trainer-sheet {
-    background: #f5f7ff;
-    border: 1px solid #c5cae9;
-    border-radius: 8px;
+    background: linear-gradient(160deg, #FFF8F0 0%, #FFF3E0 100%);
+    border: 2px solid #FFD180;
+    border-radius: 12px;
     padding: 25px;
     font-family: Arial, sans-serif;
+    box-shadow: 0 8px 32px rgba(74,44,138,0.15);
   }
 
   .sheet-main-title {
     text-align: center;
     font-family: 'Cinzel', serif;
-    color: #1565c0;
+    color: #4A2C8A;
     font-size: 20px;
     letter-spacing: 3px;
     margin-bottom: 20px;
     font-weight: 700;
+    text-shadow: 0 2px 8px rgba(255,140,0,0.2);
   }
 
   .sheet-grid {
@@ -540,7 +566,7 @@
   .field-label {
     font-size: 13px;
     font-weight: 700;
-    color: #1a237e;
+    color: #4A2C8A;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -550,21 +576,21 @@
   .field-input {
     width: 100%;
     border: none;
-    border-bottom: 2px solid #9fa8da;
+    border-bottom: 2px solid #FFB347;
     background: transparent;
     padding: 5px 0;
     font-family: 'Exo 2', sans-serif;
     font-size: 14px;
-    color: #1a237e;
+    color: #2D1B5E;
     outline: none;
     transition: border-color 0.2s;
   }
 
-  .field-input:focus { border-color: #1565c0; }
+  .field-input:focus { border-color: #FF8C00; }
 
   .history-box {
-    background: #e8eaf6;
-    border: 1px solid #9fa8da;
+    background: linear-gradient(135deg, #F3E5FF, #EDE7F6);
+    border: 1px solid #CE93D8;
     border-radius: 6px;
     padding: 10px;
     margin-top: 8px;
@@ -573,7 +599,7 @@
   .history-label {
     font-size: 12px;
     font-weight: 700;
-    color: #e53935;
+    color: #FF8C00;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -594,7 +620,7 @@
 
   .history-footer {
     font-size: 10px;
-    color: #e53935;
+    color: #FF8C00;
     margin-top: 5px;
     font-style: italic;
   }
@@ -603,8 +629,8 @@
   .mid-col {}
 
   .poke-table-wrap {
-    border: 1px solid #9fa8da;
-    border-radius: 4px;
+    border: 2px solid #FFB347;
+    border-radius: 8px;
     overflow: hidden;
     margin-bottom: 12px;
   }
@@ -616,7 +642,7 @@
   }
 
   .poke-table thead tr {
-    background: #3949ab;
+    background: linear-gradient(135deg, #4A2C8A, #6A3DB8);
     color: #fff;
   }
 
@@ -630,7 +656,7 @@
   }
 
   .poke-table thead th.header-title {
-    background: #283593;
+    background: linear-gradient(135deg, #2D1B5E, #4A2C8A);
     text-align: center;
     font-size: 12px;
     letter-spacing: 2px;
@@ -639,7 +665,7 @@
   .poke-table thead th.hp-col { color: #ff8a80; }
 
   .poke-table tbody tr { background: #fff; }
-  .poke-table tbody tr:nth-child(even) { background: #f3f4ff; }
+  .poke-table tbody tr:nth-child(even) { background: #FFF8F0; }
 
   .poke-table td {
     padding: 0;
@@ -661,18 +687,18 @@
     text-align: center;
   }
 
-  .poke-table td input:focus { background: #fffde7; }
+  .poke-table td input:focus { background: #FFF3E0; }
 
   /* Skill sections */
   .skill-section {
-    border: 1px solid #9fa8da;
-    border-radius: 4px;
+    border: 2px solid #FFB347;
+    border-radius: 8px;
     overflow: hidden;
     margin-bottom: 8px;
   }
 
   .skill-header {
-    background: #3949ab;
+    background: linear-gradient(135deg, #FF8C00, #FFB347);
     color: #fff;
     padding: 5px 10px;
     font-size: 11px;
@@ -689,14 +715,14 @@
   }
 
   .skill-row:last-child { border-bottom: none; }
-  .skill-row:nth-child(even) { background: #f3f4ff; }
+  .skill-row:nth-child(even) { background: #FFF8F0; }
 
   .skill-name {
     padding: 6px 10px;
     font-size: 11px;
     font-weight: 700;
-    color: #1a237e;
-    border-right: 1px solid #e0e0e0;
+    color: #4A2C8A;
+    border-right: 1px solid #FFD180;
     display: flex;
     align-items: center;
     text-transform: uppercase;
@@ -714,18 +740,18 @@
     padding: 6px 10px;
     font-family: 'Exo 2', sans-serif;
     font-size: 12px;
-    color: #e53935;
+    color: #FF8C00;
     outline: none;
   }
 
-  .skill-desc input:focus { background: #fffde7; }
+  .skill-desc input:focus { background: #FFF3E0; }
 
   /* Right column - PC box */
   .right-col {}
 
   .pc-table-wrap {
-    border: 1px solid #9fa8da;
-    border-radius: 4px;
+    border: 2px solid #FFB347;
+    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -736,7 +762,7 @@
   }
 
   .pc-table thead tr {
-    background: #546e7a;
+    background: linear-gradient(135deg, #2D1B5E, #4A2C8A);
     color: #fff;
   }
 
@@ -749,13 +775,13 @@
   }
 
   .pc-table thead th.header-title {
-    background: #37474f;
+    background: linear-gradient(135deg, #1A1035, #2D1B5E);
     font-size: 11px;
     letter-spacing: 2px;
   }
 
   .pc-table tbody tr { background: #fff; }
-  .pc-table tbody tr:nth-child(even) { background: #f5f5f5; }
+  .pc-table tbody tr:nth-child(even) { background: #FFF8F0; }
 
   .pc-table td {
     padding: 0;
@@ -777,7 +803,7 @@
     text-align: center;
   }
 
-  .pc-table td input:focus { background: #fffde7; }
+  .pc-table td input:focus { background: #FFF3E0; }
 
   /* Toast */
   .toast {
@@ -1038,6 +1064,9 @@ async function jsonbinSave(data) {
 }
 
 // ===== CONTAS (salvas localmente por navegador) =====
+const MASTER_PASSWORD = 'pokemestre'; // senha especial que dá acesso de mestre
+let isMaster = false;
+
 function getAccounts() {
   try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); } catch(e) { return {}; }
 }
@@ -1079,14 +1108,16 @@ function doRegister() {
   const pass  = document.getElementById('reg-password').value;
   const pass2 = document.getElementById('reg-password2').value;
 
-  if (!name)             return showError('Digite seu nome de treinador!');
-  if (pass.length < 3)   return showError('A senha precisa ter pelo menos 3 caracteres.');
-  if (pass !== pass2)    return showError('As senhas não coincidem!');
+  if (!name)           return showError('Digite seu nome de treinador!');
+  if (pass.length < 3) return showError('A senha precisa ter pelo menos 3 caracteres.');
+  if (pass !== pass2)  return showError('As senhas não coincidem!');
 
   const accounts = getAccounts();
   if (accounts[name.toLowerCase()]) return showError('Esse nome já está cadastrado!');
 
-  accounts[name.toLowerCase()] = { name, password: pass };
+  // Se a senha for a senha mestre, a conta vira admin
+  const role = (pass === MASTER_PASSWORD) ? 'master' : 'player';
+  accounts[name.toLowerCase()] = { name, password: pass, role };
   saveAccounts(accounts);
 
   document.getElementById('reg-username').value  = '';
@@ -1114,6 +1145,9 @@ async function doLogin() {
 
   hideMessages();
 
+  // Define se é mestre ou jogador
+  isMaster = (account.role === 'master');
+
   // Salva sessão e entra
   currentUser = account.name;
   localStorage.setItem('poke-logged-user', account.name);
@@ -1121,9 +1155,17 @@ async function doLogin() {
 
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-page').style.display   = 'block';
-  document.getElementById('header-username').textContent = '👤 ' + account.name;
+  document.getElementById('header-username').textContent = isMaster
+    ? '👑 ' + account.name + ' (Mestre)'
+    : '👤 ' + account.name;
+
+  // Mestre vê botão de deletar fichas; jogador não
+  document.querySelectorAll('.chip-delete').forEach(btn => {
+    btn.style.display = isMaster ? '' : 'none';
+  });
 
   buildTable();
+  applyPlayerRestrictions();
   renderUserChips();
 
   // Carrega dados da nuvem em segundo plano
@@ -1140,12 +1182,15 @@ async function doLogin() {
 async function doLogout() {
   await saveSheet(true);
   currentUser = null;
+  isMaster = false;
   localStorage.removeItem('poke-logged-user');
   localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('app-page').style.display   = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+  document.querySelector('.btn-new').style.display = 'flex';
+  setSheetReadonly(false);
   hideMessages();
 }
 
@@ -1304,6 +1349,14 @@ async function newSheet() {
   showToast('📄 Nova ficha criada!');
 }
 
+// ===== RESTRIÇÕES DE JOGADOR =====
+function applyPlayerRestrictions() {
+  if (isMaster) return; // mestre não tem restrições
+
+  // Jogador não pode criar nova ficha nem deletar
+  document.querySelector('.btn-new').style.display = 'none';
+}
+
 function renderUserChips() {
   const container = document.getElementById('users-chips');
   container.innerHTML = '';
@@ -1312,34 +1365,59 @@ function renderUserChips() {
     container.innerHTML = '<span style="font-size:12px;color:#aaa;">Nenhuma ficha salva ainda</span>';
     return;
   }
+
+  // Jogador só vê a própria ficha + pode ver as dos outros (só leitura)
   users.forEach(u => {
+    const isOwn   = (u === currentUser);
+    const canEdit = isMaster || isOwn;
+
     const wrap = document.createElement('div');
     wrap.className = 'user-chip-wrap' + (u === currentUser ? ' active' : '');
 
     const chip = document.createElement('div');
     chip.className = 'user-chip' + (u === currentUser ? ' active' : '');
-    chip.textContent = u;
+    chip.textContent = isMaster ? u : (isOwn ? u : '👁 ' + u);
+    chip.title = canEdit ? '' : 'Visualização — somente leitura';
     chip.onclick = () => {
-      saveSheet(true);
+      if (isOwn) saveSheet(true);
       currentUser = u;
-      document.getElementById('header-username').textContent = '👤 ' + u;
+      document.getElementById('header-username').textContent = isMaster
+        ? '👑 ' + u + ' (Mestre)'
+        : (isOwn ? '👤 ' + u : '👁 ' + u + ' (leitura)');
       loadSheet(u);
+      setSheetReadonly(!canEdit);
       renderUserChips();
     };
 
-    const delBtn = document.createElement('button');
-    delBtn.className = 'chip-delete';
-    delBtn.innerHTML = '×';
-    delBtn.title = 'Deletar ficha de ' + u;
-    delBtn.onclick = (e) => {
-      e.stopPropagation();
-      openDeleteModal(u);
-    };
-
     wrap.appendChild(chip);
-    wrap.appendChild(delBtn);
+
+    // Botão deletar: só mestre vê
+    if (isMaster) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'chip-delete';
+      delBtn.innerHTML = '×';
+      delBtn.title = 'Deletar ficha de ' + u;
+      delBtn.onclick = (e) => { e.stopPropagation(); openDeleteModal(u); };
+      wrap.appendChild(delBtn);
+    }
+
     container.appendChild(wrap);
   });
+
+  // Garante que a ficha atual está no modo certo
+  setSheetReadonly(!isMaster && currentUser !== Object.keys(allData).find(u => u === currentUser));
+}
+
+// Bloqueia/desbloqueia edição da ficha
+function setSheetReadonly(readonly) {
+  document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea').forEach(el => {
+    el.disabled = readonly;
+    el.style.opacity = readonly ? '0.6' : '1';
+  });
+  document.querySelector('.btn-save').style.display  = readonly ? 'none' : 'flex';
+  document.querySelector('.btn-pdf').style.display   = 'flex'; // sempre pode exportar PDF
+  const overlay = document.querySelector('.trainer-img-wrap');
+  if (overlay) overlay.style.pointerEvents = readonly ? 'none' : '';
 }
 
 let userToDelete = null;
