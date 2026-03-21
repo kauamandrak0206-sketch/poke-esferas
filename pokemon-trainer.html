@@ -934,22 +934,75 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== JSONBIN CONFIG =====
+const JSONBIN_API_KEY = '$2a$10$L2l9q0oFD3CwSvsqi9niu.h9U9Eym7P49X9Zz49wCEqtZwgMwg1jS';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+const BIN_ID = '69bdd012c3097a1dd5445ed4';
+
 // ===== STATE =====
 let currentUser = null;
-let allData = {}; // { username: { sheetData } }
+let allData = {};
+
+// ===== JSONBIN HELPERS =====
+async function jsonbinLoad() {
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
+      headers: {
+        'X-Master-Key': JSONBIN_API_KEY,
+        'X-Bin-Meta': 'false'
+      }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    // Suporta tanto { trainers: {} } quanto {} direto
+    return json.trainers || json || {};
+  } catch(e) {
+    console.error('JSONBin load error:', e);
+    showToast('❌ Erro ao carregar dados do servidor.', true);
+    return {};
+  }
+}
+
+async function jsonbinSave(data) {
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify({ trainers: data })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  } catch(e) {
+    console.error('JSONBin save error:', e);
+    showToast('❌ Erro ao salvar na nuvem.', true);
+  }
+}
 
 // ===== LOGIN =====
-function doLogin() {
+async function doLogin() {
   const name = document.getElementById('login-username').value.trim();
   if (!name) {
     document.getElementById('login-error').style.display = 'block';
     return;
   }
+
+  const btn = document.querySelector('.login-btn');
+  btn.textContent = '⏳ Carregando...';
+  btn.disabled = true;
+
   currentUser = name;
+  allData = await jsonbinLoad();
+
+  localStorage.setItem('poke-logged-user', name);
+
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-page').style.display = 'block';
   document.getElementById('header-username').textContent = '👤 ' + name;
-  loadFromStorage();
+  btn.textContent = '⚡ ENTRAR NA AVENTURA';
+  btn.disabled = false;
+
   buildTable();
   loadSheet(currentUser);
   renderUserChips();
@@ -959,9 +1012,10 @@ document.getElementById('login-username').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
 
-function doLogout() {
-  saveSheet(true);
+async function doLogout() {
+  await saveSheet(true);
   currentUser = null;
+  localStorage.removeItem('poke-logged-user');
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('app-page').style.display = 'none';
   document.getElementById('login-username').value = '';
@@ -1090,32 +1144,6 @@ function populateSheet(data) {
   });
 }
 
-function loadFromStorage() {
-  try {
-    const saved = localStorage.getItem('poke-sheets');
-    if (saved) allData = JSON.parse(saved);
-  } catch(e) {}
-}
-
-function saveToStorage() {
-  try {
-    localStorage.setItem('poke-sheets', JSON.stringify(allData));
-  } catch(e) {}
-}
-
-function saveSheet(silent = false) {
-  if (!currentUser) return;
-  allData[currentUser] = getSheetData();
-  saveToStorage();
-  renderUserChips();
-  if (!silent) {
-    showToast('✅ Ficha salva com sucesso!');
-    const status = document.getElementById('save-status');
-    status.style.display = 'flex';
-    setTimeout(() => status.style.display = 'none', 2500);
-  }
-}
-
 function loadSheet(username) {
   const data = allData[username];
   populateSheet(data);
@@ -1129,8 +1157,21 @@ function clearSheet() {
   document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea').forEach(el => el.value = '');
 }
 
-function newSheet() {
-  saveSheet(true);
+async function saveSheet(silent = false) {
+  if (!currentUser) return;
+  allData[currentUser] = getSheetData();
+  await jsonbinSave(allData);
+  renderUserChips();
+  if (!silent) {
+    showToast('✅ Ficha salva na nuvem!');
+    const status = document.getElementById('save-status');
+    status.style.display = 'flex';
+    setTimeout(() => status.style.display = 'none', 2500);
+  }
+}
+
+async function newSheet() {
+  await saveSheet(true);
   clearSheet();
   showToast('📄 Nova ficha criada!');
 }
@@ -1186,11 +1227,11 @@ function closeDeleteModal() {
   document.getElementById('delete-modal').classList.remove('show');
 }
 
-function confirmDelete() {
+async function confirmDelete() {
   if (!userToDelete) return;
   const wasActive = (userToDelete === currentUser);
   delete allData[userToDelete];
-  saveToStorage();
+  await jsonbinSave(allData);
   closeDeleteModal();
   showToast(`🗑️ Ficha de ${userToDelete} deletada.`);
   userToDelete = null;
@@ -1277,6 +1318,15 @@ function showToast(msg, error = false) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+
+// ===== AUTO LOGIN =====
+(async () => {
+  const savedUser = localStorage.getItem('poke-logged-user');
+  if (savedUser) {
+    document.getElementById('login-username').value = savedUser;
+    await doLogin();
+  }
+})();
 </script>
 </body>
 </html>
