@@ -1372,7 +1372,7 @@
 
       <!-- Info jogador -->
       <div class="music-viewer-info" id="music-viewer-info" style="display:none;">
-        👁 Você pode ver e ouvir — só o Mestre controla o que toca
+        🎵 Você pode visualizar a playlist e ajustar o volume — só o Mestre controla o que toca
       </div>
 
       <!-- Painel do Mestre -->
@@ -2315,8 +2315,8 @@ function renderMusicList() {
   const wrapEl    = document.getElementById('music-playlist-wrap');
   if (!container) return;
 
-  // Só mestre vê a playlist
-  if (wrapEl) wrapEl.style.display = isMaster ? 'block' : 'none';
+  // Todos veem a playlist
+  if (wrapEl) wrapEl.style.display = 'block';
   if (countEl) countEl.textContent = (musicSaved ? musicSaved.length : 0) + ' músicas';
 
   if (!musicSaved || musicSaved.length === 0) {
@@ -2354,9 +2354,13 @@ function renderMusicList() {
       </div>` : ''}
     `;
 
+    // Mestre clica para tocar; jogador só visualiza
     if (isMaster) {
       item.onclick = () => tocarSalva(s.videoId);
       item.style.cursor = 'pointer';
+    } else {
+      item.style.cursor = 'default';
+      item.title = 'Só o Mestre pode trocar a música';
     }
     container.appendChild(item);
   });
@@ -2409,18 +2413,22 @@ function aplicarPermissoesMusica() {
   const viewerInfo   = document.getElementById('music-viewer-info');
   const playlistWrap = document.getElementById('music-playlist-wrap');
   if (!masterPanel || !viewerInfo) return;
-  masterPanel.style.display  = isMaster ? 'block' : 'none';
-  viewerInfo.style.display   = isMaster ? 'none'  : 'block';
-  if (playlistWrap) playlistWrap.style.display = isMaster ? 'block' : 'none';
 
-  // Jogadores ajustam volume mas não controlam o que toca
+  // Painel de adicionar músicas — só mestre
+  masterPanel.style.display = isMaster ? 'block' : 'none';
+  // Info de jogador
+  viewerInfo.style.display  = isMaster ? 'none' : 'block';
+  // Playlist — TODOS veem
+  if (playlistWrap) playlistWrap.style.display = 'block';
+
+  // Jogadores só podem mexer no volume — controles de playback desabilitados
   const mcPrev = document.getElementById('mc-prev');
   const mcNext = document.getElementById('mc-next');
   const mcPlay = document.getElementById('mc-play');
   if (!isMaster) {
-    if (mcPrev) mcPrev.disabled = true;
-    if (mcNext) mcNext.disabled = true;
-    if (mcPlay) mcPlay.disabled = true;
+    if (mcPrev) { mcPrev.disabled = true; mcPrev.title = 'Só o Mestre pode controlar'; }
+    if (mcNext) { mcNext.disabled = true; mcNext.title = 'Só o Mestre pode controlar'; }
+    if (mcPlay) { mcPlay.disabled = true; mcPlay.title = 'Só o Mestre pode controlar'; }
   }
 }
 
