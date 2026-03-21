@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fichas de Treinadores - Segredo das Poké Esferas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1132,16 +1135,6 @@ async function exportPDF() {
   } catch(e){showToast('❌ Erro ao gerar PDF.',true);}
 }
 
-window.addEventListener('load', async () => {
-  const savedUser = localStorage.getItem('poke-logged-user');
-  const savedPass = localStorage.getItem('poke-logged-pass');
-  if (savedUser && savedPass) {
-    document.getElementById('login-username').value = savedUser;
-    document.getElementById('login-password').value = savedPass;
-    await doLogin();
-  }
-});
-
 // ===== ATUALIZAR FICHAS MANUALMENTE =====
 async function atualizarFichas() {
   const btn = document.getElementById('btn-refresh');
@@ -1168,6 +1161,17 @@ async function atualizarFichas() {
     if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄 Atualizar Fichas'; }
   }
 }
+
+window.addEventListener('load', async () => {
+  const savedUser = localStorage.getItem('poke-logged-user');
+  const savedPass = localStorage.getItem('poke-logged-pass');
+  if (savedUser && savedPass) {
+    document.getElementById('login-username').value = savedUser;
+    document.getElementById('login-password').value = savedPass;
+    await doLogin();
+  }
+});
+
 </script>
 </body>
 </html>
