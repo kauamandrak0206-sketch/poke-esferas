@@ -388,117 +388,6 @@
   }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.error { background: #c62828; }
-  /* ===== MOBILE RESPONSIVO ===== */
-  @media (max-width: 900px) {
-
-    /* HEADER — linha única sem quebrar */
-    .app-header { padding: 8px 12px; flex-wrap: nowrap; gap: 6px; }
-    .header-deco { flex: 1; min-width: 0; gap: 5px; }
-    .app-header-title { font-size: 10px; letter-spacing: 0.5px; white-space: normal; line-height: 1.3; }
-    .header-pokemon-img { height: 32px; flex-shrink: 0; }
-    .header-user { flex-shrink: 0; gap: 6px; font-size: 11px; }
-    .btn-logout { padding: 5px 10px; font-size: 11px; white-space: nowrap; }
-
-    /* ACTION BAR */
-    .action-bar { padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
-    .btn-action { padding: 8px 12px; font-size: 12px; }
-    .btn-action svg { width: 14px; height: 14px; }
-
-    /* USERS BAR */
-    .users-bar { padding: 6px 12px; }
-
-    /* REGRAS — tudo em 1 coluna */
-    .rules-container { padding: 16px 12px 0; }
-    .rules-obrigatorio { font-size: 20px; letter-spacing: 2px; }
-    .rules-obrigatorio-sub { font-size: 11px; letter-spacing: 1px; }
-    .rules-body {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 20px;
-      padding: 16px;
-    }
-    .rules-table-wrap { position: static !important; width: 100%; }
-    .rules-table { font-size: 13px; }
-    .rules-table td { padding: 10px 10px; }
-
-    /* HOWTO — tudo em 1 coluna */
-    .howto-container { padding: 0 12px; }
-    .howto-body {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 16px;
-      padding: 16px;
-    }
-    .howto-full { grid-column: auto !important; }
-
-    /* FICHA — tudo em 1 coluna */
-    .sheet-container { padding: 10px; }
-    #trainer-sheet { padding: 12px; }
-    .sheet-main-title { font-size: 13px; letter-spacing: 1px; margin-bottom: 12px; }
-    .sheet-grid {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 14px;
-    }
-
-    /* Coluna esquerda */
-    .left-col { width: 100%; }
-    .trainer-img-wrap { height: 200px; max-width: 100%; }
-    .trainer-img-wrap.modo-corpo { height: 320px; }
-    .foto-modo-btns { display: flex; gap: 8px; }
-    .foto-modo-btn { font-size: 12px; padding: 8px; }
-
-    /* Coluna meio — tabela time */
-    .mid-col { width: 100%; }
-    .poke-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .poke-table { min-width: 280px; width: 100%; }
-    .poke-table thead th { font-size: 11px; padding: 8px 6px; }
-    .poke-table td input { font-size: 13px; padding: 8px 4px; }
-
-    /* Habilidades — 1 coluna, tamanho legível */
-    #skills-container {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 8px;
-    }
-    .skill-section { width: 100%; margin-bottom: 0; }
-    .skill-header { font-size: 12px; padding: 6px 10px; }
-    .skill-row { display: flex !important; flex-direction: column !important; }
-    .skill-name {
-      padding: 6px 10px;
-      font-size: 11px;
-      border-right: none !important;
-      border-bottom: 1px solid rgba(200,150,12,0.3);
-      background: rgba(74,44,138,0.15);
-    }
-    .skill-desc input { font-size: 13px; padding: 8px 10px; width: 100%; }
-
-    /* Coluna direita — PC */
-    .right-col { width: 100%; }
-    .pc-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .pc-table { min-width: 260px; width: 100%; }
-    .pc-table thead th { font-size: 11px; padding: 8px 4px; }
-    .pc-table td input { font-size: 13px; padding: 8px 4px; }
-
-    /* Historia */
-    .history-textarea { min-height: 90px; font-size: 13px; }
-    .field-input { font-size: 14px; }
-
-    /* Login */
-    .login-box { width: 92vw; padding: 28px 20px; }
-    .pokemon-real-img { max-width: 200px; }
-    .welcome-title { font-size: 16px; }
-  }
-
-  @media (max-width: 480px) {
-    .app-header-title { display: none; }
-    .header-pokemon-img { height: 28px; }
-    .rules-obrigatorio { font-size: 16px; }
-    .login-box { padding: 22px 14px; }
-    .welcome-title { font-size: 14px; }
-    .btn-action span, .btn-action { font-size: 11px; padding: 7px 10px; }
-  }
-
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
@@ -580,6 +469,14 @@
     <button class="btn-action btn-new" id="btn-new" onclick="newSheet()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nova Ficha
+    </button>
+    <button class="btn-action" onclick="verRegras()" style="background:linear-gradient(135deg,#2D1B5E,#4A2C8A);color:#C8960C;border:1px solid #C8960C;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      📋 Regras
+    </button>
+    <button class="btn-action" onclick="verRPG()" style="background:linear-gradient(135deg,#2D1B5E,#4A2C8A);color:#C8960C;border:1px solid #C8960C;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      🎲 Como jogar
     </button>
     <div class="save-status" id="save-status">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -886,13 +783,20 @@ async function doLogin() {
   document.getElementById('header-username').textContent = isMaster ? '👑 '+account.name+' (Mestre)' : '👤 '+account.name;
   document.getElementById('btn-new').style.display = isMaster ? 'flex' : 'none';
 
-  // Sempre mostra regras primeiro e reseta checkbox
-  document.getElementById('rules-section').style.display   = 'block';
-  document.getElementById('howto-section').style.display   = 'none';
-  document.getElementById('sheet-container').style.display = 'none';
-  const cb = document.getElementById('rules-checkbox');
-  const btn = document.getElementById('rules-close-btn');
-  cb.checked = false; btn.disabled = true; btn.textContent = '🔒 Li e Entendi — Jogar!';
+  // Só mostra regras na primeira vez — depois vai direto pra ficha
+  const jaAceitou = localStorage.getItem('poke-rules-' + account.name.toLowerCase());
+  if (jaAceitou) {
+    document.getElementById('rules-section').style.display   = 'none';
+    document.getElementById('howto-section').style.display   = 'none';
+    document.getElementById('sheet-container').style.display = 'block';
+  } else {
+    document.getElementById('rules-section').style.display   = 'block';
+    document.getElementById('howto-section').style.display   = 'none';
+    document.getElementById('sheet-container').style.display = 'none';
+    const cb = document.getElementById('rules-checkbox');
+    const btn = document.getElementById('rules-close-btn');
+    cb.checked = false; btn.disabled = true; btn.textContent = '🔒 Li e Entendi — Jogar!';
+  }
 
   buildTable();
   renderUserChips();
@@ -1021,6 +925,8 @@ function toggleRulesBtn() {
 }
 function fecharRegras() {
   if(!document.getElementById('rules-checkbox').checked)return;
+  // Salva que este usuario ja aceitou as regras
+  localStorage.setItem('poke-rules-' + currentUser.toLowerCase(), '1');
   document.getElementById('rules-section').style.display='none';
   document.getElementById('howto-section').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1028,6 +934,27 @@ function fecharRegras() {
 function fecharHowto() {
   document.getElementById('howto-section').style.display='none';
   document.getElementById('sheet-container').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function verRegras() {
+  document.getElementById('rules-section').style.display='block';
+  document.getElementById('howto-section').style.display='none';
+  document.getElementById('sheet-container').style.display='none';
+  const cb = document.getElementById('rules-checkbox');
+  const btn = document.getElementById('rules-close-btn');
+  // Se ja aceitou, deixa o botao liberado direto
+  const jaAceitou = localStorage.getItem('poke-rules-' + currentUser.toLowerCase());
+  if (jaAceitou) {
+    cb.checked = true; btn.disabled = false; btn.textContent = '✅ Li e Entendi — Jogar!';
+  } else {
+    cb.checked = false; btn.disabled = true; btn.textContent = '🔒 Li e Entendi — Jogar!';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function verRPG() {
+  document.getElementById('rules-section').style.display='none';
+  document.getElementById('howto-section').style.display='block';
+  document.getElementById('sheet-container').style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
