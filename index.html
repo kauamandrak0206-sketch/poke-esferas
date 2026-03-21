@@ -167,6 +167,9 @@
   .btn-regras:hover { background: linear-gradient(135deg, #1A1035, #2D1B5E); transform: translateY(-1px); }
   .btn-rpg { background: linear-gradient(135deg, #2D1B5E, #4A2C8A); color: #C8960C; border: 1px solid #C8960C; }
   .btn-rpg:hover { background: linear-gradient(135deg, #1A1035, #2D1B5E); transform: translateY(-1px); }
+  .btn-refresh { background: linear-gradient(135deg, #1B5E20, #2E7D32); color: #fff; }
+  .btn-refresh:hover { background: linear-gradient(135deg, #2E7D32, #388E3C); transform: translateY(-1px); }
+  .btn-refresh.loading { opacity: 0.7; pointer-events: none; }
   .btn-new:hover { background: linear-gradient(135deg, #e67e00, #C46A00); }
   .save-status { font-size: 12px; color: #C46A00; display: none; align-items: center; gap: 5px; }
   .users-bar {
@@ -618,6 +621,9 @@
     <button class="btn-action btn-rpg" onclick="verRPG()">
       🎲 Como Jogar
     </button>
+    <button class="btn-action btn-refresh" id="btn-refresh" onclick="atualizarFichas()">
+      🔄 Atualizar Fichas
+    </button>
     <div class="save-status" id="save-status">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       Salvo!
@@ -944,7 +950,6 @@ async function doLogin() {
 
   buildTable();
   renderUserChips();
-  iniciarAutoSync(); // inicia sincronização automática
 
   // Carrega nuvem em segundo plano
   try {
@@ -958,7 +963,6 @@ async function doLogin() {
 async function doLogout() {
   await saveSheet(true);
   currentUser = null; isMaster = false;
-  pararAutoSync(); // para sincronização ao sair
   localStorage.removeItem('poke-logged-user');
   localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
@@ -1024,7 +1028,6 @@ async function saveSheet(silent=false) {
   if(!currentUser)return;
   allData[currentUser]=getSheetData();
   await jsonbinSave(allData);
-  lastSyncHash = JSON.stringify(allData); // evita re-sync desnecessário
   renderUserChips();
   if(!silent){showToast('✅ Ficha salva na nuvem!');const s=document.getElementById('save-status');s.style.display='flex';setTimeout(()=>s.style.display='none',2500);}
 }
