@@ -538,6 +538,256 @@
     .btn-action { padding: 7px 9px; font-size: 11px; }
   }
 
+
+  /* ===== DADOS 3D ===== */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: linear-gradient(90deg, #F5ECD9, #EFE0C0);
+    border-bottom: 2px solid #C8960C;
+    padding: 8px 14px 0;
+  }
+  .nav-tab {
+    padding: 8px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: 2px solid #C8960C;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    color: #C46A00;
+    transition: all 0.2s;
+  }
+  .nav-tab.active {
+    background: linear-gradient(135deg, #4A2C8A, #6A3DB8);
+    color: #C8960C;
+    border-color: #4A2C8A;
+  }
+  .nav-tab:hover:not(.active) { background: rgba(200,150,12,0.1); }
+
+  .dice-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .dice-title {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .dice-controls {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+  }
+  .dice-control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .dice-control-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .dice-control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dice-btn-small {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid #C8960C;
+    background: rgba(200,150,12,0.15);
+    color: #C8960C;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dice-btn-small:hover { background: #C8960C; color: #1A1035; }
+  .dice-count-display, .dice-sides-display {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    min-width: 60px;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(200,150,12,0.5);
+  }
+  .dice-sides-input {
+    width: 80px;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid #C8960C;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+  }
+
+  .dice-roll-btn {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 24px;
+    padding: 18px;
+    background: linear-gradient(135deg, #C46A00, #C8960C);
+    color: #1A1035;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    box-shadow: 0 4px 20px rgba(200,150,12,0.4);
+  }
+  .dice-roll-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(200,150,12,0.6); }
+  .dice-roll-btn:active { transform: translateY(0); }
+  .dice-roll-btn:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Canvas 3D */
+  #dice-canvas-wrap {
+    width: 100%;
+    height: 260px;
+    position: relative;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .die-canvas {
+    border-radius: 12px;
+    background: transparent;
+  }
+
+  /* Resultados */
+  .dice-results {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .dice-results-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .dice-individual {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .die-result {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4A2C8A, #6A3DB8);
+    border: 2px solid #C8960C;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(200,150,12,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    animation: dieAppear 0.4s ease-out;
+  }
+  @keyframes dieAppear {
+    from { transform: scale(0) rotate(180deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .dice-total {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.8);
+  }
+  .dice-total-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(200,150,12,0.6);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: 'Cinzel', serif;
+  }
+
+  /* Histórico */
+  .dice-history {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 20px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .dice-history-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .history-entry {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #C8960C;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #E8D5A8;
+    line-height: 1.5;
+  }
+  .history-entry .he-user { color: #C8960C; font-weight: 700; }
+  .history-entry .he-total { color: #fff; font-weight: 900; font-size: 16px; }
+  .history-entry .he-time { color: rgba(200,150,12,0.4); font-size: 11px; float: right; }
+
+  @media (max-width: 900px) {
+    .dice-container { padding: 14px; }
+    .dice-controls { padding: 16px; gap: 14px; }
+    .die-result { width: 46px; height: 46px; font-size: 16px; }
+    .dice-total { font-size: 28px; }
+    .nav-tab { font-size: 10px; padding: 6px 12px; }
+  }
+
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
@@ -635,6 +885,12 @@
     </div>
   </div>
 
+  <!-- ABAS DE NAVEGAÇÃO -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-fichas" onclick="showTab('fichas')">📋 Fichas</button>
+    <button class="nav-tab" id="tab-dados" onclick="showTab('dados')">🎲 Dados</button>
+  </div>
+  <div id="section-fichas">
   <div class="users-bar">
     <span class="users-bar-label">Fichas:</span>
     <div id="users-chips"></div>
@@ -832,6 +1088,68 @@
     </div>
   </div>
 </div>
+
+  </div><!-- end section-fichas -->
+
+  <!-- ABA DADOS -->
+  <div id="section-dados" style="display:none;">
+    <div class="dice-container">
+      <div class="dice-title">🎲 Lançador de Dados</div>
+
+      <div class="dice-controls">
+        <!-- Quantidade de dados -->
+        <div class="dice-control-group">
+          <div class="dice-control-label">Quantidade de Dados</div>
+          <div class="dice-control-row">
+            <button class="dice-btn-small" onclick="changeDiceCount(-1)">−</button>
+            <div class="dice-count-display" id="dice-count">1</div>
+            <button class="dice-btn-small" onclick="changeDiceCount(1)">+</button>
+          </div>
+        </div>
+
+        <!-- Lados do dado -->
+        <div class="dice-control-group">
+          <div class="dice-control-label">Lados do Dado</div>
+          <div class="dice-control-row">
+            <button class="dice-btn-small" onclick="changeDiceSides(-1)">−</button>
+            <input class="dice-sides-input" id="dice-sides" type="number" value="6" min="2" max="100" onchange="clampSides()" />
+            <button class="dice-btn-small" onclick="changeDiceSides(1)">+</button>
+          </div>
+        </div>
+
+        <!-- Atalhos comuns -->
+        <div class="dice-control-group">
+          <div class="dice-control-label">Atalhos</div>
+          <div class="dice-control-row" style="flex-wrap:wrap;gap:6px;justify-content:center;">
+            <button class="dice-btn-small" onclick="setSides(4)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D4</button>
+            <button class="dice-btn-small" onclick="setSides(6)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D6</button>
+            <button class="dice-btn-small" onclick="setSides(8)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D8</button>
+            <button class="dice-btn-small" onclick="setSides(10)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D10</button>
+            <button class="dice-btn-small" onclick="setSides(12)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D12</button>
+            <button class="dice-btn-small" onclick="setSides(20)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D20</button>
+            <button class="dice-btn-small" onclick="setSides(100)" style="width:auto;padding:4px 10px;border-radius:8px;font-size:12px;">D100</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão lançar -->
+      <button class="dice-roll-btn" id="dice-roll-btn" onclick="lancarDados()">⚡ JOGAR</button>
+
+      <!-- Resultados -->
+      <div class="dice-results" id="dice-results" style="display:none;">
+        <div class="dice-results-title">🎯 Resultado do Lançamento</div>
+        <div class="dice-individual" id="dice-individual"></div>
+        <div class="dice-total-label">SOMA TOTAL</div>
+        <div class="dice-total" id="dice-total">0</div>
+      </div>
+
+      <!-- Histórico -->
+      <div class="dice-history">
+        <div class="dice-history-title">📜 Histórico de Lançamentos</div>
+        <div id="dice-history-list"><div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div></div>
+      </div>
+    </div>
+  </div><!-- end section-dados -->
 
 <div class="modal-overlay" id="delete-modal">
   <div class="modal-box">
@@ -1183,6 +1501,135 @@ function iniciarListenerFirebase() {
       const ind = document.getElementById('sync-indicator');
       if (ind) { ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0',2000); }
     }
+  });
+}
+
+
+// ===== DADOS =====
+let diceCount = 1;
+let diceSides = 6;
+
+function showTab(tab) {
+  document.getElementById('section-fichas').style.display = tab === 'fichas' ? 'block' : 'none';
+  document.getElementById('section-dados').style.display  = tab === 'dados'  ? 'block' : 'none';
+  document.getElementById('tab-fichas').classList.toggle('active', tab === 'fichas');
+  document.getElementById('tab-dados').classList.toggle('active',  tab === 'dados');
+}
+
+function changeDiceCount(delta) {
+  diceCount = Math.max(1, Math.min(10, diceCount + delta));
+  document.getElementById('dice-count').textContent = diceCount;
+}
+
+function changeDiceSides(delta) {
+  diceSides = Math.max(2, Math.min(100, diceSides + delta));
+  document.getElementById('dice-sides').value = diceSides;
+}
+
+function setSides(n) {
+  diceSides = n;
+  document.getElementById('dice-sides').value = n;
+}
+
+function clampSides() {
+  const el = document.getElementById('dice-sides');
+  diceSides = Math.max(2, Math.min(100, parseInt(el.value) || 6));
+  el.value = diceSides;
+}
+
+function rolarDado(lados) {
+  // Usa crypto para aleatoriedade 100%
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  return (arr[0] % lados) + 1;
+}
+
+async function lancarDados() {
+  if (!currentUser) return;
+  const btn = document.getElementById('dice-roll-btn');
+  btn.disabled = true;
+
+  const lados = parseInt(document.getElementById('dice-sides').value) || 6;
+  const qtd = diceCount;
+
+  // Animação de rolagem
+  btn.textContent = '🎲 Rolando...';
+  
+  // Pequeno delay para animação
+  await new Promise(r => setTimeout(r, 400));
+
+  // Gera resultados 100% aleatórios
+  const resultados = [];
+  for (let i = 0; i < qtd; i++) {
+    resultados.push(rolarDado(lados));
+  }
+  const soma = resultados.reduce((a, b) => a + b, 0);
+
+  // Mostra na tela
+  const resDiv = document.getElementById('dice-results');
+  const indDiv = document.getElementById('dice-individual');
+  const totalDiv = document.getElementById('dice-total');
+  
+  resDiv.style.display = 'block';
+  indDiv.innerHTML = '';
+  resultados.forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'die-result';
+    d.textContent = v;
+    indDiv.appendChild(d);
+  });
+  totalDiv.textContent = soma;
+
+  // Salva no Firebase para todos verem
+  const lancamento = {
+    user: currentUser,
+    qtd: qtd,
+    lados: lados,
+    resultados: resultados,
+    soma: soma,
+    time: Date.now()
+  };
+  
+  try {
+    await db.ref('dados').push(lancamento);
+  } catch(e) {
+    console.error('Erro ao salvar lançamento:', e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ JOGAR';
+}
+
+// Escuta lançamentos em tempo real
+function iniciarListenerDados() {
+  db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
+    const list = document.getElementById('dice-history-list');
+    if (!list) return;
+    
+    const entries = [];
+    snapshot.forEach(child => entries.push(child.val()));
+    
+    if (entries.length === 0) {
+      list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
+      return;
+    }
+
+    // Mais recente primeiro
+    entries.reverse();
+    list.innerHTML = '';
+    entries.forEach(e => {
+      const time = new Date(e.time).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+      const div = document.createElement('div');
+      div.className = 'history-entry';
+      div.innerHTML = `
+        <span class="he-time">${time}</span>
+        <span class="he-user">${e.user}</span> lançou 
+        <strong>${e.qtd}D${e.lados}</strong>: 
+        [${e.resultados.join(', ')}] = 
+        <span class="he-total">${e.soma}</span>
+      `;
+      list.appendChild(div);
+    });
   });
 }
 
