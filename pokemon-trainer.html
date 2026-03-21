@@ -943,6 +943,15 @@ const BIN_ID = '69bdd012c3097a1dd5445ed4';
 let currentUser = null;
 let allData = {};
 
+// ===== TOAST =====
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (error ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
 // ===== JSONBIN HELPERS =====
 async function jsonbinLoad() {
   try {
@@ -1315,23 +1324,14 @@ async function exportPDF() {
   }
 }
 
-// ===== TOAST =====
-function showToast(msg, error = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (error ? ' error' : '');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
 // ===== AUTO LOGIN =====
-(async () => {
+window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem('poke-logged-user');
   if (savedUser) {
     document.getElementById('login-username').value = savedUser;
     await doLogin();
   }
-})();
+});
 </script>
 </body>
 </html>
