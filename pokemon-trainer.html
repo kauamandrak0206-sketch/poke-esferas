@@ -721,6 +721,111 @@
     box-shadow: none;
   }
 
+  /* ===== COMO FUNCIONA ===== */
+  .howto-container {
+    padding: 0 30px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .howto-title {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .howto-body {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(200,150,12,0.1);
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  .howto-section {
+    color: #F5E6C8;
+  }
+
+  .howto-section h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(200,150,12,0.3);
+    padding-bottom: 8px;
+  }
+
+  .howto-section p { font-size: 13px; color: #E8D5A8; line-height: 1.7; margin-bottom: 8px; }
+
+  .howto-section ol, .howto-section ul {
+    padding-left: 18px;
+    margin: 6px 0 10px;
+  }
+
+  .howto-section ol li, .howto-section ul li {
+    font-size: 13px;
+    color: #E8D5A8;
+    line-height: 1.7;
+    padding: 2px 0;
+  }
+
+  .howto-section ul { list-style: none; padding-left: 0; }
+  .howto-section ul li::before { content: '▸ '; color: #C8960C; }
+
+  /* Tabela de tipos */
+  .types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .type-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(200,150,12,0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: #E8D5A8;
+    line-height: 1.6;
+  }
+
+  .type-card strong {
+    display: block;
+    color: #C8960C;
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+
+  .type-card span { color: #aaa; font-size: 10.5px; font-style: italic; }
+
+  .howto-full { grid-column: 1 / -1; }
+
+  .mestre-box {
+    background: rgba(74,44,138,0.3);
+    border: 1px solid rgba(106,61,184,0.5);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .mestre-box ul { list-style: none; padding: 0; margin: 0; }
+  .mestre-box ul li { font-size: 13px; color: #E8D5A8; padding: 4px 0 4px 20px; position: relative; line-height: 1.6; }
+  .mestre-box ul li::before { content: '⚡'; position: absolute; left: 0; }
+
   /* ===== SHEET CONTAINER ===== */
   .sheet-container {
     padding: 30px;
@@ -1319,6 +1424,80 @@
     </div>
   </div>
 
+  <!-- ===== COMO FUNCIONA O RPG ===== -->
+  <div class="howto-container" id="howto-section" style="display:none;">
+    <div class="howto-title">🎲 Como Funciona o RPG: Segredo das Poké Esferas</div>
+
+    <div class="howto-body">
+
+      <!-- CRIAÇÃO DE PERSONAGENS -->
+      <div class="howto-section">
+        <h2>🧑‍🤝‍🧑 CRIAÇÃO DE PERSONAGENS</h2>
+        <p>Cada jogador deve montar seu treinador Pokémon, definindo:</p>
+        <ul>
+          <li>Nome, idade e aparência</li>
+          <li>Origem e motivação para buscar as Poké Esferas</li>
+          <li>Pokémon inicial: Bulbassauro, Charmander, Squirtle ou Eevee</li>
+          <li>Uma característica única (ex: conhecedor de plantas, habilidoso em tecnologia)</li>
+        </ul>
+        <p><strong style="color:#C8960C;">Importante:</strong> Tanto história quanto imagem do personagem são fundamentais — quanto mais detalhados forem, mais rica será a experiência!</p>
+      </div>
+
+      <!-- FLUXO DA CAMPANHA -->
+      <div class="howto-section">
+        <h2>📖 FLUXO DA CAMPANHA</h2>
+        <ol>
+          <li><strong>Início:</strong> Os jogadores se encontram em uma vila antiga, onde ouvem sobre o mistério das Poké Esferas</li>
+          <li><strong>Missões:</strong> A cada etapa, serão liberadas missões para encontrar pistas, coletar itens e enfrentar desafios</li>
+          <li><strong>Batalhas:</strong> Cada Pokémon tem pontos de vida, ataques básicos e habilidades únicas que podem ser desenvolvidas</li>
+          <li><strong>Desenvolvimento:</strong> Conforme avançam, os jogadores vão desvendando o segredo por trás das esferas</li>
+        </ol>
+      </div>
+
+      <!-- TABELA DE TIPOS -->
+      <div class="howto-section howto-full">
+        <h2>💥 TABELA DE TIPOS — DANO SUPER EFICAZ (2×)</h2>
+        <div class="types-grid">
+          <div class="type-card"><strong>🔥 Fogo</strong>Planta · Gelo · Inseto · Pedra</div>
+          <div class="type-card"><strong>💧 Água</strong>Fogo · Pedra · Rocha</div>
+          <div class="type-card"><strong>🌱 Planta</strong>Água · Pedra · Rocha</div>
+          <div class="type-card"><strong>⚡ Elétrico</strong>Água · Voador</div>
+          <div class="type-card"><strong>❄️ Gelo</strong>Planta · Terrestre · Voador · Dragão</div>
+          <div class="type-card"><strong>🥊 Lutador</strong>Normal · Gelo · Pedra · Sombrio<br><span>Não afeta Fantasma</span></div>
+          <div class="type-card"><strong>🦠 Venenoso</strong>Planta · Fada</div>
+          <div class="type-card"><strong>🌍 Terrestre</strong>Elétrico · Fogo · Venenoso · Pedra · Rocha</div>
+          <div class="type-card"><strong>🦅 Voador</strong>Planta · Lutador · Inseto</div>
+          <div class="type-card"><strong>🧠 Psíquico</strong>Lutador · Venenoso</div>
+          <div class="type-card"><strong>🐜 Inseto</strong>Planta · Psíquico · Sombrio</div>
+          <div class="type-card"><strong>🪨 Pedra</strong>Fogo · Gelo · Voador · Inseto</div>
+          <div class="type-card"><strong>👻 Fantasma</strong>Psíquico · Fantasma</div>
+          <div class="type-card"><strong>🐉 Dragão</strong>Dragão</div>
+          <div class="type-card"><strong>🖤 Sombrio</strong>Fantasma · Lutador</div>
+          <div class="type-card"><strong>✨ Fada</strong>Lutador · Dragão · Sombrio</div>
+          <div class="type-card"><strong>🟡 Normal</strong><span>Nenhum tipo recebe 2×<br>Não afeta Fantasma</span></div>
+        </div>
+      </div>
+
+      <!-- LEMBRETES AO MESTRE -->
+      <div class="howto-section howto-full">
+        <h2>💡 LEMBRANDO AO MESTRE</h2>
+        <div class="mestre-box">
+          <ul>
+            <li>Evoluir o Pokémon quando os requisitos forem atendidos (nível, item específico ou condição da história)</li>
+            <li>Aplicar o dano super eficaz (2×) conforme a tabela acima durante batalhas</li>
+            <li>Dar recompensas adequadas após missões concluídas (itens, XP, novas habilidades)</li>
+            <li>Incorporar detalhes da história e imagem dos personagens nos enredos</li>
+            <li>Ajustar a dificuldade conforme o progresso do grupo</li>
+            <li>Lembre-se: história e imagem fazem parte do charme do jogo — invista tempo em dar vida ao mundo e aos Pokémons!</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="rules-close-btn" onclick="fecharHowto()" style="max-width:400px;margin:0 auto 28px;display:block;">🎮 Entendido — Ir para a Ficha!</button>
+  </div>
+
   <div class="sheet-container" id="sheet-container" style="display:none;">
     <div id="trainer-sheet">
       <div class="sheet-main-title">FICHAS DE TREINADORES - SEGREDO DAS POKÉ ESFERAS</div>
@@ -1872,7 +2051,14 @@ function fecharRegras() {
   const cb = document.getElementById('rules-checkbox');
   if (!cb.checked) return;
   document.getElementById('rules-section').style.display = 'none';
+  document.getElementById('howto-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function fecharHowto() {
+  document.getElementById('howto-section').style.display = 'none';
   document.getElementById('sheet-container').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== MODO DE FOTO =====
