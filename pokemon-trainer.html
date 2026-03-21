@@ -523,6 +523,196 @@
   .modal-btn-confirm { background: #e53935; color: #fff; }
   .modal-btn-confirm:hover { background: #b71c1c; }
 
+  /* ===== REGRAS ===== */
+  .rules-container {
+    padding: 30px 30px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .rules-obrigatorio {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #C8960C;
+    -webkit-text-stroke: 2px #8B6508;
+    text-shadow:
+      3px 3px 0px #8B6508,
+      0 0 30px rgba(200,150,12,0.6),
+      0 0 60px rgba(200,150,12,0.3);
+    margin-bottom: 6px;
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { text-shadow: 3px 3px 0px #8B6508, 0 0 30px rgba(200,150,12,0.6); }
+    50%       { text-shadow: 3px 3px 0px #8B6508, 0 0 50px rgba(200,150,12,1), 0 0 80px rgba(200,150,12,0.5); }
+  }
+
+  .rules-obrigatorio-sub {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: rgba(200,150,12,0.7);
+    letter-spacing: 4px;
+    margin-bottom: 24px;
+  }
+
+  .rules-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(200,150,12,0.1);
+    margin-bottom: 28px;
+  }
+
+  .rules-text { color: #F5E6C8; font-size: 13.5px; line-height: 1.8; }
+
+  .rules-text h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    margin: 18px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rules-text h2:first-child { margin-top: 0; }
+
+  .rules-text p { margin-bottom: 10px; color: #E8D5A8; }
+
+  .rules-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 10px 8px;
+  }
+
+  .rules-text ul li {
+    padding: 4px 0 4px 18px;
+    position: relative;
+    color: #E8D5A8;
+  }
+
+  .rules-text ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #C8960C;
+  }
+
+  .rules-text ol {
+    padding-left: 20px;
+    margin: 6px 0 10px;
+  }
+
+  .rules-text ol li { color: #E8D5A8; padding: 3px 0; }
+
+  /* Tabela de punição */
+  .rules-table-wrap {
+    position: sticky;
+    top: 80px;
+  }
+
+  .rules-table-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #C8960C;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .rules-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .rules-table thead tr {
+    background: linear-gradient(135deg, #C8960C, #8B6508);
+    color: #1A1035;
+  }
+
+  .rules-table thead th {
+    padding: 10px 12px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 900;
+  }
+
+  .rules-table tbody tr:nth-child(1) { background: #2D3B1A; }
+  .rules-table tbody tr:nth-child(2) { background: #3B2E10; }
+  .rules-table tbody tr:nth-child(3) { background: #3B1010; }
+
+  .rules-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(200,150,12,0.2);
+    color: #F5E6C8;
+    line-height: 1.5;
+    vertical-align: top;
+  }
+
+  .rules-table td:first-child {
+    font-weight: 700;
+    color: #C8960C;
+    white-space: nowrap;
+  }
+
+  .severity-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .severity-leve    { background: #2D5A1A; color: #7FD45A; border: 1px solid #4A8A2A; }
+  .severity-medio   { background: #5A4010; color: #FFB347; border: 1px solid #8A6020; }
+  .severity-grave   { background: #5A1010; color: #FF6B6B; border: 1px solid #8A2020; }
+
+  /* Botão para fechar regras */
+  .rules-close-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #C46A00, #C8960C);
+    color: #1A1035;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+
+  .rules-close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200,150,12,0.4);
+  }
+
   /* ===== SHEET CONTAINER ===== */
   .sheet-container {
     padding: 30px;
@@ -1012,6 +1202,109 @@
   <div class="users-bar" id="users-bar">
     <span class="users-bar-label">Fichas:</span>
     <div id="users-chips"></div>
+  </div>
+
+  <!-- ===== REGRAS OBRIGATÓRIAS ===== -->
+  <div class="rules-container" id="rules-section">
+    <div class="rules-obrigatorio">⚠ Obrigatório Ler ⚠</div>
+    <div class="rules-obrigatorio-sub">🎮 REGRAS OFICIAIS DA CAMPANHA — SEGREDO DAS POKÉ ESFERAS</div>
+
+    <div class="rules-body">
+      <!-- TEXTO DAS REGRAS -->
+      <div class="rules-text">
+
+        <h2>📅 DATAS E HORÁRIOS DA CAMPANHA</h2>
+        <p>Sessões ocorrem todas as <strong>terças, quintas, sábados e domingos</strong> — participe quando conseguir! Caso precise faltar, avise o mestre com antecedência.</p>
+
+        <h2>🚫 REGRA 1: SEM XINGAMENTOS EM GERAL!</h2>
+        <p>Qualquer tipo de palavrão ou linguagem ofensiva (mesmo que não seja direcionada a alguém) não será tolerado. Confira a tabela de punições ao lado.</p>
+
+        <h2>❌ REGRA 2: NÃO PODE XINGAR O COLEGA!</h2>
+        <p>Qualquer forma de xingamento, insulto ou comentário desrespeitoso direcionado a um participante resulta na <strong>penalidade máxima</strong>, independentemente da gravidade:</p>
+        <ul>
+          <li>Perda de todos os itens especiais do inventário (exceto Poké Bolas básicas)</li>
+          <li>Redução de 2 níveis no Pokémon principal</li>
+          <li>Missão obrigatória "A Busca da Esfera Perdida" para recuperar o status anterior</li>
+        </ul>
+
+        <h2>🤝 REGRA 3: AJUDE SEUS AMIGOS!</h2>
+        <p>Se um colega não entender alguma regra, mecânica do jogo ou parte da história, e o mestre não estiver disponível:</p>
+        <ul>
+          <li>É permitido e incentivado ajudar o amigo, explicando de forma clara e paciente</li>
+          <li>Não é permitido dar informações que quebrem o mistério da campanha ou vantagens injustas</li>
+          <li>Se houver dúvidas sobre o que pode ser explicado, anote para consultar o mestre depois</li>
+          <li>Ajudar outros jogadores pode render recompensas pequenas pelo mestre no final da sessão</li>
+        </ul>
+
+        <h2>📞 COMO DENUNCIAR DESCUMPRIMENTO</h2>
+        <ol>
+          <li><strong>Comunicação direta:</strong> Primeiro, converse com o jogador para informar que o comportamento não é permitido</li>
+          <li><strong>Avisar o mestre:</strong> Se o problema persistir, entre em contato de forma privada</li>
+          <li><strong>Registro:</strong> O mestre anotará o ocorrido e aplicará a penalidade correspondente</li>
+        </ol>
+
+        <h2>🏆 RECOMPENSAS PARA AMBIENTE POSITIVO</h2>
+        <p>Jogadores que mantêm o respeito, ajudam os colegas e contribuem para um clima bom podem ganhar:</p>
+        <ul>
+          <li>Itens exclusivos como "Poção de Amizade" (cura status leves e aumenta sincronia com o Pokémon)</li>
+          <li>Pontos extras de experiência para seu Pokémon</li>
+          <li>Acesso a missões secundárias exclusivas</li>
+          <li>Reconhecimento público pelo mestre durante a sessão</li>
+        </ul>
+
+        <h2>📝 FORMULÁRIO DE DENÚNCIA</h2>
+        <p>Se precisar avisar o mestre, envie uma mensagem com:</p>
+        <ul>
+          <li><strong>Assunto:</strong> Denúncia - [Nome do seu personagem]</li>
+          <li><strong>Ocorrido:</strong> Descreva brevemente o que aconteceu</li>
+          <li><strong>Horário aproximado:</strong> Quando ocorreu</li>
+          <li><strong>Já conversou com o jogador?</strong> Sim / Não</li>
+          <li><strong>Observações adicionais:</strong> Outras informações importantes</li>
+        </ul>
+
+        <h2>✅ LEMBRE-SE</h2>
+        <p>O objetivo é <strong>se divertir juntos</strong> e desvendar os mistérios das Poké Esferas — mantenha o respeito e a boa disposição! 🌟</p>
+      </div>
+
+      <!-- TABELA DE PUNIÇÃO -->
+      <div class="rules-table-wrap">
+        <div class="rules-table-title">⚖️ Tabela de Punições</div>
+        <table class="rules-table">
+          <thead>
+            <tr>
+              <th>Gravidade</th>
+              <th>Consequência</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="severity-badge severity-leve">🟢 LEVE</span><br/>Palavras de baixo calão</td>
+              <td>Perda de <strong>20%</strong> dos pontos de nível acumulados</td>
+            </tr>
+            <tr>
+              <td><span class="severity-badge severity-medio">🟡 MODERADO</span><br/>Palavrões leves</td>
+              <td>Perda de <strong>50%</strong> dos pontos de nível acumulados</td>
+            </tr>
+            <tr>
+              <td><span class="severity-badge severity-grave">🔴 GRAVE</span><br/>Palavrões fortes ou repetidos</td>
+              <td>Perda de pontos + Pokémon "fraco" em <strong>1 rodada</strong> de batalha</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:20px; background:rgba(200,150,12,0.08); border:1px solid rgba(200,150,12,0.3); border-radius:10px; padding:14px;">
+          <div style="font-family:'Cinzel',serif; font-size:11px; color:#C8960C; letter-spacing:1px; text-align:center; margin-bottom:8px;">🚨 PENALIDADE MÁXIMA</div>
+          <div style="font-size:12px; color:#FF6B6B; line-height:1.6;">
+            Xingar um colega diretamente resulta em:<br>
+            • Perda de <strong>todos os itens especiais</strong><br>
+            • <strong>-2 níveis</strong> no Pokémon principal<br>
+            • Missão punitiva obrigatória
+          </div>
+        </div>
+
+        <button class="rules-close-btn" onclick="fecharRegras()">✅ Li e Entendi — Jogar!</button>
+      </div>
+    </div>
   </div>
 
   <div class="sheet-container">
@@ -1554,6 +1847,11 @@ async function confirmDelete() {
 document.getElementById('delete-modal').addEventListener('click', function(e) {
   if (e.target === this) closeDeleteModal();
 });
+
+// ===== REGRAS =====
+function fecharRegras() {
+  document.getElementById('rules-section').style.display = 'none';
+}
 
 // ===== MODO DE FOTO =====
 function setFotoModo(modo) {
