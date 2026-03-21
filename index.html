@@ -2089,6 +2089,8 @@ function criarPlayer(videoId) {
       modestbranding: 1,
       controls:       1,
       fs:             1,
+      enablejsapi:    1,
+      origin:         window.location.origin,
     },
     events: {
       onReady:       onPlayerReady,
@@ -2105,7 +2107,6 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-  // 1 = playing, 2 = paused, 0 = ended
   musicPlaying = (event.data === YT.PlayerState.PLAYING);
   atualizarBotaoPlay(musicPlaying);
   if (event.data === YT.PlayerState.PLAYING) {
@@ -2115,6 +2116,13 @@ function onPlayerStateChange(event) {
         document.getElementById('music-now-playing').textContent = '🎵 ' + info.title;
       }
     } catch(e) {}
+  }
+  // Auto-próxima quando termina (só mestre sincroniza)
+  if (event.data === YT.PlayerState.ENDED && isMaster) {
+    const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+    if (idx >= 0 && idx < musicSaved.length - 1) {
+      tocarSalva(musicSaved[idx + 1].videoId);
+    }
   }
 }
 
@@ -2136,13 +2144,17 @@ function musicPlayPause() {
 }
 
 function musicNext() {
-  if (!ytPlayer) return;
-  ytPlayer.nextVideo ? ytPlayer.nextVideo() : ytPlayer.playVideo();
+  if (!isMaster || !musicSaved.length) return;
+  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+  const next = musicSaved[idx + 1] || musicSaved[0];
+  if (next) tocarSalva(next.videoId);
 }
 
 function musicPrev() {
-  if (!ytPlayer) return;
-  ytPlayer.previousVideo ? ytPlayer.previousVideo() : ytPlayer.playVideo();
+  if (!isMaster || !musicSaved.length) return;
+  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+  const prev = idx > 0 ? musicSaved[idx - 1] : musicSaved[musicSaved.length - 1];
+  if (prev) tocarSalva(prev.videoId);
 }
 
 function musicVolume(val) {
@@ -2214,20 +2226,42 @@ function renderMusicList() {
   const container = document.getElementById('music-saved-list-items');
   if (!container) return;
   if (!musicSaved || musicSaved.length === 0) {
-    container.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;">Nenhuma música salva ainda...</div>';
+    container.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:12px;">Nenhuma música na playlist ainda...<br>Cole um link do YouTube acima!</div>';
     return;
   }
   container.innerHTML = '';
-  musicSaved.forEach(s => {
+  musicSaved.forEach((s, idx) => {
+    const isActive = s.videoId === currentVideoId;
     const item = document.createElement('div');
-    item.className = 'music-saved-item' + (s.videoId === currentVideoId ? ' active' : '');
+    item.className = 'music-saved-item' + (isActive ? ' active' : '');
+
+    const thumb = `https://img.youtube.com/vi/${s.videoId}/default.jpg`;
     item.innerHTML = `
-      <span class="music-saved-name" title="${s.label}">${s.label}</span>
-      ${isMaster ? `<button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')">×</button>` : ''}
+      <img src="${thumb}" style="width:54px;height:38px;object-fit:cover;border-radius:5px;flex-shrink:0;" onerror="this.style.display='none'"/>
+      <div style="flex:1;min-width:0;">
+        <div class="music-saved-name" title="${s.label}">${isActive ? '▶ ' : (idx+1)+'. '}${s.label}</div>
+      </div>
+      ${isMaster ? `
+        <button class="music-saved-del" onclick="event.stopPropagation();moverMusica(${idx},-1)" title="Subir" style="font-size:12px;opacity:0.6;">↑</button>
+        <button class="music-saved-del" onclick="event.stopPropagation();moverMusica(${idx},1)"  title="Descer" style="font-size:12px;opacity:0.6;">↓</button>
+        <button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')" title="Remover">×</button>
+      ` : ''}
     `;
-    if (isMaster) item.onclick = () => tocarSalva(s.videoId);
+    // Mestre clica para tocar; jogador também pode clicar (mestre sincroniza)
+    item.onclick = () => { if (isMaster) tocarSalva(s.videoId); };
+    if (isMaster) item.style.cursor = 'pointer';
     container.appendChild(item);
   });
+}
+
+async function moverMusica(idx, dir) {
+  if (!isMaster) return;
+  const novo = idx + dir;
+  if (novo < 0 || novo >= musicSaved.length) return;
+  const tmp = musicSaved[idx];
+  musicSaved[idx]  = musicSaved[novo];
+  musicSaved[novo] = tmp;
+  await db.ref('musica/saved').set(musicSaved);
 }
 
 // ---- Listener Firebase ----
@@ -2281,3 +2315,19 @@ function aplicarPermissoesMusica() {
 }
 
 
+
+// ============================================================
+// AUTO-LOGIN ao carregar a página
+// ============================================================
+window.addEventListener('load', async () => {
+  const savedUser = localStorage.getItem('poke-logged-user');
+  const savedPass = localStorage.getItem('poke-logged-pass');
+  if (savedUser && savedPass) {
+    document.getElementById('login-username').value = savedUser;
+    document.getElementById('login-password').value = savedPass;
+    await doLogin();
+  }
+});
+</script>
+</body>
+</html>
