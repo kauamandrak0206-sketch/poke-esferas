@@ -624,7 +624,11 @@
     </div>
   </div>
 
-  <div class="users-bar"><span class="users-bar-label">Fichas:</span><div id="users-chips"></div></div>
+  <div class="users-bar">
+    <span class="users-bar-label">Fichas:</span>
+    <div id="users-chips"></div>
+    <span id="sync-indicator" style="margin-left:auto;font-size:11px;color:#4CAF50;opacity:0;transition:opacity 0.5s;">✓ sincronizado</span>
+  </div>
 
   <!-- REGRAS -->
   <div class="rules-container" id="rules-section" style="display:none;">
@@ -940,6 +944,7 @@ async function doLogin() {
 
   buildTable();
   renderUserChips();
+  iniciarAutoSync(); // inicia sincronização automática
 
   // Carrega nuvem em segundo plano
   try {
@@ -953,6 +958,7 @@ async function doLogin() {
 async function doLogout() {
   await saveSheet(true);
   currentUser = null; isMaster = false;
+  pararAutoSync(); // para sincronização ao sair
   localStorage.removeItem('poke-logged-user');
   localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
@@ -1018,6 +1024,7 @@ async function saveSheet(silent=false) {
   if(!currentUser)return;
   allData[currentUser]=getSheetData();
   await jsonbinSave(allData);
+  lastSyncHash = JSON.stringify(allData); // evita re-sync desnecessário
   renderUserChips();
   if(!silent){showToast('✅ Ficha salva na nuvem!');const s=document.getElementById('save-status');s.style.display='flex';setTimeout(()=>s.style.display='none',2500);}
 }
@@ -1131,6 +1138,57 @@ window.addEventListener('load', async () => {
     await doLogin();
   }
 });
+
+// ===== AUTO-SYNC: atualiza fichas para todos a cada 10 segundos =====
+let lastSyncHash = '';
+
+async function autoSync() {
+  // Só sincroniza se estiver logado e na tela da ficha
+  if (!currentUser) return;
+  if (document.getElementById('sheet-container').style.display === 'none') return;
+
+  try {
+    const dados = await jsonbinLoad();
+    if (!dados || Object.keys(dados).length === 0) return;
+
+    // Verifica se houve mudança comparando com o estado atual
+    const novoHash = JSON.stringify(dados);
+    if (novoHash === lastSyncHash) return; // nada mudou
+    lastSyncHash = novoHash;
+
+    // Atualiza os dados globais
+    const fichaAnterior = JSON.stringify(allData[currentUser] || {});
+    allData = dados;
+
+    // Atualiza os chips de fichas para todos verem
+    renderUserChips();
+
+    // Se a ficha do usuário atual foi atualizada por outro (ex: mestre editou)
+    // e o usuário atual não é o dono, recarrega
+    const fichaAtual = JSON.stringify(allData[currentUser] || {});
+    if (fichaAnterior !== fichaAtual && !isMaster) {
+      // Não recarrega a ficha do próprio usuário enquanto ele edita
+    }
+
+    // Mostra indicador sutil de sincronização
+    const ind = document.getElementById('sync-indicator');
+    if (ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 1000); }
+
+  } catch(e) {
+    // Falha silenciosa — não interrompe o usuário
+  }
+}
+
+// Inicia polling após login (chamado dentro do doLogin)
+let syncInterval = null;
+function iniciarAutoSync() {
+  if (syncInterval) clearInterval(syncInterval);
+  syncInterval = setInterval(autoSync, 10000); // a cada 10 segundos
+}
+function pararAutoSync() {
+  if (syncInterval) clearInterval(syncInterval);
+  syncInterval = null;
+}
 </script>
 </body>
 </html>
