@@ -138,6 +138,39 @@
     display: none;
   }
 
+  .login-success {
+    color: #69f0ae;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .login-tabs {
+    display: flex;
+    margin-bottom: 28px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .login-tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .login-tab.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+
   .welcome-text {
     margin-bottom: 28px;
     line-height: 1.3;
@@ -799,10 +832,34 @@
       <div class="welcome-divider"></div>
     </div>
 
-    <label class="login-label">Nome do Treinador</label>
-    <input class="login-input" id="login-username" type="text" placeholder="Ex: Ash Ketchum" autocomplete="off" />
-    <button class="login-btn" onclick="doLogin()">⚡ ENTRAR NA AVENTURA</button>
-    <div class="login-error" id="login-error">Digite seu nome de treinador!</div>
+    <!-- Abas Entrar / Cadastrar -->
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+      <button class="login-tab" id="tab-register" onclick="switchTab('register')">Cadastrar</button>
+    </div>
+
+    <!-- Formulário de Login -->
+    <div id="form-login">
+      <label class="login-label">Nome do Treinador</label>
+      <input class="login-input" id="login-username" type="text" placeholder="Ex: Ash Ketchum" autocomplete="off" />
+      <label class="login-label">Senha</label>
+      <input class="login-input" id="login-password" type="password" placeholder="Sua senha secreta" />
+      <button class="login-btn" onclick="doLogin()">⚡ ENTRAR NA AVENTURA</button>
+    </div>
+
+    <!-- Formulário de Cadastro -->
+    <div id="form-register" style="display:none">
+      <label class="login-label">Nome do Treinador</label>
+      <input class="login-input" id="reg-username" type="text" placeholder="Ex: Misty" autocomplete="off" />
+      <label class="login-label">Criar Senha</label>
+      <input class="login-input" id="reg-password" type="password" placeholder="Escolha uma senha" />
+      <label class="login-label">Confirmar Senha</label>
+      <input class="login-input" id="reg-password2" type="password" placeholder="Repita a senha" />
+      <button class="login-btn" onclick="doRegister()">🌟 CRIAR CONTA</button>
+    </div>
+
+    <div class="login-error" id="login-error">Erro no login.</div>
+    <div class="login-success" id="login-success">Conta criada! Agora faça login.</div>
   </div>
 </div>
 
@@ -943,15 +1000,6 @@ const BIN_ID = '69bdd012c3097a1dd5445ed4';
 let currentUser = null;
 let allData = {};
 
-// ===== TOAST =====
-function showToast(msg, error = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (error ? ' error' : '');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
 // ===== JSONBIN HELPERS =====
 async function jsonbinLoad() {
   try {
@@ -989,27 +1037,96 @@ async function jsonbinSave(data) {
   }
 }
 
+// ===== CONTAS (salvas localmente por navegador) =====
+function getAccounts() {
+  try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); } catch(e) { return {}; }
+}
+function saveAccounts(accounts) {
+  localStorage.setItem('poke-accounts', JSON.stringify(accounts));
+}
+
+// ===== ABAS LOGIN / CADASTRO =====
+function switchTab(tab) {
+  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  hideMessages();
+}
+
+function showError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('login-success').style.display = 'none';
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('login-success');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function hideMessages() {
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-success').style.display = 'none';
+}
+
+// ===== CADASTRO =====
+function doRegister() {
+  const name  = document.getElementById('reg-username').value.trim();
+  const pass  = document.getElementById('reg-password').value;
+  const pass2 = document.getElementById('reg-password2').value;
+
+  if (!name)             return showError('Digite seu nome de treinador!');
+  if (pass.length < 3)   return showError('A senha precisa ter pelo menos 3 caracteres.');
+  if (pass !== pass2)    return showError('As senhas não coincidem!');
+
+  const accounts = getAccounts();
+  if (accounts[name.toLowerCase()]) return showError('Esse nome já está cadastrado!');
+
+  accounts[name.toLowerCase()] = { name, password: pass };
+  saveAccounts(accounts);
+
+  document.getElementById('reg-username').value  = '';
+  document.getElementById('reg-password').value  = '';
+  document.getElementById('reg-password2').value = '';
+
+  showSuccess('✅ Conta criada! Agora faça login.');
+  switchTab('login');
+  document.getElementById('login-username').value = name;
+}
+
 // ===== LOGIN =====
 async function doLogin() {
   const name = document.getElementById('login-username').value.trim();
-  if (!name) {
-    document.getElementById('login-error').style.display = 'block';
-    return;
-  }
+  const pass = document.getElementById('login-password').value;
 
-  // Salva o nome IMEDIATAMENTE antes de qualquer coisa
-  currentUser = name;
-  localStorage.setItem('poke-logged-user', name);
+  if (!name) return showError('Digite seu nome de treinador!');
+  if (!pass) return showError('Digite sua senha!');
 
-  // Entra na tela principal sem esperar a nuvem
+  const accounts = getAccounts();
+  const account  = accounts[name.toLowerCase()];
+
+  if (!account)                  return showError('Treinador não encontrado. Cadastre-se primeiro!');
+  if (account.password !== pass) return showError('Senha incorreta!');
+
+  hideMessages();
+
+  // Salva sessão e entra
+  currentUser = account.name;
+  localStorage.setItem('poke-logged-user', account.name);
+  localStorage.setItem('poke-logged-pass', pass);
+
   document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app-page').style.display = 'block';
-  document.getElementById('header-username').textContent = '👤 ' + name;
+  document.getElementById('app-page').style.display   = 'block';
+  document.getElementById('header-username').textContent = '👤 ' + account.name;
 
   buildTable();
   renderUserChips();
 
-  // Tenta carregar dados da nuvem em segundo plano
+  // Carrega dados da nuvem em segundo plano
   try {
     const dados = await jsonbinLoad();
     if (dados && Object.keys(dados).length > 0) {
@@ -1017,22 +1134,19 @@ async function doLogin() {
       loadSheet(currentUser);
       renderUserChips();
     }
-  } catch(e) {
-    // Nuvem falhou, mas o login já está salvo normalmente
-  }
+  } catch(e) {}
 }
-
-document.getElementById('login-username').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
 
 async function doLogout() {
   await saveSheet(true);
   currentUser = null;
   localStorage.removeItem('poke-logged-user');
+  localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('app-page').style.display = 'none';
+  document.getElementById('app-page').style.display   = 'none';
   document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  hideMessages();
 }
 
 // ===== BUILD TABLE ROWS =====
@@ -1324,11 +1438,22 @@ async function exportPDF() {
   }
 }
 
+// ===== TOAST =====
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (error ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
 // ===== AUTO LOGIN =====
 window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem('poke-logged-user');
-  if (savedUser) {
+  const savedPass = localStorage.getItem('poke-logged-pass');
+  if (savedUser && savedPass) {
     document.getElementById('login-username').value = savedUser;
+    document.getElementById('login-password').value = savedPass;
     await doLogin();
   }
 });
