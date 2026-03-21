@@ -713,6 +713,14 @@
     box-shadow: 0 8px 24px rgba(200,150,12,0.4);
   }
 
+  .rules-close-btn:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
   /* ===== SHEET CONTAINER ===== */
   .sheet-container {
     padding: 30px;
@@ -1302,12 +1310,16 @@
           </div>
         </div>
 
-        <button class="rules-close-btn" onclick="fecharRegras()">✅ Li e Entendi — Jogar!</button>
+        <button class="rules-close-btn" id="rules-close-btn" onclick="fecharRegras()" disabled>🔒 Li e Entendi — Jogar!</button>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:14px;cursor:pointer;color:#E8D5A8;font-size:13px;">
+          <input type="checkbox" id="rules-checkbox" onchange="toggleRulesBtn()" style="width:18px;height:18px;accent-color:#C8960C;cursor:pointer;flex-shrink:0;" />
+          Li e concordo com todas as regras acima
+        </label>
       </div>
     </div>
   </div>
 
-  <div class="sheet-container">
+  <div class="sheet-container" id="sheet-container" style="display:none;">
     <div id="trainer-sheet">
       <div class="sheet-main-title">FICHAS DE TREINADORES - SEGREDO DAS POKÉ ESFERAS</div>
 
@@ -1849,8 +1861,18 @@ document.getElementById('delete-modal').addEventListener('click', function(e) {
 });
 
 // ===== REGRAS =====
+function toggleRulesBtn() {
+  const cb  = document.getElementById('rules-checkbox');
+  const btn = document.getElementById('rules-close-btn');
+  btn.disabled = !cb.checked;
+  btn.textContent = cb.checked ? '✅ Li e Entendi — Jogar!' : '🔒 Li e Entendi — Jogar!';
+}
+
 function fecharRegras() {
+  const cb = document.getElementById('rules-checkbox');
+  if (!cb.checked) return;
   document.getElementById('rules-section').style.display = 'none';
+  document.getElementById('sheet-container').style.display = 'block';
 }
 
 // ===== MODO DE FOTO =====
