@@ -988,10 +988,11 @@ async function doLogin() {
     return;
   }
 
-  // Entra na tela imediatamente, sem esperar o JSONBin
+  // Salva o nome IMEDIATAMENTE antes de qualquer coisa
   currentUser = name;
   localStorage.setItem('poke-logged-user', name);
 
+  // Entra na tela principal sem esperar a nuvem
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-page').style.display = 'block';
   document.getElementById('header-username').textContent = '👤 ' + name;
@@ -1000,13 +1001,15 @@ async function doLogin() {
   renderUserChips();
 
   // Tenta carregar dados da nuvem em segundo plano
-  showToast('⏳ Carregando dados...');
-  const dados = await jsonbinLoad();
-  if (dados && Object.keys(dados).length > 0) {
-    allData = dados;
-    loadSheet(currentUser);
-    renderUserChips();
-    showToast('✅ Dados carregados!');
+  try {
+    const dados = await jsonbinLoad();
+    if (dados && Object.keys(dados).length > 0) {
+      allData = dados;
+      loadSheet(currentUser);
+      renderUserChips();
+    }
+  } catch(e) {
+    // Nuvem falhou, mas o login já está salvo normalmente
   }
 }
 
