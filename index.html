@@ -1142,55 +1142,31 @@ window.addEventListener('load', async () => {
   }
 });
 
-// ===== AUTO-SYNC: atualiza fichas para todos a cada 10 segundos =====
-let lastSyncHash = '';
-
-async function autoSync() {
-  // Só sincroniza se estiver logado e na tela da ficha
-  if (!currentUser) return;
-  if (document.getElementById('sheet-container').style.display === 'none') return;
-
+// ===== ATUALIZAR FICHAS MANUALMENTE =====
+async function atualizarFichas() {
+  const btn = document.getElementById('btn-refresh');
+  if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Carregando...'; }
   try {
-    const dados = await jsonbinLoad();
-    if (!dados || Object.keys(dados).length === 0) return;
-
-    // Verifica se houve mudança comparando com o estado atual
-    const novoHash = JSON.stringify(dados);
-    if (novoHash === lastSyncHash) return; // nada mudou
-    lastSyncHash = novoHash;
-
-    // Atualiza os dados globais
-    const fichaAnterior = JSON.stringify(allData[currentUser] || {});
-    allData = dados;
-
-    // Atualiza os chips de fichas para todos verem
-    renderUserChips();
-
-    // Se a ficha do usuário atual foi atualizada por outro (ex: mestre editou)
-    // e o usuário atual não é o dono, recarrega
-    const fichaAtual = JSON.stringify(allData[currentUser] || {});
-    if (fichaAnterior !== fichaAtual && !isMaster) {
-      // Não recarrega a ficha do próprio usuário enquanto ele edita
+    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const dados = json.trainers || json || {};
+    if (dados && Object.keys(dados).length > 0) {
+      allData = dados;
+      loadSheet(currentUser);
+      renderUserChips();
+      showToast('✅ Fichas atualizadas!');
+    } else {
+      showToast('Nenhuma ficha na nuvem ainda.');
     }
-
-    // Mostra indicador sutil de sincronização
-    const ind = document.getElementById('sync-indicator');
-    if (ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 1000); }
-
   } catch(e) {
-    // Falha silenciosa — não interrompe o usuário
+    console.error('Erro ao atualizar:', e);
+    showToast('❌ Erro ao atualizar. Verifique a conexão.', true);
+  } finally {
+    if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄 Atualizar Fichas'; }
   }
-}
-
-// Inicia polling após login (chamado dentro do doLogin)
-let syncInterval = null;
-function iniciarAutoSync() {
-  if (syncInterval) clearInterval(syncInterval);
-  syncInterval = setInterval(autoSync, 10000); // a cada 10 segundos
-}
-function pararAutoSync() {
-  if (syncInterval) clearInterval(syncInterval);
-  syncInterval = null;
 }
 </script>
 </body>
