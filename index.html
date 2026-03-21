@@ -788,6 +788,120 @@
     .nav-tab { font-size: 10px; padding: 6px 12px; }
   }
 
+
+  /* ===== MÚSICA ===== */
+  .music-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .music-title {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900;
+    letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 24px; text-transform: uppercase;
+  }
+  .music-player-wrap {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .music-player-wrap iframe {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+  }
+  .music-master-only {
+    background: rgba(74,44,138,0.3);
+    border: 1px solid rgba(106,61,184,0.5);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .music-master-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px; color: #C8960C;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .music-input-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .music-url-input {
+    flex: 1; min-width: 200px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .music-url-input:focus { border-color: #C8960C; }
+  .music-url-input::placeholder { color: rgba(255,255,255,0.3); }
+  .music-load-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #C46A00, #C8960C);
+    color: #1A1035; border: none; border-radius: 8px;
+    font-family: 'Cinzel', serif; font-size: 12px;
+    font-weight: 900; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .music-load-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(200,150,12,0.4); }
+  .music-status {
+    font-size: 12px; color: rgba(200,150,12,0.6);
+    margin-top: 10px; text-align: center;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .music-saved-list {
+    margin-top: 14px;
+  }
+  .music-saved-title {
+    font-family: 'Cinzel', serif; font-size: 11px;
+    color: #C8960C; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .music-saved-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,150,12,0.15);
+    margin-bottom: 6px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .music-saved-item:hover { background: rgba(200,150,12,0.1); border-color: #C8960C; }
+  .music-saved-item.active { background: rgba(74,44,138,0.4); border-color: #6A3DB8; }
+  .music-saved-name {
+    flex: 1; font-size: 13px; color: #E8D5A8;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .music-saved-del {
+    background: transparent; border: none;
+    color: rgba(255,100,100,0.5); font-size: 16px;
+    cursor: pointer; padding: 2px 6px;
+    transition: color 0.2s; line-height: 1;
+  }
+  .music-saved-del:hover { color: #e53935; }
+  .music-viewer-info {
+    text-align: center; padding: 16px;
+    font-size: 13px; color: rgba(200,150,12,0.6);
+    font-family: 'Exo 2', sans-serif;
+  }
+
+  @media (max-width: 900px) {
+    .music-container { padding: 14px; }
+    .music-input-row { flex-direction: column; }
+    .music-load-btn { width: 100%; }
+  }
+
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
@@ -889,6 +1003,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" id="tab-fichas" onclick="showTab('fichas')">📋 Fichas</button>
     <button class="nav-tab" id="tab-dados" onclick="showTab('dados')">🎲 Dados</button>
+    <button class="nav-tab" id="tab-musica" onclick="showTab('musica')">🎵 Música</button>
   </div>
   <div id="section-fichas">
   <div class="users-bar">
@@ -1149,7 +1264,56 @@
         <div id="dice-history-list"><div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div></div>
       </div>
     </div>
+
   </div><!-- end section-dados -->
+
+  <!-- ABA MÚSICA -->
+  <div id="section-musica" style="display:none;">
+    <div class="music-container">
+      <div class="music-title">🎵 Playlist da Campanha</div>
+
+      <!-- Player YouTube -->
+      <div class="music-player-wrap">
+        <iframe
+          id="yt-player"
+          height="400"
+          src="https://www.youtube.com/embed/sTelrncNFbU?list=WL&autoplay=0&rel=0&modestbranding=1"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <!-- Info para jogadores -->
+      <div class="music-viewer-info" id="music-viewer-info" style="display:none;">
+        🎵 Só o Mestre pode controlar a música
+      </div>
+
+      <!-- Controles do Mestre -->
+      <div class="music-master-only" id="music-master-panel">
+        <div class="music-master-title">👑 Controles do Mestre</div>
+
+        <div class="music-input-row">
+          <input class="music-url-input" id="music-url-input"
+            placeholder="Cole um link do YouTube (vídeo ou playlist)..."
+            onkeydown="if(event.key==='Enter') carregarMusica()" />
+          <button class="music-load-btn" onclick="carregarMusica()">▶ Carregar</button>
+        </div>
+        <div class="music-status" id="music-status"></div>
+
+        <!-- Lista salva -->
+        <div class="music-saved-list">
+          <div class="music-saved-title">📂 Músicas salvas</div>
+          <div id="music-saved-list-items">
+            <div style="color:rgba(200,150,12,0.4);font-size:12px;">Nenhuma música salva ainda...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end section-musica -->
+
+
 
 <div class="modal-overlay" id="delete-modal">
   <div class="modal-box">
@@ -1344,6 +1508,8 @@ async function doLogin() {
   buildTable();
   renderUserChips();
   iniciarListeners(); // Firebase real-time
+  iniciarListenerMusica();
+  aplicarPermissoesMusica();
 }
 
 // ============================================================
@@ -1788,10 +1954,12 @@ async function atualizarFichas() {
 // NAVEGAÇÃO POR ABAS (Fichas / Dados)
 // ============================================================
 function showTab(tab) {
-  document.getElementById('section-fichas').style.display = tab === 'fichas' ? 'block' : 'none';
-  document.getElementById('section-dados').style.display  = tab === 'dados'  ? 'block' : 'none';
-  document.getElementById('tab-fichas').classList.toggle('active', tab === 'fichas');
-  document.getElementById('tab-dados').classList.toggle('active',  tab === 'dados');
+  ['fichas','dados','musica'].forEach(t => {
+    const sec = document.getElementById('section-' + t);
+    const btn = document.getElementById('tab-' + t);
+    if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
 }
 
 // ============================================================
@@ -1873,6 +2041,134 @@ async function lancarDados() {
 // ============================================================
 // AUTO-LOGIN ao carregar a página
 // ============================================================
+
+// ============================================================
+// MÚSICA — controle pelo Mestre via Firebase
+// ============================================================
+function iniciarListenerMusica() {
+  db.ref('musica').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !data.embedUrl) return;
+    const iframe = document.getElementById('yt-player');
+    if (iframe && iframe.src !== data.embedUrl) {
+      iframe.src = data.embedUrl;
+    }
+    renderMusicList(data.saved || []);
+  });
+}
+
+function youtubeToEmbed(url) {
+  if (!url) return null;
+  url = url.trim();
+
+  // Já é embed
+  if (url.includes('youtube.com/embed/')) return url;
+
+  // Extrai video ID e list
+  let videoId = null, listId = null;
+  try {
+    const u = new URL(url);
+    videoId = u.searchParams.get('v');
+    listId  = u.searchParams.get('list');
+    // youtu.be/ID
+    if (!videoId && u.hostname === 'youtu.be') {
+      videoId = u.pathname.replace('/', '');
+    }
+  } catch(e) {}
+
+  if (!videoId && !listId) return null;
+
+  let embed = 'https://www.youtube.com/embed/';
+  if (videoId) embed += videoId;
+  embed += '?rel=0&modestbranding=1&autoplay=1';
+  if (listId) embed += '&list=' + listId + (videoId ? '' : '&listType=playlist&index=1');
+  return embed;
+}
+
+async function carregarMusica() {
+  const input  = document.getElementById('music-url-input');
+  const status = document.getElementById('music-status');
+  const url    = input.value.trim();
+  if (!url) { status.textContent = '⚠️ Cole um link do YouTube!'; return; }
+
+  const embedUrl = youtubeToEmbed(url);
+  if (!embedUrl) { status.textContent = '❌ Link inválido. Use um link do YouTube.'; return; }
+
+  status.textContent = '⏳ Carregando...';
+
+  // Pega o título da URL para exibir
+  const nome = url.includes('list=') ? '🎵 Playlist' : '🎵 Vídeo';
+  const label = nome + ' — ' + url.substring(url.lastIndexOf('/') + 1).substring(0, 40);
+
+  // Carrega atual snapshot para pegar saved list
+  const snap = await db.ref('musica').once('value');
+  const data = snap.val() || {};
+  const saved = data.saved || [];
+
+  // Adiciona à lista se não existir
+  if (!saved.find(s => s.embedUrl === embedUrl)) {
+    saved.push({ label, embedUrl, url });
+  }
+
+  await db.ref('musica').set({ embedUrl, saved });
+  input.value = '';
+  status.textContent = '✅ Música carregada para todos!';
+  setTimeout(() => status.textContent = '', 3000);
+}
+
+async function tocarSalva(embedUrl) {
+  if (!isMaster) return;
+  const snap  = await db.ref('musica').once('value');
+  const data  = snap.val() || {};
+  await db.ref('musica').update({ embedUrl });
+}
+
+async function deletarMusica(embedUrl) {
+  if (!isMaster) return;
+  const snap  = await db.ref('musica').once('value');
+  const data  = snap.val() || {};
+  const saved = (data.saved || []).filter(s => s.embedUrl !== embedUrl);
+  const newEmbed = (data.embedUrl === embedUrl)
+    ? (saved[0]?.embedUrl || 'https://www.youtube.com/embed/sTelrncNFbU?list=WL&rel=0&modestbranding=1')
+    : data.embedUrl;
+  await db.ref('musica').set({ embedUrl: newEmbed, saved });
+}
+
+function renderMusicList(saved) {
+  const container = document.getElementById('music-saved-list-items');
+  if (!container) return;
+  if (!saved || saved.length === 0) {
+    container.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;">Nenhuma música salva ainda...</div>';
+    return;
+  }
+  const iframe = document.getElementById('yt-player');
+  const current = iframe ? iframe.src : '';
+  container.innerHTML = '';
+  saved.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'music-saved-item' + (current.includes(s.embedUrl.split('?')[0].split('/').pop()) ? ' active' : '');
+    item.innerHTML = `
+      <span class="music-saved-name" title="${s.url || s.embedUrl}">${s.label}</span>
+      ${isMaster ? `<button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.embedUrl.replace(/'/g,"\'")}')">×</button>` : ''}
+    `;
+    if (isMaster) item.onclick = () => tocarSalva(s.embedUrl);
+    container.appendChild(item);
+  });
+}
+
+function aplicarPermissoesMusica() {
+  const masterPanel  = document.getElementById('music-master-panel');
+  const viewerInfo   = document.getElementById('music-viewer-info');
+  if (!masterPanel || !viewerInfo) return;
+  if (isMaster) {
+    masterPanel.style.display = 'block';
+    viewerInfo.style.display  = 'none';
+  } else {
+    masterPanel.style.display = 'none';
+    viewerInfo.style.display  = 'block';
+  }
+}
+
 window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
