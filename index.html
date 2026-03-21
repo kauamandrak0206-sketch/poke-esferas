@@ -393,6 +393,65 @@
   .pc-table td:last-child { border-right: none; }
   .pc-table td input { width: 100%; border: none; background: transparent; padding: 7px 6px; font-family: 'Exo 2', sans-serif; font-size: 13px; color: #333; outline: none; text-align: center; }
   .pc-table td input:focus { background: #EFE0C0; }
+
+  /* ===== TABELA DE ITENS ===== */
+  .items-table-wrap {
+    border: 2px solid #C46A00; border-radius: 8px;
+    overflow: hidden; margin-top: 12px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 280px; }
+  .items-table thead tr.items-title-row {
+    background: linear-gradient(135deg, #7B3F00, #C46A00); color: #fff;
+  }
+  .items-table thead th.items-main-title {
+    padding: 8px; text-align: center; font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 2px; font-weight: 900;
+  }
+  .items-table thead tr.items-cols-row {
+    background: linear-gradient(135deg, #C46A00, #D4820A); color: #fff;
+  }
+  .items-table thead th.items-col {
+    padding: 6px 4px; text-align: center;
+    font-size: 10px; letter-spacing: 0.5px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .items-table tbody tr { background: #fff; }
+  .items-table tbody tr:nth-child(even) { background: #F5ECD9; }
+  .items-table td {
+    padding: 0; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #D4820A;
+  }
+  .items-table td:last-child { border-right: none; }
+  .items-table td input {
+    width: 100%; border: none; background: transparent;
+    padding: 7px 4px; font-family: 'Exo 2', sans-serif;
+    font-size: 12px; color: #333; outline: none; text-align: center;
+  }
+  .items-table td input:focus { background: #FFF3E0; }
+
+  /* ===== TABELA DE ITENS ===== */
+  .items-table-wrap { border: 2px solid #C46A00; border-radius: 8px; overflow: hidden; margin-top: 12px; }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .items-table thead tr.title-row { background: linear-gradient(135deg, #7B3F00, #C46A00); }
+  .items-table thead tr.title-row th {
+    padding: 8px; text-align: center; font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 2px; color: #fff;
+  }
+  .items-table thead tr.col-row { background: linear-gradient(135deg, #C46A00, #D4820A); }
+  .items-table thead tr.col-row th {
+    padding: 6px 4px; text-align: center; font-size: 10px;
+    letter-spacing: 0.5px; text-transform: uppercase; color: #fff; font-weight: 700;
+  }
+  .items-table tbody tr { background: #fff; }
+  .items-table tbody tr:nth-child(even) { background: #F5ECD9; }
+  .items-table td { padding: 0; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; }
+  .items-table td:last-child { border-right: none; }
+  .items-table td input {
+    width: 100%; border: none; background: transparent;
+    padding: 8px 4px; font-family: 'Exo 2', sans-serif;
+    font-size: 12px; color: #333; outline: none; text-align: center;
+  }
+  .items-table td input:focus { background: #EFE0C0; }
   .toast {
     position: fixed; bottom: 30px; right: 30px; background: #2e7d32; color: #fff;
     padding: 14px 24px; border-radius: 10px; font-family: 'Exo 2', sans-serif;
@@ -519,6 +578,10 @@
       -webkit-overflow-scrolling: touch;
     }
     .pc-table { min-width: 260px; }
+    .items-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .items-table { min-width: 280px; }
+    .items-table thead tr.col-row th { font-size: 9px; padding: 5px 3px; }
+    .items-table td input { font-size: 11px; padding: 7px 3px; }
 
     /* Historia */
     .history-textarea { min-height: 80px; }
@@ -1408,6 +1471,23 @@
               <tbody id="pc-tbody"></tbody>
             </table>
           </div>
+
+          <!-- TABELA DE ITENS -->
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead>
+                <tr class="title-row"><th colspan="5">🎒 ITENS</th></tr>
+                <tr class="col-row">
+                  <th>POKÉ BOLAS</th>
+                  <th>ULTRA BALL</th>
+                  <th>MASTER BALL</th>
+                  <th>POÇÃO DE CURA</th>
+                  <th>REVIVAL</th>
+                </tr>
+              </thead>
+              <tbody id="items-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1885,6 +1965,22 @@ function buildTable() {
       <td><input type="text" class="pc-hp"    data-i="${i}"/></td>`;
     pc.appendChild(tr);
   }
+
+  // Tabela de itens (3 linhas editáveis)
+  const itemsTbody = document.getElementById('items-tbody');
+  if (itemsTbody) {
+    itemsTbody.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="item-pokebola"  data-i="${i}" placeholder=""/></td>
+        <td><input type="text" class="item-ultraball" data-i="${i}" placeholder=""/></td>
+        <td><input type="text" class="item-masterball" data-i="${i}" placeholder=""/></td>
+        <td><input type="text" class="item-pocao"     data-i="${i}" placeholder=""/></td>
+        <td><input type="text" class="item-revival"   data-i="${i}" placeholder=""/></td>`;
+      itemsTbody.appendChild(tr);
+    }
+  }
 }
 
 // ============================================================
@@ -1913,12 +2009,24 @@ function getSheetData() {
     hp:    document.querySelector(`.pc-hp[data-i="${i}"]`)?.value    || ''
   });
 
+  // Itens
+  const items = [];
+  for (let i = 0; i < 3; i++) {
+    items.push({
+      pokebola:   document.querySelector(`.item-pokebola[data-i="${i}"]`)?.value  || '',
+      ultraball:  document.querySelector(`.item-ultraball[data-i="${i}"]`)?.value || '',
+      masterball: document.querySelector(`.item-masterball[data-i="${i}"]`)?.value|| '',
+      pocao:      document.querySelector(`.item-pocao[data-i="${i}"]`)?.value     || '',
+      revival:    document.querySelector(`.item-revival[data-i="${i}"]`)?.value   || '',
+    });
+  }
+
   return {
     trainerName:    document.getElementById('trainer-name').value,
     trainerAge:     document.getElementById('trainer-age').value,
     trainerHistory: document.getElementById('trainer-history').value,
     trainerImg:     document.getElementById('trainer-img').src,
-    team, skills, pc
+    team, skills, pc, items
   };
 }
 
@@ -1946,6 +2054,14 @@ function populateSheet(data) {
     const n = document.querySelector(`.pc-name[data-i="${i}"]`);  if (n) n.value = t.name;
     const l = document.querySelector(`.pc-level[data-i="${i}"]`); if (l) l.value = t.level;
     const h = document.querySelector(`.pc-hp[data-i="${i}"]`);    if (h) h.value = t.hp;
+  });
+
+  (data.items || []).forEach((it, i) => {
+    const pb = document.querySelector(`.item-pokebola[data-i="${i}"]`);   if (pb) pb.value = it.pokebola   || '';
+    const ub = document.querySelector(`.item-ultraball[data-i="${i}"]`);  if (ub) ub.value = it.ultraball  || '';
+    const mb = document.querySelector(`.item-masterball[data-i="${i}"]`); if (mb) mb.value = it.masterball || '';
+    const po = document.querySelector(`.item-pocao[data-i="${i}"]`);      if (po) po.value = it.pocao      || '';
+    const rv = document.querySelector(`.item-revival[data-i="${i}"]`);    if (rv) rv.value = it.revival    || '';
   });
 }
 
