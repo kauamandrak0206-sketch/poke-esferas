@@ -9,6 +9,8 @@
 <title>Fichas de Treinadores - Segredo das Poké Esferas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
 
@@ -845,9 +847,18 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const JSONBIN_API_KEY = '$2a$10$L2l9q0oFD3CwSvsqi9niu.h9U9Eym7P49X9Zz49wCEqtZwgMwg1jS';
-const JSONBIN_BASE   = 'https://api.jsonbin.io/v3';
-const BIN_ID         = '69bea202c3097a1dd546e023';
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCeHVL8XI1lUb65G9zXzD_z4sQ7fNZBXQE",
+  authDomain: "poke-esferas.firebaseapp.com",
+  databaseURL: "https://poke-esferas-default-rtdb.firebaseio.com",
+  projectId: "poke-esferas",
+  storageBucket: "poke-esferas.firebasestorage.app",
+  messagingSenderId: "840840961370",
+  appId: "1:840840961370:web:5d30b6ca9f6ea7281a6763"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 const MASTER_PASSWORD = 'pokemestre';
 
 let currentUser = null, allData = {}, isMaster = false;
@@ -862,24 +873,21 @@ function showToast(msg, error=false) {
 
 async function jsonbinLoad() {
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    return json.trainers || json || {};
-  } catch(e) { console.error('Load error:', e); return {}; }
+    const snapshot = await db.ref('trainers').once('value');
+    return snapshot.val() || {};
+  } catch(e) {
+    console.error('Firebase load error:', e);
+    throw e;
+  }
 }
 
 async function jsonbinSave(data) {
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-      body: JSON.stringify({ trainers: data })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-  } catch(e) { console.error('Save error:', e); showToast('❌ Erro ao salvar na nuvem.', true); }
+    await db.ref('trainers').set(data);
+  } catch(e) {
+    console.error('Firebase save error:', e);
+    showToast('❌ Erro ao salvar na nuvem.', true);
+  }
 }
 
 function getAccounts() {
@@ -966,6 +974,7 @@ async function doLogin() {
 async function doLogout() {
   await saveSheet(true);
   currentUser = null; isMaster = false;
+  db.ref('trainers').off(); // para listener
   localStorage.removeItem('poke-logged-user');
   localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
@@ -1140,26 +1149,41 @@ async function atualizarFichas() {
   const btn = document.getElementById('btn-refresh');
   if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Carregando...'; }
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const dados = json.trainers || json || {};
+    const dados = await jsonbinLoad();
     if (dados && Object.keys(dados).length > 0) {
       allData = dados;
       loadSheet(currentUser);
       renderUserChips();
       showToast('✅ Fichas atualizadas!');
     } else {
-      showToast('Nenhuma ficha na nuvem ainda.');
+      showToast('Nenhuma ficha salva ainda.');
     }
   } catch(e) {
     console.error('Erro ao atualizar:', e);
-    showToast('❌ Erro ao atualizar. Verifique a conexão.', true);
+    showToast('❌ Erro ao atualizar. Tente novamente.', true);
   } finally {
     if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄 Atualizar Fichas'; }
   }
+}
+
+// ===== LISTENER EM TEMPO REAL DO FIREBASE =====
+// Quando qualquer ficha for salva, atualiza automaticamente para todos
+function iniciarListenerFirebase() {
+  db.ref('trainers').on('value', (snapshot) => {
+    if (!currentUser) return;
+    const dados = snapshot.val() || {};
+    if (JSON.stringify(dados) === JSON.stringify(allData)) return; // nada mudou
+    allData = dados;
+    renderUserChips();
+    // Atualiza a ficha só se o usuário estiver vendo a ficha de alguém
+    const sheetVisible = document.getElementById('sheet-container').style.display !== 'none';
+    if (sheetVisible) {
+      loadSheet(currentUser);
+      // Mostra indicador discreto
+      const ind = document.getElementById('sync-indicator');
+      if (ind) { ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0',2000); }
+    }
+  });
 }
 
 window.addEventListener('load', async () => {
