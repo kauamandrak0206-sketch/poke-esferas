@@ -881,19 +881,94 @@
   }
   .music-load-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(200,150,12,0.4); }
   .music-status { font-size: 12px; color: rgba(200,150,12,0.6); margin-top: 10px; text-align: center; font-family: 'Exo 2', sans-serif; }
+  /* Playlist estilo YouTube */
+  .music-playlist-wrap {
+    background: linear-gradient(160deg, #0d0d1a 0%, #1a1035 100%);
+    border: 2px solid #C8960C; border-radius: 14px;
+    overflow: hidden; margin-top: 16px;
+  }
+  .music-playlist-header {
+    padding: 12px 16px;
+    background: rgba(200,150,12,0.12);
+    border-bottom: 1px solid rgba(200,150,12,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .music-playlist-header-title {
+    font-family: 'Cinzel', serif; font-size: 13px;
+    font-weight: 700; color: #C8960C; letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .music-playlist-count {
+    font-size: 11px; color: rgba(200,150,12,0.5);
+    font-family: 'Exo 2', sans-serif;
+  }
+  .music-playlist-list {
+    max-height: 420px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: #C8960C #1a1035;
+  }
+  .music-playlist-list::-webkit-scrollbar { width: 5px; }
+  .music-playlist-list::-webkit-scrollbar-track { background: #1a1035; }
+  .music-playlist-list::-webkit-scrollbar-thumb { background: #C8960C; border-radius: 3px; }
+  .music-playlist-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer; transition: background 0.15s; position: relative;
+  }
+  .music-playlist-item:hover { background: rgba(255,255,255,0.06); }
+  .music-playlist-item.active { background: rgba(74,44,138,0.5); }
+  .music-playlist-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: #C8960C; border-radius: 0 2px 2px 0;
+  }
+  .mpi-num {
+    font-size: 12px; color: rgba(200,150,12,0.5);
+    min-width: 22px; text-align: center;
+    font-family: 'Cinzel', serif;
+  }
+  .mpi-num.playing { color: #C8960C; }
+  .mpi-thumb-wrap {
+    position: relative; flex-shrink: 0;
+    width: 80px; height: 50px;
+  }
+  .mpi-thumb {
+    width: 80px; height: 50px;
+    object-fit: cover; border-radius: 5px;
+    background: #222;
+  }
+  .mpi-duration {
+    position: absolute; bottom: 3px; right: 3px;
+    background: rgba(0,0,0,0.8); color: #fff;
+    font-size: 10px; padding: 1px 4px; border-radius: 3px;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .mpi-info { flex: 1; min-width: 0; }
+  .mpi-title {
+    font-size: 13px; color: #fff; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 3px; line-height: 1.3;
+  }
+  .mpi-title.active { color: #C8960C; }
+  .mpi-artist {
+    font-size: 11px; color: rgba(255,255,255,0.4);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .mpi-actions {
+    display: flex; gap: 2px; flex-shrink: 0;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .music-playlist-item:hover .mpi-actions { opacity: 1; }
+  .mpi-btn {
+    background: transparent; border: none;
+    color: rgba(255,255,255,0.4); font-size: 14px;
+    cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    transition: all 0.15s; line-height: 1;
+  }
+  .mpi-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .mpi-btn.del:hover { color: #e53935; }
   .music-saved-list { margin-top: 14px; }
   .music-saved-title { font-family: 'Cinzel', serif; font-size: 11px; color: #C8960C; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .music-saved-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 9px 12px; border-radius: 8px;
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(200,150,12,0.15);
-    margin-bottom: 6px; cursor: pointer; transition: all 0.2s;
-  }
-  .music-saved-item:hover { background: rgba(200,150,12,0.1); border-color: #C8960C; }
-  .music-saved-item.active { background: rgba(74,44,138,0.4); border-color: #6A3DB8; }
-  .music-saved-name { flex: 1; font-size: 13px; color: #E8D5A8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .music-saved-del { background: transparent; border: none; color: rgba(255,100,100,0.5); font-size: 16px; cursor: pointer; padding: 2px 6px; transition: color 0.2s; line-height: 1; }
-  .music-saved-del:hover { color: #e53935; }
   .music-viewer-info { text-align: center; padding: 10px; font-size: 13px; color: rgba(200,150,12,0.5); font-family: 'Exo 2', sans-serif; }
 
   @media (max-width: 900px) {
@@ -1310,12 +1385,18 @@
             onkeydown="if(event.key==='Enter') carregarMusica()" />
           <button class="music-load-btn" onclick="carregarMusica()">+ Adicionar</button>
         </div>
-        <div class="music-status" id="music-status"></div>
+        <div class="music-status" id="music-add-status" style="margin-top:8px;"></div>
+      </div>
 
-        <div class="music-saved-list">
-          <div class="music-saved-title">📂 Músicas salvas</div>
-          <div id="music-saved-list-items">
-            <div style="color:rgba(200,150,12,0.4);font-size:12px;">Nenhuma música salva ainda...</div>
+      <!-- PLAYLIST estilo YouTube — só mestre vê -->
+      <div class="music-playlist-wrap" id="music-playlist-wrap">
+        <div class="music-playlist-header">
+          <div class="music-playlist-header-title">🎵 Playlist</div>
+          <div class="music-playlist-count" id="music-playlist-count">0 músicas</div>
+        </div>
+        <div class="music-playlist-list" id="music-saved-list-items">
+          <div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:20px;">
+            Nenhuma música ainda — cole um link acima!
           </div>
         </div>
       </div>
@@ -2179,26 +2260,32 @@ function extrairVideoId(url) {
 async function carregarMusica() {
   if (!isMaster) return;
   const input  = document.getElementById('music-url-input');
-  const status = document.getElementById('music-status');
+  const status = document.getElementById('music-add-status');
   const url    = input.value.trim();
   if (!url) { status.textContent = '⚠️ Cole um link do YouTube!'; return; }
 
   const videoId = extrairVideoId(url);
   if (!videoId) { status.textContent = '❌ Link inválido. Use um link de vídeo do YouTube.'; return; }
 
-  status.textContent = '⏳ Carregando...';
+  status.textContent = '⏳ Buscando informações...';
 
-  // Pega título via oEmbed (sem precisar de API key)
-  let label = '🎵 Música ' + (musicSaved.length + 1);
+  // Busca título e artista via oEmbed
+  let label    = 'Música ' + (musicSaved.length + 1);
+  let artist   = 'YouTube';
+  let duration = '';
   try {
     const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
-    if (res.ok) { const j = await res.json(); label = j.title || label; }
+    if (res.ok) {
+      const j  = await res.json();
+      label    = j.title        || label;
+      artist   = j.author_name  || artist;
+    }
   } catch {}
 
   // Evita duplicatas
   const jaExiste = musicSaved.find(s => s.videoId === videoId);
   if (!jaExiste) {
-    musicSaved.push({ videoId, label, url });
+    musicSaved.push({ videoId, label, artist, duration, url });
     await db.ref('musica/saved').set(musicSaved);
   }
 
@@ -2206,7 +2293,7 @@ async function carregarMusica() {
   await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
 
   input.value = '';
-  status.textContent = '✅ Carregado para todos!';
+  status.textContent = '✅ Adicionado: ' + label;
   setTimeout(() => status.textContent = '', 3000);
 }
 
@@ -2224,32 +2311,53 @@ async function deletarMusica(videoId) {
 
 function renderMusicList() {
   const container = document.getElementById('music-saved-list-items');
+  const countEl   = document.getElementById('music-playlist-count');
+  const wrapEl    = document.getElementById('music-playlist-wrap');
   if (!container) return;
+
+  // Só mestre vê a playlist
+  if (wrapEl) wrapEl.style.display = isMaster ? 'block' : 'none';
+  if (countEl) countEl.textContent = (musicSaved ? musicSaved.length : 0) + ' músicas';
+
   if (!musicSaved || musicSaved.length === 0) {
-    container.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:12px;">Nenhuma música na playlist ainda...<br>Cole um link do YouTube acima!</div>';
+    container.innerHTML = `<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:24px 16px;">
+      Nenhuma música ainda<br><span style="font-size:10px;opacity:0.6;">Cole um link do YouTube acima!</span>
+    </div>`;
     return;
   }
+
   container.innerHTML = '';
   musicSaved.forEach((s, idx) => {
     const isActive = s.videoId === currentVideoId;
-    const item = document.createElement('div');
-    item.className = 'music-saved-item' + (isActive ? ' active' : '');
+    const thumb    = `https://img.youtube.com/vi/${s.videoId}/mqdefault.jpg`;
+    const artist   = s.artist || 'YouTube';
+    const duration = s.duration || '';
 
-    const thumb = `https://img.youtube.com/vi/${s.videoId}/default.jpg`;
+    const item = document.createElement('div');
+    item.className = 'music-playlist-item' + (isActive ? ' active' : '');
+
     item.innerHTML = `
-      <img src="${thumb}" style="width:54px;height:38px;object-fit:cover;border-radius:5px;flex-shrink:0;" onerror="this.style.display='none'"/>
-      <div style="flex:1;min-width:0;">
-        <div class="music-saved-name" title="${s.label}">${isActive ? '▶ ' : (idx+1)+'. '}${s.label}</div>
+      <div class="mpi-num ${isActive ? 'playing' : ''}">${isActive ? '▶' : (idx + 1)}</div>
+      <div class="mpi-thumb-wrap">
+        <img class="mpi-thumb" src="${thumb}" alt="" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect fill=\'%23222\' width=\'80\' height=\'50\'/%3E%3Ctext x=\'40\' y=\'28\' text-anchor=\'middle\' fill=\'%23666\' font-size=\'18\'%3E🎵%3C/text%3E%3C/svg%3E'" />
+        ${duration ? `<span class="mpi-duration">${duration}</span>` : ''}
+      </div>
+      <div class="mpi-info">
+        <div class="mpi-title ${isActive ? 'active' : ''}" title="${s.label}">${s.label}</div>
+        <div class="mpi-artist">${artist}</div>
       </div>
       ${isMaster ? `
-        <button class="music-saved-del" onclick="event.stopPropagation();moverMusica(${idx},-1)" title="Subir" style="font-size:12px;opacity:0.6;">↑</button>
-        <button class="music-saved-del" onclick="event.stopPropagation();moverMusica(${idx},1)"  title="Descer" style="font-size:12px;opacity:0.6;">↓</button>
-        <button class="music-saved-del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')" title="Remover">×</button>
-      ` : ''}
+      <div class="mpi-actions">
+        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},-1)" title="Subir">↑</button>
+        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},1)"  title="Descer">↓</button>
+        <button class="mpi-btn del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')" title="Remover">✕</button>
+      </div>` : ''}
     `;
-    // Mestre clica para tocar; jogador também pode clicar (mestre sincroniza)
-    item.onclick = () => { if (isMaster) tocarSalva(s.videoId); };
-    if (isMaster) item.style.cursor = 'pointer';
+
+    if (isMaster) {
+      item.onclick = () => tocarSalva(s.videoId);
+      item.style.cursor = 'pointer';
+    }
     container.appendChild(item);
   });
 }
@@ -2297,13 +2405,15 @@ function iniciarListenerMusica() {
 }
 
 function aplicarPermissoesMusica() {
-  const masterPanel = document.getElementById('music-master-panel');
-  const viewerInfo  = document.getElementById('music-viewer-info');
+  const masterPanel  = document.getElementById('music-master-panel');
+  const viewerInfo   = document.getElementById('music-viewer-info');
+  const playlistWrap = document.getElementById('music-playlist-wrap');
   if (!masterPanel || !viewerInfo) return;
-  masterPanel.style.display = isMaster ? 'block' : 'none';
-  viewerInfo.style.display  = isMaster ? 'none'  : 'block';
+  masterPanel.style.display  = isMaster ? 'block' : 'none';
+  viewerInfo.style.display   = isMaster ? 'none'  : 'block';
+  if (playlistWrap) playlistWrap.style.display = isMaster ? 'block' : 'none';
 
-  // Jogadores podem ajustar volume mas não controlar o que toca
+  // Jogadores ajustam volume mas não controlam o que toca
   const mcPrev = document.getElementById('mc-prev');
   const mcNext = document.getElementById('mc-next');
   const mcPlay = document.getElementById('mc-play');
