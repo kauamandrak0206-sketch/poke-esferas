@@ -1165,66 +1165,118 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== FIREBASE CONFIG =====
+// ============================================================
+// FIREBASE — banco de dados em tempo real
+// ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyCeHVL8XI1lUb65G9zXzD_z4sQ7fNZBXQE",
-  authDomain: "poke-esferas.firebaseapp.com",
-  databaseURL: "https://poke-esferas-default-rtdb.firebaseio.com",
-  projectId: "poke-esferas",
-  storageBucket: "poke-esferas.firebasestorage.app",
+  apiKey:            "AIzaSyCeHVL8XI1lUb65G9zXzD_z4sQ7fNZBXQE",
+  authDomain:        "poke-esferas.firebaseapp.com",
+  databaseURL:       "https://poke-esferas-default-rtdb.firebaseio.com",
+  projectId:         "poke-esferas",
+  storageBucket:     "poke-esferas.firebasestorage.app",
   messagingSenderId: "840840961370",
-  appId: "1:840840961370:web:5d30b6ca9f6ea7281a6763"
+  appId:             "1:840840961370:web:5d30b6ca9f6ea7281a6763"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+// Configura presença online e reconexão automática
+db.ref('.info/connected').on('value', (snap) => {
+  const online = snap.val();
+  const ind = document.getElementById('sync-indicator');
+  if (ind) {
+    ind.textContent = online ? '🟢 online' : '🔴 offline';
+    ind.style.color  = online ? '#4CAF50' : '#e53935';
+    ind.style.opacity = '1';
+  }
+});
+
+// ============================================================
+// HELPERS FIREBASE — com retry automático
+// ============================================================
+async function fbSet(path, data, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await db.ref(path).set(data);
+      return true;
+    } catch (e) {
+      console.warn(`fbSet attempt ${i+1} failed:`, e.message);
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+  showToast('❌ Erro ao salvar. Verifique sua conexão.', true);
+  return false;
+}
+
+async function fbGet(path, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const snap = await db.ref(path).once('value');
+      return snap.val();
+    } catch (e) {
+      console.warn(`fbGet attempt ${i+1} failed:`, e.message);
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+  throw new Error('Falha ao carregar dados após múltiplas tentativas.');
+}
+
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
 const MASTER_PASSWORD = 'pokemestre';
+let currentUser = null;
+let allData     = {};
+let isMaster    = false;
 
-let currentUser = null, allData = {}, isMaster = false;
-
-function showToast(msg, error=false) {
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, error = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (error ? ' error' : '');
+  t.className   = 'toast' + (error ? ' error' : '');
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-async function jsonbinLoad() {
-  try {
-    const snapshot = await db.ref('trainers').once('value');
-    return snapshot.val() || {};
-  } catch(e) {
-    console.error('Firebase load error:', e);
-    throw e;
-  }
-}
-
-async function jsonbinSave(data) {
-  try {
-    await db.ref('trainers').set(data);
-  } catch(e) {
-    console.error('Firebase save error:', e);
-    showToast('❌ Erro ao salvar na nuvem.', true);
-  }
-}
-
+// ============================================================
+// CONTAS (localStorage)
+// ============================================================
 function getAccounts() {
-  try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); } catch(e) { return {}; }
+  try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); }
+  catch { return {}; }
 }
-function saveAccounts(a) { localStorage.setItem('poke-accounts', JSON.stringify(a)); }
+function saveAccounts(a) {
+  localStorage.setItem('poke-accounts', JSON.stringify(a));
+}
 
+// ============================================================
+// LOGIN UI
+// ============================================================
 function switchTab(tab) {
-  document.getElementById('form-login').style.display    = tab==='login'    ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',    tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
-  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('login-error').style.display   = 'none';
   document.getElementById('login-success').style.display = 'none';
 }
 
-function showError(msg)   { const e=document.getElementById('login-error');   e.textContent=msg; e.style.display='block'; document.getElementById('login-success').style.display='none'; }
-function showSuccess(msg) { const e=document.getElementById('login-success'); e.textContent=msg; e.style.display='block'; document.getElementById('login-error').style.display='none'; }
+function showError(msg) {
+  const e = document.getElementById('login-error');
+  e.textContent = msg; e.style.display = 'block';
+  document.getElementById('login-success').style.display = 'none';
+}
+function showSuccess(msg) {
+  const e = document.getElementById('login-success');
+  e.textContent = msg; e.style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
+}
 
+// ============================================================
+// CADASTRO
+// ============================================================
 function doRegister() {
   const name  = document.getElementById('reg-username').value.trim();
   const pass  = document.getElementById('reg-password').value;
@@ -1234,19 +1286,29 @@ function doRegister() {
   if (pass !== pass2)  return showError('As senhas não coincidem!');
   const accounts = getAccounts();
   if (accounts[name.toLowerCase()]) return showError('Esse nome já está cadastrado!');
-  accounts[name.toLowerCase()] = { name, password: pass, role: pass===MASTER_PASSWORD ? 'master' : 'player' };
+  accounts[name.toLowerCase()] = {
+    name,
+    password: pass,
+    role: pass === MASTER_PASSWORD ? 'master' : 'player'
+  };
   saveAccounts(accounts);
-  document.getElementById('reg-username').value = document.getElementById('reg-password').value = document.getElementById('reg-password2').value = '';
+  document.getElementById('reg-username').value  = '';
+  document.getElementById('reg-password').value  = '';
+  document.getElementById('reg-password2').value = '';
   showSuccess('✅ Conta criada! Agora faça login.');
   switchTab('login');
   document.getElementById('login-username').value = name;
 }
 
+// ============================================================
+// LOGIN
+// ============================================================
 async function doLogin() {
   const name = document.getElementById('login-username').value.trim();
   const pass = document.getElementById('login-password').value;
   if (!name) return showError('Digite seu nome de treinador!');
   if (!pass) return showError('Digite sua senha!');
+
   const accounts = getAccounts();
   const account  = accounts[name.toLowerCase()];
   if (!account)                  return showError('Treinador não encontrado. Cadastre-se primeiro!');
@@ -1259,10 +1321,11 @@ async function doLogin() {
 
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-page').style.display   = 'block';
-  document.getElementById('header-username').textContent = isMaster ? '👑 '+account.name+' (Mestre)' : '👤 '+account.name;
+  document.getElementById('header-username').textContent = isMaster
+    ? '👑 ' + account.name + ' (Mestre)' : '👤 ' + account.name;
   document.getElementById('btn-new').style.display = isMaster ? 'flex' : 'none';
 
-  // Primeira vez mostra regras, depois vai direto pra ficha
+  // Primeira vez mostra regras; depois vai direto pra ficha
   const jaAceitou = localStorage.getItem('poke-rules-' + account.name.toLowerCase());
   if (jaAceitou) {
     document.getElementById('rules-section').style.display   = 'none';
@@ -1272,27 +1335,24 @@ async function doLogin() {
     document.getElementById('rules-section').style.display   = 'block';
     document.getElementById('howto-section').style.display   = 'none';
     document.getElementById('sheet-container').style.display = 'none';
-    const cb = document.getElementById('rules-checkbox');
+    const cb  = document.getElementById('rules-checkbox');
     const btn = document.getElementById('rules-close-btn');
-    cb.checked = false; btn.disabled = true; btn.textContent = '🔒 Li e Entendi — Jogar!';
+    cb.checked = false; btn.disabled = true;
+    btn.textContent = '🔒 Li e Entendi — Jogar!';
   }
 
   buildTable();
   renderUserChips();
-
-  // Carrega nuvem em segundo plano
-  try {
-    const dados = await jsonbinLoad();
-    if (dados && Object.keys(dados).length > 0) {
-      allData = dados; loadSheet(currentUser); renderUserChips();
-    }
-  } catch(e) {}
+  iniciarListeners(); // Firebase real-time
 }
 
+// ============================================================
+// LOGOUT
+// ============================================================
 async function doLogout() {
-  await saveSheet(true);
-  currentUser = null; isMaster = false;
-  db.ref('trainers').off(); // para listener
+  await salvarFicha(true);
+  pararListeners();
+  currentUser = null; isMaster = false; allData = {};
   localStorage.removeItem('poke-logged-user');
   localStorage.removeItem('poke-logged-pass');
   document.getElementById('login-page').style.display = 'flex';
@@ -1300,174 +1360,415 @@ async function doLogout() {
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
   setSheetReadonly(false);
-  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-error').style.display   = 'none';
   document.getElementById('login-success').style.display = 'none';
+  // Volta para aba fichas
+  showTab('fichas');
 }
 
+// ============================================================
+// BUILD TABLE (gera linhas da ficha)
+// ============================================================
 function buildTable() {
+  // Time (6 pokémons)
   const tbody = document.getElementById('team-tbody');
   tbody.innerHTML = '';
-  for (let i=0;i<6;i++) {
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input type="text" class="team-name" data-i="${i}"/></td><td><input type="text" class="team-level" data-i="${i}"/></td><td><input type="text" class="team-hp" data-i="${i}"/></td>`;
+  for (let i = 0; i < 6; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="team-name"  data-i="${i}"/></td>
+      <td><input type="text" class="team-level" data-i="${i}"/></td>
+      <td><input type="text" class="team-hp"    data-i="${i}"/></td>`;
     tbody.appendChild(tr);
   }
-  const sc=document.getElementById('skills-container'); sc.innerHTML='';
-  for (let p=0;p<6;p++) {
-    const div=document.createElement('div'); div.className='skill-section';
-    let rows='';
-    for (let s=0;s<4;s++) rows+=`<div class="skill-row"><div class="skill-name">HABILIDADE ${s+1}</div><div class="skill-desc"><input type="text" class="skill-input" data-p="${p}" data-s="${s}" placeholder="descrição"/></div></div>`;
-    div.innerHTML=`<div class="skill-header">HABILIDADES DO POKEMON</div>${rows}`;
+  // Habilidades (6 pokémons × 4)
+  const sc = document.getElementById('skills-container');
+  sc.innerHTML = '';
+  for (let p = 0; p < 6; p++) {
+    const div = document.createElement('div');
+    div.className = 'skill-section';
+    let rows = '';
+    for (let s = 0; s < 4; s++) {
+      rows += `<div class="skill-row">
+        <div class="skill-name">HABILIDADE ${s+1}</div>
+        <div class="skill-desc"><input type="text" class="skill-input" data-p="${p}" data-s="${s}" placeholder="descrição"/></div>
+      </div>`;
+    }
+    div.innerHTML = `<div class="skill-header">HABILIDADES DO POKEMON</div>${rows}`;
     sc.appendChild(div);
   }
-  const pcT=document.getElementById('pc-tbody'); pcT.innerHTML='';
-  for (let i=0;i<20;i++) {
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input type="text" class="pc-name" data-i="${i}"/></td><td><input type="text" class="pc-level" data-i="${i}"/></td><td><input type="text" class="pc-hp" data-i="${i}"/></td>`;
-    pcT.appendChild(tr);
+  // PC (20 pokémons)
+  const pc = document.getElementById('pc-tbody');
+  pc.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="pc-name"  data-i="${i}"/></td>
+      <td><input type="text" class="pc-level" data-i="${i}"/></td>
+      <td><input type="text" class="pc-hp"    data-i="${i}"/></td>`;
+    pc.appendChild(tr);
   }
 }
 
+// ============================================================
+// FICHA — GET / POPULATE / LOAD / CLEAR
+// ============================================================
 function getSheetData() {
-  const team=[]; for(let i=0;i<6;i++) team.push({name:document.querySelector(`.team-name[data-i="${i}"]`)?.value||'',level:document.querySelector(`.team-level[data-i="${i}"]`)?.value||'',hp:document.querySelector(`.team-hp[data-i="${i}"]`)?.value||''});
-  const skills=[]; for(let p=0;p<6;p++){const ps=[];for(let s=0;s<4;s++)ps.push(document.querySelector(`.skill-input[data-p="${p}"][data-s="${s}"]`)?.value||'');skills.push(ps);}
-  const pc=[]; for(let i=0;i<20;i++) pc.push({name:document.querySelector(`.pc-name[data-i="${i}"]`)?.value||'',level:document.querySelector(`.pc-level[data-i="${i}"]`)?.value||'',hp:document.querySelector(`.pc-hp[data-i="${i}"]`)?.value||''});
-  return {trainerName:document.getElementById('trainer-name').value,trainerAge:document.getElementById('trainer-age').value,trainerHistory:document.getElementById('trainer-history').value,trainerImg:document.getElementById('trainer-img').src,team,skills,pc};
+  const team = [];
+  for (let i = 0; i < 6; i++) team.push({
+    name:  document.querySelector(`.team-name[data-i="${i}"]`)?.value  || '',
+    level: document.querySelector(`.team-level[data-i="${i}"]`)?.value || '',
+    hp:    document.querySelector(`.team-hp[data-i="${i}"]`)?.value    || ''
+  });
+
+  const skills = [];
+  for (let p = 0; p < 6; p++) {
+    const ps = [];
+    for (let s = 0; s < 4; s++)
+      ps.push(document.querySelector(`.skill-input[data-p="${p}"][data-s="${s}"]`)?.value || '');
+    skills.push(ps);
+  }
+
+  const pc = [];
+  for (let i = 0; i < 20; i++) pc.push({
+    name:  document.querySelector(`.pc-name[data-i="${i}"]`)?.value  || '',
+    level: document.querySelector(`.pc-level[data-i="${i}"]`)?.value || '',
+    hp:    document.querySelector(`.pc-hp[data-i="${i}"]`)?.value    || ''
+  });
+
+  return {
+    trainerName:    document.getElementById('trainer-name').value,
+    trainerAge:     document.getElementById('trainer-age').value,
+    trainerHistory: document.getElementById('trainer-history').value,
+    trainerImg:     document.getElementById('trainer-img').src,
+    team, skills, pc
+  };
 }
 
 function populateSheet(data) {
-  if(!data)return;
-  document.getElementById('trainer-name').value=data.trainerName||'';
-  document.getElementById('trainer-age').value=data.trainerAge||'';
-  document.getElementById('trainer-history').value=data.trainerHistory||'';
-  if(data.trainerImg)document.getElementById('trainer-img').src=data.trainerImg;
-  (data.team||[]).forEach((t,i)=>{const n=document.querySelector(`.team-name[data-i="${i}"]`);if(n)n.value=t.name;const l=document.querySelector(`.team-level[data-i="${i}"]`);if(l)l.value=t.level;const h=document.querySelector(`.team-hp[data-i="${i}"]`);if(h)h.value=t.hp;});
-  (data.skills||[]).forEach((ps,p)=>ps.forEach((v,s)=>{const el=document.querySelector(`.skill-input[data-p="${p}"][data-s="${s}"]`);if(el)el.value=v;}));
-  (data.pc||[]).forEach((t,i)=>{const n=document.querySelector(`.pc-name[data-i="${i}"]`);if(n)n.value=t.name;const l=document.querySelector(`.pc-level[data-i="${i}"]`);if(l)l.value=t.level;const h=document.querySelector(`.pc-hp[data-i="${i}"]`);if(h)h.value=t.hp;});
+  if (!data) return;
+  document.getElementById('trainer-name').value    = data.trainerName    || '';
+  document.getElementById('trainer-age').value     = data.trainerAge     || '';
+  document.getElementById('trainer-history').value = data.trainerHistory || '';
+  if (data.trainerImg) document.getElementById('trainer-img').src = data.trainerImg;
+
+  (data.team || []).forEach((t, i) => {
+    const n = document.querySelector(`.team-name[data-i="${i}"]`);  if (n) n.value = t.name;
+    const l = document.querySelector(`.team-level[data-i="${i}"]`); if (l) l.value = t.level;
+    const h = document.querySelector(`.team-hp[data-i="${i}"]`);    if (h) h.value = t.hp;
+  });
+
+  (data.skills || []).forEach((ps, p) =>
+    ps.forEach((v, s) => {
+      const el = document.querySelector(`.skill-input[data-p="${p}"][data-s="${s}"]`);
+      if (el) el.value = v;
+    })
+  );
+
+  (data.pc || []).forEach((t, i) => {
+    const n = document.querySelector(`.pc-name[data-i="${i}"]`);  if (n) n.value = t.name;
+    const l = document.querySelector(`.pc-level[data-i="${i}"]`); if (l) l.value = t.level;
+    const h = document.querySelector(`.pc-hp[data-i="${i}"]`);    if (h) h.value = t.hp;
+  });
 }
 
-function loadSheet(u) { populateSheet(allData[u]); }
+function loadSheet(u)  { populateSheet(allData[u]); }
 
 function clearSheet() {
-  document.getElementById('trainer-name').value=document.getElementById('trainer-age').value=document.getElementById('trainer-history').value='';
-  document.getElementById('trainer-img').src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='210' viewBox='0 0 300 210'%3E%3Crect width='300' height='210' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='70' r='30' fill='%23666'/%3E%3Cellipse cx='150' cy='155' rx='50' ry='60' fill='%23555'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%23888' font-size='11' font-family='Arial'%3EClique para trocar imagem%3C/text%3E%3C/svg%3E";
-  document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea').forEach(el=>el.value='');
+  document.getElementById('trainer-name').value    = '';
+  document.getElementById('trainer-age').value     = '';
+  document.getElementById('trainer-history').value = '';
+  document.getElementById('trainer-img').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='210' viewBox='0 0 300 210'%3E%3Crect width='300' height='210' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='70' r='30' fill='%23666'/%3E%3Cellipse cx='150' cy='155' rx='50' ry='60' fill='%23555'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%23888' font-size='11' font-family='Arial'%3EClique para trocar imagem%3C/text%3E%3C/svg%3E";
+  document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea').forEach(el => el.value = '');
 }
 
-async function saveSheet(silent=false) {
-  if(!currentUser)return;
-  allData[currentUser]=getSheetData();
-  await jsonbinSave(allData);
+// ============================================================
+// SALVAR / NOVA FICHA
+// ============================================================
+async function salvarFicha(silent = false) {
+  if (!currentUser) return;
+  allData[currentUser] = getSheetData();
+  const ok = await fbSet('trainers', allData);
+  if (!silent && ok) {
+    showToast('✅ Ficha salva!');
+    const s = document.getElementById('save-status');
+    s.style.display = 'flex';
+    setTimeout(() => s.style.display = 'none', 2500);
+  }
   renderUserChips();
-  if(!silent){showToast('✅ Ficha salva na nuvem!');const s=document.getElementById('save-status');s.style.display='flex';setTimeout(()=>s.style.display='none',2500);}
 }
 
-async function newSheet() { await saveSheet(true); clearSheet(); showToast('📄 Nova ficha criada!'); }
+// Alias para compatibilidade com onclick="saveSheet()"
+const saveSheet = salvarFicha;
 
+async function newSheet() {
+  await salvarFicha(true);
+  clearSheet();
+  showToast('📄 Nova ficha criada!');
+}
+
+// ============================================================
+// CHIPS DE USUÁRIOS
+// ============================================================
 function renderUserChips() {
-  const container=document.getElementById('users-chips'); container.innerHTML='';
-  const users=Object.keys(allData);
-  if(users.length===0){container.innerHTML='<span style="font-size:12px;color:#aaa;">Nenhuma ficha salva ainda</span>';return;}
-  users.forEach(u=>{
-    const isOwn=(u===currentUser), canEdit=isMaster||isOwn;
-    const wrap=document.createElement('div'); wrap.className='user-chip-wrap'+(u===currentUser?' active':'');
-    const chip=document.createElement('div'); chip.className='user-chip'+(u===currentUser?' active':'');
-    chip.textContent=isMaster?u:(isOwn?u:'👁 '+u);
-    chip.onclick=()=>{if(isOwn)saveSheet(true);currentUser=u;document.getElementById('header-username').textContent=isMaster?'👑 '+u+' (Mestre)':(isOwn?'👤 '+u:'👁 '+u+' (leitura)');loadSheet(u);setSheetReadonly(!canEdit);renderUserChips();};
+  const container = document.getElementById('users-chips');
+  container.innerHTML = '';
+  const users = Object.keys(allData);
+
+  if (users.length === 0) {
+    container.innerHTML = '<span style="font-size:12px;color:#aaa;">Nenhuma ficha salva ainda</span>';
+    return;
+  }
+
+  users.forEach(u => {
+    const isOwn   = (u === currentUser);
+    const canEdit = isMaster || isOwn;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'user-chip-wrap' + (isOwn ? ' active' : '');
+
+    const chip = document.createElement('div');
+    chip.className = 'user-chip' + (isOwn ? ' active' : '');
+    chip.textContent = isMaster ? u : (isOwn ? u : '👁 ' + u);
+
+    chip.onclick = () => {
+      if (isOwn) salvarFicha(true);
+      currentUser = u;
+      document.getElementById('header-username').textContent = isMaster
+        ? '👑 ' + u + ' (Mestre)'
+        : (isOwn ? '👤 ' + u : '👁 ' + u + ' (leitura)');
+      loadSheet(u);
+      setSheetReadonly(!canEdit);
+      renderUserChips();
+    };
+
     wrap.appendChild(chip);
-    if(isMaster){const d=document.createElement('button');d.className='chip-delete';d.innerHTML='×';d.title='Deletar '+u;d.onclick=e=>{e.stopPropagation();openDeleteModal(u);};wrap.appendChild(d);}
+
+    if (isMaster) {
+      const del = document.createElement('button');
+      del.className = 'chip-delete';
+      del.innerHTML = '×';
+      del.title = 'Deletar ficha de ' + u;
+      del.onclick = e => { e.stopPropagation(); openDeleteModal(u); };
+      wrap.appendChild(del);
+    }
+
     container.appendChild(wrap);
   });
 }
 
+// ============================================================
+// READ-ONLY
+// ============================================================
 function setSheetReadonly(r) {
-  document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea').forEach(el=>{el.disabled=r;el.style.opacity=r?'0.6':'1';});
-  document.querySelector('.btn-save').style.display=r?'none':'flex';
-  const ow=document.querySelector('.trainer-img-wrap');if(ow)ow.style.pointerEvents=r?'none':'';
+  document.querySelectorAll('#trainer-sheet input, #trainer-sheet textarea')
+    .forEach(el => { el.disabled = r; el.style.opacity = r ? '0.6' : '1'; });
+  document.querySelector('.btn-save').style.display = r ? 'none' : 'flex';
+  const ow = document.querySelector('.trainer-img-wrap');
+  if (ow) ow.style.pointerEvents = r ? 'none' : '';
 }
 
-let userToDelete=null;
-function openDeleteModal(u){userToDelete=u;document.getElementById('modal-username').textContent=u;document.getElementById('delete-modal').classList.add('show');}
-function closeDeleteModal(){userToDelete=null;document.getElementById('delete-modal').classList.remove('show');}
-async function confirmDelete(){
-  if(!userToDelete)return;
-  const wasActive=(userToDelete===currentUser);
-  delete allData[userToDelete]; await jsonbinSave(allData);
-  closeDeleteModal(); showToast('🗑️ Ficha deletada.'); userToDelete=null;
-  if(wasActive){const r=Object.keys(allData);if(r.length>0){currentUser=r[0];loadSheet(currentUser);}else clearSheet();}
+// ============================================================
+// MODAL DELETAR
+// ============================================================
+let userToDelete = null;
+
+function openDeleteModal(u) {
+  userToDelete = u;
+  document.getElementById('modal-username').textContent = u;
+  document.getElementById('delete-modal').classList.add('show');
+}
+function closeDeleteModal() {
+  userToDelete = null;
+  document.getElementById('delete-modal').classList.remove('show');
+}
+async function confirmDelete() {
+  if (!userToDelete) return;
+  const wasActive = (userToDelete === currentUser);
+  delete allData[userToDelete];
+  await fbSet('trainers', allData);
+  closeDeleteModal();
+  showToast('🗑️ Ficha deletada.');
+  if (wasActive) {
+    const remaining = Object.keys(allData);
+    if (remaining.length > 0) { currentUser = remaining[0]; loadSheet(currentUser); }
+    else clearSheet();
+  }
   renderUserChips();
 }
-document.getElementById('delete-modal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+});
 
+// ============================================================
+// REGRAS / HOWTO / FICHA
+// ============================================================
 function toggleRulesBtn() {
-  const cb=document.getElementById('rules-checkbox'), btn=document.getElementById('rules-close-btn');
-  btn.disabled=!cb.checked; btn.textContent=cb.checked?'✅ Li e Entendi — Jogar!':'🔒 Li e Entendi — Jogar!';
-}
-function fecharRegras() {
-  if(!document.getElementById('rules-checkbox').checked)return;
-  localStorage.setItem('poke-rules-' + currentUser.toLowerCase(), '1');
-  document.getElementById('rules-section').style.display='none';
-  document.getElementById('howto-section').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function verRegras() {
-  document.getElementById('rules-section').style.display='block';
-  document.getElementById('howto-section').style.display='none';
-  document.getElementById('sheet-container').style.display='none';
-  const jaAceitou = localStorage.getItem('poke-rules-' + currentUser.toLowerCase());
-  const cb = document.getElementById('rules-checkbox');
+  const cb  = document.getElementById('rules-checkbox');
   const btn = document.getElementById('rules-close-btn');
-  if (jaAceitou) { cb.checked=true; btn.disabled=false; btn.textContent='✅ Li e Entendi — Jogar!'; }
-  else { cb.checked=false; btn.disabled=true; btn.textContent='🔒 Li e Entendi — Jogar!'; }
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function verRPG() {
-  document.getElementById('rules-section').style.display='none';
-  document.getElementById('howto-section').style.display='block';
-  document.getElementById('sheet-container').style.display='none';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function fecharHowto() {
-  document.getElementById('howto-section').style.display='none';
-  document.getElementById('sheet-container').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
+  btn.disabled    = !cb.checked;
+  btn.textContent = cb.checked ? '✅ Li e Entendi — Jogar!' : '🔒 Li e Entendi — Jogar!';
 }
 
+function fecharRegras() {
+  if (!document.getElementById('rules-checkbox').checked) return;
+  localStorage.setItem('poke-rules-' + currentUser.toLowerCase(), '1');
+  document.getElementById('rules-section').style.display = 'none';
+  document.getElementById('howto-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function fecharHowto() {
+  document.getElementById('howto-section').style.display   = 'none';
+  document.getElementById('sheet-container').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function verRegras() {
+  document.getElementById('rules-section').style.display   = 'block';
+  document.getElementById('howto-section').style.display   = 'none';
+  document.getElementById('sheet-container').style.display = 'none';
+  const jaAceitou = localStorage.getItem('poke-rules-' + currentUser.toLowerCase());
+  const cb  = document.getElementById('rules-checkbox');
+  const btn = document.getElementById('rules-close-btn');
+  if (jaAceitou) { cb.checked = true;  btn.disabled = false; btn.textContent = '✅ Li e Entendi — Jogar!'; }
+  else           { cb.checked = false; btn.disabled = true;  btn.textContent = '🔒 Li e Entendi — Jogar!'; }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function verRPG() {
+  document.getElementById('rules-section').style.display   = 'none';
+  document.getElementById('howto-section').style.display   = 'block';
+  document.getElementById('sheet-container').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// FOTO MODO
+// ============================================================
 function setFotoModo(modo) {
-  const wrap=document.getElementById('trainer-img-wrap');
-  const br=document.getElementById('btn-modo-rosto'), bc=document.getElementById('btn-modo-corpo');
-  if(modo==='corpo'){wrap.classList.add('modo-corpo');bc.classList.add('active');br.classList.remove('active');}
-  else{wrap.classList.remove('modo-corpo');br.classList.add('active');bc.classList.remove('active');}
+  const wrap = document.getElementById('trainer-img-wrap');
+  const br   = document.getElementById('btn-modo-rosto');
+  const bc   = document.getElementById('btn-modo-corpo');
+  if (modo === 'corpo') {
+    wrap.classList.add('modo-corpo');
+    bc.classList.add('active'); br.classList.remove('active');
+  } else {
+    wrap.classList.remove('modo-corpo');
+    br.classList.add('active'); bc.classList.remove('active');
+  }
 }
 
 function changeImage(event) {
-  const file=event.target.files[0]; if(!file)return;
-  const reader=new FileReader(); reader.onload=e=>{document.getElementById('trainer-img').src=e.target.result;}; reader.readAsDataURL(file);
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('trainer-img').src = e.target.result; };
+  reader.readAsDataURL(file);
 }
 
+// ============================================================
+// EXPORT PDF
+// ============================================================
 async function exportPDF() {
   showToast('⏳ Gerando PDF...');
-  document.querySelectorAll('.img-overlay').forEach(el=>el.style.opacity='0');
+  document.querySelectorAll('.img-overlay').forEach(el => el.style.opacity = '0');
   try {
-    const canvas=await html2canvas(document.getElementById('trainer-sheet'),{scale:2,useCORS:true,backgroundColor:'#f5f7ff',logging:false});
-    const {jsPDF}=window.jspdf;
-    const imgData=canvas.toDataURL('image/jpeg',0.95);
-    const pdfW=297,pdfH=210;
-    let imgW=pdfW-10,imgH=imgW/(canvas.width/canvas.height);
-    if(imgH>pdfH-10){imgH=pdfH-10;imgW=imgH*(canvas.width/canvas.height);}
-    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    pdf.addImage(imgData,'JPEG',(pdfW-imgW)/2,(pdfH-imgH)/2,imgW,imgH);
-    pdf.save(`ficha-${(document.getElementById('trainer-name').value||currentUser||'treinador').replace(/\s+/g,'-').toLowerCase()}.pdf`);
+    const canvas = await html2canvas(document.getElementById('trainer-sheet'), {
+      scale: 2, useCORS: true, backgroundColor: '#f5f7ff', logging: false
+    });
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const pdfW = 297, pdfH = 210;
+    let imgW = pdfW - 10;
+    let imgH = imgW / (canvas.width / canvas.height);
+    if (imgH > pdfH - 10) { imgH = pdfH - 10; imgW = imgH * (canvas.width / canvas.height); }
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    pdf.addImage(imgData, 'JPEG', (pdfW - imgW) / 2, (pdfH - imgH) / 2, imgW, imgH);
+    const nome = (document.getElementById('trainer-name').value || currentUser || 'treinador')
+      .replace(/\s+/g, '-').toLowerCase();
+    pdf.save(`ficha-${nome}.pdf`);
     showToast('✅ PDF exportado!');
-  } catch(e){showToast('❌ Erro ao gerar PDF.',true);}
+  } catch (e) {
+    console.error(e);
+    showToast('❌ Erro ao gerar PDF.', true);
+  }
 }
 
-// ===== ATUALIZAR FICHAS MANUALMENTE =====
+// ============================================================
+// FIREBASE — LISTENERS EM TEMPO REAL
+// ============================================================
+let _trainerListener = null;
+let _dadosListener   = null;
+
+function iniciarListeners() {
+  // Listener fichas — atualiza automaticamente para todos
+  if (_trainerListener) db.ref('trainers').off('value', _trainerListener);
+  _trainerListener = db.ref('trainers').on('value', (snapshot) => {
+    if (!currentUser) return;
+    const dados = snapshot.val() || {};
+    // Só atualiza se o conteúdo realmente mudou
+    if (JSON.stringify(dados) === JSON.stringify(allData)) return;
+    allData = dados;
+    renderUserChips();
+    const sheetVisible = document.getElementById('sheet-container').style.display !== 'none';
+    if (sheetVisible) {
+      const pos = window.scrollY;
+      loadSheet(currentUser);
+      window.scrollTo(0, pos);
+    }
+    const ind = document.getElementById('sync-indicator');
+    if (ind) { ind.textContent = '✓ atualizado'; ind.style.color = '#4CAF50'; ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 2000); }
+  }, (err) => {
+    console.error('Trainer listener error:', err);
+    showToast('⚠️ Conexão instável. Tentando reconectar...', true);
+  });
+
+  // Listener dados (lançamento de dados)
+  if (_dadosListener) db.ref('dados').off('value', _dadosListener);
+  _dadosListener = db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
+    const list = document.getElementById('dice-history-list');
+    if (!list) return;
+    const entries = [];
+    snapshot.forEach(child => entries.push(child.val()));
+    if (entries.length === 0) {
+      list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
+      return;
+    }
+    entries.reverse();
+    list.innerHTML = '';
+    entries.forEach(e => {
+      const time = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const div  = document.createElement('div');
+      div.className = 'history-entry';
+      div.innerHTML = `
+        <span class="he-time">${time}</span>
+        <span class="he-user">${e.user}</span> lançou
+        <strong>${e.qtd}D${e.lados}</strong>:
+        [${e.resultados.join(', ')}] =
+        <span class="he-total">${e.soma}</span>`;
+      list.appendChild(div);
+    });
+  }, (err) => {
+    console.error('Dados listener error:', err);
+  });
+}
+
+function pararListeners() {
+  if (_trainerListener) { db.ref('trainers').off('value', _trainerListener); _trainerListener = null; }
+  if (_dadosListener)   { db.ref('dados').off('value', _dadosListener);      _dadosListener   = null; }
+}
+
+// ============================================================
+// ATUALIZAR FICHAS (manual — botão backup)
+// ============================================================
 async function atualizarFichas() {
   const btn = document.getElementById('btn-refresh');
   if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Carregando...'; }
   try {
-    const dados = await jsonbinLoad();
+    const dados = await fbGet('trainers');
     if (dados && Object.keys(dados).length > 0) {
       allData = dados;
       loadSheet(currentUser);
@@ -1476,45 +1777,28 @@ async function atualizarFichas() {
     } else {
       showToast('Nenhuma ficha salva ainda.');
     }
-  } catch(e) {
-    console.error('Erro ao atualizar:', e);
-    showToast('❌ Erro ao atualizar. Tente novamente.', true);
+  } catch (e) {
+    showToast('❌ Erro ao atualizar. Verifique a conexão.', true);
   } finally {
     if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄 Atualizar Fichas'; }
   }
 }
 
-// ===== LISTENER EM TEMPO REAL DO FIREBASE =====
-// Quando qualquer ficha for salva, atualiza automaticamente para todos
-function iniciarListenerFirebase() {
-  db.ref('trainers').on('value', (snapshot) => {
-    if (!currentUser) return;
-    const dados = snapshot.val() || {};
-    if (JSON.stringify(dados) === JSON.stringify(allData)) return; // nada mudou
-    allData = dados;
-    renderUserChips();
-    // Atualiza a ficha só se o usuário estiver vendo a ficha de alguém
-    const sheetVisible = document.getElementById('sheet-container').style.display !== 'none';
-    if (sheetVisible) {
-      loadSheet(currentUser);
-      // Mostra indicador discreto
-      const ind = document.getElementById('sync-indicator');
-      if (ind) { ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0',2000); }
-    }
-  });
-}
-
-
-// ===== DADOS =====
-let diceCount = 1;
-let diceSides = 6;
-
+// ============================================================
+// NAVEGAÇÃO POR ABAS (Fichas / Dados)
+// ============================================================
 function showTab(tab) {
   document.getElementById('section-fichas').style.display = tab === 'fichas' ? 'block' : 'none';
   document.getElementById('section-dados').style.display  = tab === 'dados'  ? 'block' : 'none';
   document.getElementById('tab-fichas').classList.toggle('active', tab === 'fichas');
   document.getElementById('tab-dados').classList.toggle('active',  tab === 'dados');
 }
+
+// ============================================================
+// DADOS (dice roller)
+// ============================================================
+let diceCount = 1;
+let diceSides = 6;
 
 function changeDiceCount(delta) {
   diceCount = Math.max(1, Math.min(10, diceCount + delta));
@@ -1532,13 +1816,12 @@ function setSides(n) {
 }
 
 function clampSides() {
-  const el = document.getElementById('dice-sides');
+  const el  = document.getElementById('dice-sides');
   diceSides = Math.max(2, Math.min(100, parseInt(el.value) || 6));
-  el.value = diceSides;
+  el.value  = diceSides;
 }
 
 function rolarDado(lados) {
-  // Usa crypto para aleatoriedade 100%
   const arr = new Uint32Array(1);
   crypto.getRandomValues(arr);
   return (arr[0] % lados) + 1;
@@ -1546,93 +1829,50 @@ function rolarDado(lados) {
 
 async function lancarDados() {
   if (!currentUser) return;
-  const btn = document.getElementById('dice-roll-btn');
+  const btn   = document.getElementById('dice-roll-btn');
   btn.disabled = true;
+  btn.textContent = '🎲 Rolando...';
 
   const lados = parseInt(document.getElementById('dice-sides').value) || 6;
-  const qtd = diceCount;
+  const qtd   = diceCount;
 
-  // Animação de rolagem
-  btn.textContent = '🎲 Rolando...';
-  
-  // Pequeno delay para animação
-  await new Promise(r => setTimeout(r, 400));
+  await new Promise(r => setTimeout(r, 350));
 
-  // Gera resultados 100% aleatórios
-  const resultados = [];
-  for (let i = 0; i < qtd; i++) {
-    resultados.push(rolarDado(lados));
-  }
-  const soma = resultados.reduce((a, b) => a + b, 0);
+  const resultados = Array.from({ length: qtd }, () => rolarDado(lados));
+  const soma       = resultados.reduce((a, b) => a + b, 0);
 
-  // Mostra na tela
-  const resDiv = document.getElementById('dice-results');
-  const indDiv = document.getElementById('dice-individual');
+  // Mostra resultados na tela
+  const resDiv   = document.getElementById('dice-results');
+  const indDiv   = document.getElementById('dice-individual');
   const totalDiv = document.getElementById('dice-total');
-  
   resDiv.style.display = 'block';
   indDiv.innerHTML = '';
   resultados.forEach(v => {
     const d = document.createElement('div');
-    d.className = 'die-result';
+    d.className   = 'die-result';
     d.textContent = v;
     indDiv.appendChild(d);
   });
   totalDiv.textContent = soma;
 
-  // Salva no Firebase para todos verem
-  const lancamento = {
-    user: currentUser,
-    qtd: qtd,
-    lados: lados,
-    resultados: resultados,
-    soma: soma,
-    time: Date.now()
-  };
-  
+  // Salva no Firebase para todos verem em tempo real
   try {
-    await db.ref('dados').push(lancamento);
-  } catch(e) {
+    await db.ref('dados').push({
+      user: currentUser,
+      qtd, lados, resultados, soma,
+      time: Date.now()
+    });
+  } catch (e) {
     console.error('Erro ao salvar lançamento:', e);
   }
 
-  btn.disabled = false;
+  btn.disabled    = false;
   btn.textContent = '⚡ JOGAR';
 }
 
-// Escuta lançamentos em tempo real
-function iniciarListenerDados() {
-  db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
-    const list = document.getElementById('dice-history-list');
-    if (!list) return;
-    
-    const entries = [];
-    snapshot.forEach(child => entries.push(child.val()));
-    
-    if (entries.length === 0) {
-      list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
-      return;
-    }
-
-    // Mais recente primeiro
-    entries.reverse();
-    list.innerHTML = '';
-    entries.forEach(e => {
-      const time = new Date(e.time).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-      const div = document.createElement('div');
-      div.className = 'history-entry';
-      div.innerHTML = `
-        <span class="he-time">${time}</span>
-        <span class="he-user">${e.user}</span> lançou 
-        <strong>${e.qtd}D${e.lados}</strong>: 
-        [${e.resultados.join(', ')}] = 
-        <span class="he-total">${e.soma}</span>
-      `;
-      list.appendChild(div);
-    });
-  });
-}
-
+// ============================================================
+// AUTO-LOGIN ao carregar a página
+// ============================================================
 window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
@@ -1642,7 +1882,6 @@ window.addEventListener('load', async () => {
     await doLogin();
   }
 });
-
 </script>
 </body>
 </html>
