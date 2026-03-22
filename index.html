@@ -543,7 +543,6 @@
     .poke-table { min-width: 280px; }
 
     /* HABILIDADES: empilha nome + campo */
-    .dice-layout { grid-template-columns: 1fr; gap: 14px; }
     .dice-history { max-height: 300px; }
 
     #skills-container {
@@ -816,23 +815,13 @@
   }
 
   /* Histórico */
-  /* Dados layout lado a lado */
-  .dice-layout {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 20px;
-    align-items: start;
-  }
-  .dice-left { min-width: 0; }
-  .dice-right { min-width: 0; }
-
   .dice-history {
     background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
     border: 2px solid #C8960C;
     border-radius: 16px;
     padding: 20px;
-    height: 100%;
-    max-height: 600px;
+    margin-top: 16px;
+    max-height: 400px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #C8960C #1a1035;
@@ -1571,33 +1560,25 @@
         </div>
       </div>
 
-      <div class="dice-layout">
+      <!-- Botão lançar — sempre visível acima de tudo -->
+      <button class="dice-roll-btn" id="dice-roll-btn" onclick="lancarDados()">⚡ JOGAR</button>
 
-        <!-- ESQUERDA: controles + resultado -->
-        <div class="dice-left">
-          <!-- Botão lançar -->
-          <button class="dice-roll-btn" id="dice-roll-btn" onclick="lancarDados()">⚡ JOGAR</button>
+      <!-- Resultado imediato -->
+      <div class="dice-results" id="dice-results" style="display:none;">
+        <div class="dice-results-title">🎯 Resultado do Lançamento</div>
+        <div class="dice-individual" id="dice-individual"></div>
+        <div class="dice-total-label">SOMA TOTAL</div>
+        <div class="dice-total" id="dice-total">0</div>
+      </div>
 
-          <!-- Resultados -->
-          <div class="dice-results" id="dice-results" style="display:none;">
-            <div class="dice-results-title">🎯 Resultado do Lançamento</div>
-            <div class="dice-individual" id="dice-individual"></div>
-            <div class="dice-total-label">SOMA TOTAL</div>
-            <div class="dice-total" id="dice-total">0</div>
-          </div>
+      <!-- Histórico em tempo real — abaixo do resultado -->
+      <div class="dice-history">
+        <div class="dice-history-title">📜 Histórico de Lançamentos</div>
+        <div id="dice-history-list">
+          <div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>
         </div>
+      </div>
 
-        <!-- DIREITA: histórico em tempo real -->
-        <div class="dice-right">
-          <div class="dice-history">
-            <div class="dice-history-title">📜 Histórico de Lançamentos</div>
-            <div id="dice-history-list">
-              <div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- end dice-layout -->
     </div>
 
   </div><!-- end section-dados -->
