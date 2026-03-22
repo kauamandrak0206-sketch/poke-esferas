@@ -2455,6 +2455,61 @@ let _trainerListener = null;
 let _dadosListener   = null;
 let _lastDadosCount  = 0;
 
+function renderDiceHistory(entries, animateFirst) {
+  const list = document.getElementById('dice-history-list');
+  if (!list) return;
+  list.innerHTML = '';
+  entries.forEach((e, idx) => {
+    const div = criarEntradaHistorico(e, idx === 0 && animateFirst);
+    list.appendChild(div);
+  });
+}
+
+function adicionarEntradaHistorico(e, animate) {
+  const list = document.getElementById('dice-history-list');
+  if (!list) return;
+
+  // Remove placeholder
+  const placeholder = list.querySelector('div[style]');
+  if (placeholder) placeholder.remove();
+
+  const div = criarEntradaHistorico(e, animate);
+  list.insertBefore(div, list.firstChild); // insere no topo
+
+  // Atualiza resultado na tela para todos
+  const resDiv   = document.getElementById('dice-results');
+  const indDiv   = document.getElementById('dice-individual');
+  const totalDiv = document.getElementById('dice-total');
+  if (resDiv && indDiv && totalDiv) {
+    resDiv.style.display = 'block';
+    indDiv.innerHTML = '';
+    (e.resultados || []).forEach(v => {
+      const d = document.createElement('div');
+      d.className = 'die-result'; d.textContent = v;
+      indDiv.appendChild(d);
+    });
+    totalDiv.textContent = e.soma;
+  }
+
+  // Rola para o topo
+  const parent = list.closest('.dice-history');
+  if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function criarEntradaHistorico(e, animate) {
+  const time  = new Date(e.time).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const isOwn = (e.user === currentUser);
+  const div   = document.createElement('div');
+  div.className = 'history-entry' + (isOwn ? ' mine' : '') + (animate ? ' new-entry' : '');
+  div.innerHTML = `
+    <span class="he-time">${time}</span>
+    <span class="he-user" style="${isOwn ? 'color:#fff;' : ''}">${isOwn ? '👤 Você' : e.user}</span> lançou
+    <strong>${e.qtd}D${e.lados}</strong>:
+    [${e.resultados.join(', ')}] =
+    <span class="he-total">${e.soma}</span>`;
+  return div;
+}
+
 function iniciarListeners() {
   // Listener fichas — atualiza automaticamente para todos
   if (_trainerListener) db.ref('trainers').off('value', _trainerListener);
@@ -2478,43 +2533,40 @@ function iniciarListeners() {
     showToast('⚠️ Conexão instável. Tentando reconectar...', true);
   });
 
-  // Listener dados (lançamento de dados)
-  if (_dadosListener) db.ref('dados').off('value', _dadosListener);
-  _dadosListener = db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
+  // Listener dados — usa child_added para detectar APENAS entradas novas
+  if (_dadosListener) { db.ref('dados').off(); _dadosListener = null; }
+
+  let _dadosInicializado = false;
+  const _dadosBuffer = [];
+
+  // Primeiro carrega o histórico existente com once()
+  db.ref('dados').orderByChild('time').limitToLast(30).once('value', (snapshot) => {
     const list = document.getElementById('dice-history-list');
     if (!list) return;
     const entries = [];
     snapshot.forEach(child => entries.push(child.val()));
     if (entries.length === 0) {
       list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
-      _lastDadosCount = 0;
+    } else {
+      entries.reverse();
+      renderDiceHistory(entries, false);
+    }
+    _dadosInicializado = true;
+
+    // Agora aplica qualquer entrada que chegou enquanto carregava
+    _dadosBuffer.forEach(e => adicionarEntradaHistorico(e, true));
+    _dadosBuffer.length = 0;
+  });
+
+  // Escuta APENAS novas entradas em tempo real
+  _dadosListener = db.ref('dados').orderByChild('time').limitToLast(1).on('child_added', (snapshot) => {
+    const e = snapshot.val();
+    if (!e) return;
+    if (!_dadosInicializado) {
+      _dadosBuffer.push(e);
       return;
     }
-    const isNew = entries.length > _lastDadosCount;
-    _lastDadosCount = entries.length;
-
-    // Mais recente primeiro
-    entries.reverse();
-    list.innerHTML = '';
-    entries.forEach((e, idx) => {
-      const time    = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const isOwn   = (e.user === currentUser);
-      const div     = document.createElement('div');
-      div.className = 'history-entry' + (isOwn ? ' mine' : '') + (idx === 0 && isNew ? ' new-entry' : '');
-      div.innerHTML = `
-        <span class="he-time">${time}</span>
-        <span class="he-user" style="${isOwn ? 'color:#fff;' : ''}">${isOwn ? '👤 Você' : e.user}</span> lançou
-        <strong>${e.qtd}D${e.lados}</strong>:
-        [${e.resultados.join(', ')}] =
-        <span class="he-total">${e.soma}</span>`;
-      list.appendChild(div);
-    });
-
-    // Se foi lançamento novo, rola para o topo do histórico
-    if (isNew && entries.length > 0) {
-      const parent = list.closest('.dice-history');
-      if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    adicionarEntradaHistorico(e, true);
   }, (err) => {
     console.error('Dados listener error:', err);
   });
