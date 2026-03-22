@@ -543,6 +543,9 @@
     .poke-table { min-width: 280px; }
 
     /* HABILIDADES: empilha nome + campo */
+    .dice-layout { grid-template-columns: 1fr; gap: 14px; }
+    .dice-history { max-height: 300px; }
+
     #skills-container {
       display: flex !important;
       flex-direction: column !important;
@@ -813,14 +816,30 @@
   }
 
   /* Histórico */
+  /* Dados layout lado a lado */
+  .dice-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    align-items: start;
+  }
+  .dice-left { min-width: 0; }
+  .dice-right { min-width: 0; }
+
   .dice-history {
     background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
     border: 2px solid #C8960C;
     border-radius: 16px;
     padding: 20px;
-    max-height: 280px;
+    height: 100%;
+    max-height: 600px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #C8960C #1a1035;
   }
+  .dice-history::-webkit-scrollbar { width: 5px; }
+  .dice-history::-webkit-scrollbar-track { background: #1a1035; }
+  .dice-history::-webkit-scrollbar-thumb { background: #C8960C; border-radius: 3px; }
   .dice-history-title {
     font-family: 'Cinzel', serif;
     font-size: 13px;
@@ -828,6 +847,21 @@
     letter-spacing: 2px;
     margin-bottom: 12px;
     text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(160deg, #1A1035, #2D1B5E);
+    padding-bottom: 8px;
+  }
+  .history-entry.mine {
+    border-left-color: #C8960C;
+    background: rgba(200,150,12,0.08);
+  }
+  .history-entry.new-entry {
+    animation: slideIn 0.4s ease-out;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
   }
   .history-entry {
     padding: 10px 12px;
@@ -1537,22 +1571,33 @@
         </div>
       </div>
 
-      <!-- Botão lançar -->
-      <button class="dice-roll-btn" id="dice-roll-btn" onclick="lancarDados()">⚡ JOGAR</button>
+      <div class="dice-layout">
 
-      <!-- Resultados -->
-      <div class="dice-results" id="dice-results" style="display:none;">
-        <div class="dice-results-title">🎯 Resultado do Lançamento</div>
-        <div class="dice-individual" id="dice-individual"></div>
-        <div class="dice-total-label">SOMA TOTAL</div>
-        <div class="dice-total" id="dice-total">0</div>
-      </div>
+        <!-- ESQUERDA: controles + resultado -->
+        <div class="dice-left">
+          <!-- Botão lançar -->
+          <button class="dice-roll-btn" id="dice-roll-btn" onclick="lancarDados()">⚡ JOGAR</button>
 
-      <!-- Histórico -->
-      <div class="dice-history">
-        <div class="dice-history-title">📜 Histórico de Lançamentos</div>
-        <div id="dice-history-list"><div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div></div>
-      </div>
+          <!-- Resultados -->
+          <div class="dice-results" id="dice-results" style="display:none;">
+            <div class="dice-results-title">🎯 Resultado do Lançamento</div>
+            <div class="dice-individual" id="dice-individual"></div>
+            <div class="dice-total-label">SOMA TOTAL</div>
+            <div class="dice-total" id="dice-total">0</div>
+          </div>
+        </div>
+
+        <!-- DIREITA: histórico em tempo real -->
+        <div class="dice-right">
+          <div class="dice-history">
+            <div class="dice-history-title">📜 Histórico de Lançamentos</div>
+            <div id="dice-history-list">
+              <div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end dice-layout -->
     </div>
 
   </div><!-- end section-dados -->
@@ -2321,6 +2366,7 @@ function iniciarListeners() {
 
   // Listener dados (lançamento de dados)
   if (_dadosListener) db.ref('dados').off('value', _dadosListener);
+  let _lastDadosCount = 0;
   _dadosListener = db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
     const list = document.getElementById('dice-history-list');
     if (!list) return;
@@ -2328,22 +2374,35 @@ function iniciarListeners() {
     snapshot.forEach(child => entries.push(child.val()));
     if (entries.length === 0) {
       list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
+      _lastDadosCount = 0;
       return;
     }
+    const isNew = entries.length > _lastDadosCount;
+    _lastDadosCount = entries.length;
+
+    // Mais recente primeiro
     entries.reverse();
     list.innerHTML = '';
-    entries.forEach(e => {
-      const time = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      const div  = document.createElement('div');
-      div.className = 'history-entry';
+    entries.forEach((e, idx) => {
+      const time    = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const isOwn   = (e.user === currentUser);
+      const div     = document.createElement('div');
+      // Destaca o próprio lançamento + anima novo
+      div.className = 'history-entry' + (isOwn ? ' mine' : '') + (idx === 0 && isNew ? ' new-entry' : '');
       div.innerHTML = `
         <span class="he-time">${time}</span>
-        <span class="he-user">${e.user}</span> lançou
+        <span class="he-user" style="${isOwn ? 'color:#fff;' : ''}">${isOwn ? '👤 Você' : e.user}</span> lançou
         <strong>${e.qtd}D${e.lados}</strong>:
         [${e.resultados.join(', ')}] =
         <span class="he-total">${e.soma}</span>`;
       list.appendChild(div);
     });
+
+    // Se foi lançamento novo, rola para o topo do histórico
+    if (isNew) {
+      const parent = list.closest('.dice-history');
+      if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, (err) => {
     console.error('Dados listener error:', err);
   });
@@ -2457,6 +2516,14 @@ async function lancarDados() {
       qtd, lados, resultados, soma,
       time: Date.now()
     });
+    // Scroll automático para o histórico após lançar
+    setTimeout(() => {
+      const hist = document.getElementById('dice-history-list');
+      if (hist) {
+        const parent = hist.closest('.dice-history');
+        if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 300);
   } catch (e) {
     console.error('Erro ao salvar lançamento:', e);
   }
