@@ -1680,8 +1680,14 @@
       <div class="music-title">🎵 Playlist da Campanha</div>
 
       <!-- Player YouTube IFrame API -->
-      <div class="music-player-wrap">
+      <div class="music-player-wrap" style="position:relative;">
         <div id="yt-player"></div>
+        <!-- Banner para primeira interação do usuário -->
+        <div id="music-click-banner" onclick="ativarAudio()" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;flex-direction:column;cursor:pointer;z-index:10;border-radius:14px;">
+          <div style="font-size:60px;margin-bottom:12px;">▶</div>
+          <div style="font-family:'Cinzel',serif;font-size:16px;color:#C8960C;letter-spacing:2px;text-align:center;">Clique para ouvir a música</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;">O navegador requer uma interação para tocar áudio</div>
+        </div>
       </div>
 
       <!-- Nome da música tocando -->
@@ -2610,6 +2616,8 @@ function showTab(tab) {
     if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
     if (btn) btn.classList.toggle('active', t === tab);
   });
+  // Quando entra na aba de música, marca interação do usuário
+  if (tab === 'musica') marcarInteracao();
 }
 
 // ============================================================
@@ -2738,7 +2746,7 @@ async function carregarMusica() {
   }
 
   // Define como música atual e toca
-  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
 
   input.value = '';
   status.textContent = '✅ Adicionado: ' + label;
@@ -2747,7 +2755,7 @@ async function carregarMusica() {
 
 async function tocarSalva(videoId) {
   if (!isMaster) return;
-  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
 }
 
 async function deletarMusica(videoId) {
@@ -2843,47 +2851,67 @@ function carregarYTScript() {
 
 window.onYouTubeIframeAPIReady = function() {
   ytReady = true;
-  if (currentVideoId) criarPlayerParaTodos(currentVideoId, _shouldPause);
+  if (currentVideoId) criarPlayer(currentVideoId, 0);
 };
 
-// _shouldPause: controla se ao criar o player ele deve pausar
-let _shouldPause = false;
+let _shouldPause  = false;
+let _userInteracted = false; // rastrea se o usuário já clicou algo
 
-function criarPlayerParaTodos(videoId, paused) {
+// Chamada quando usuário interage pela primeira vez
+function marcarInteracao() { _userInteracted = true; }
+
+function criarPlayerParaTodos(videoId, paused, startTime) {
   _shouldPause = !!paused;
-  criarPlayer(videoId);
+  criarPlayer(videoId, startTime || 0);
 }
 
-function criarPlayer(videoId) {
+function criarPlayer(videoId, startSeconds) {
   if (!ytReady) { currentVideoId = videoId; return; }
   if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
   const wrap = document.getElementById('yt-player');
   if (!wrap) return;
   wrap.innerHTML = '';
+
   ytPlayer = new YT.Player('yt-player', {
     height: '340', width: '100%', videoId: videoId,
     playerVars: {
-      autoplay:       1,
+      autoplay:       _userInteracted ? 1 : 0, // autoplay só após interação
       rel:            0,
       modestbranding: 1,
       controls:       1,
       enablejsapi:    1,
+      start:          Math.floor(startSeconds || 0),
       origin:         window.location.origin
     },
     events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
   });
+
+  // Mostra/esconde o banner de "clique para ouvir"
+  const banner = document.getElementById('music-click-banner');
+  if (banner) banner.style.display = _userInteracted ? 'none' : 'flex';
 }
 
 function onPlayerReady(event) {
   const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
   event.target.setVolume(vol);
-  // Se a música estava pausada quando o jogador entrou, mantém pausada
   if (_shouldPause) {
     event.target.pauseVideo();
     atualizarBotaoPlay(false);
-  } else {
+  } else if (_userInteracted) {
     event.target.playVideo();
     atualizarBotaoPlay(true);
+  }
+  // Se não houve interação, o player fica pronto mas não toca
+  // O banner aparece pedindo para clicar
+}
+
+// Ativado quando jogador clica no banner "▶ Clique para ouvir"
+function ativarAudio() {
+  _userInteracted = true;
+  const banner = document.getElementById('music-click-banner');
+  if (banner) banner.style.display = 'none';
+  if (ytPlayer && !_shouldPause) {
+    try { ytPlayer.playVideo(); atualizarBotaoPlay(true); } catch(e){}
   }
 }
 
@@ -3047,7 +3075,9 @@ function iniciarListenerMusica() {
     // Se o vídeo mudou OU se o player ainda não foi criado, cria agora
     if (estado.videoId !== currentVideoId || !ytPlayer) {
       currentVideoId = estado.videoId;
-      criarPlayerParaTodos(currentVideoId, estado.paused);
+      // Calcula quantos segundos já se passaram desde que a música começou
+      const elapsed = estado.startTime ? Math.floor((Date.now() - estado.startTime) / 1000) : 0;
+      criarPlayerParaTodos(currentVideoId, estado.paused, elapsed);
       renderMusicList();
       return;
     }
