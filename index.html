@@ -2772,6 +2772,190 @@ async function moverMusica(idx, dir) {
   await db.ref('musica/saved').set(musicSaved);
 }
 
+// ============================================================
+// MÚSICA — YouTube IFrame API
+// ============================================================
+let ytPlayer       = null;
+let ytReady        = false;
+let musicPlaying   = false;
+let currentVideoId = null;
+let musicSaved     = [];
+
+function carregarYTScript() {
+  if (document.getElementById('yt-api-script')) return;
+  const tag = document.createElement('script');
+  tag.id  = 'yt-api-script';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  if (currentVideoId) criarPlayer(currentVideoId);
+};
+
+function criarPlayer(videoId) {
+  if (!ytReady) { currentVideoId = videoId; return; }
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} }
+  const wrap = document.getElementById('yt-player');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  ytPlayer = new YT.Player('yt-player', {
+    height: '340', width: '100%', videoId: videoId,
+    playerVars: { autoplay:1, rel:0, modestbranding:1, controls:1, enablejsapi:1, origin: window.location.origin },
+    events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+  });
+}
+
+function onPlayerReady(event) {
+  const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
+  event.target.setVolume(vol);
+  event.target.playVideo();
+  atualizarBotaoPlay(true);
+}
+
+function onPlayerStateChange(event) {
+  musicPlaying = (event.data === YT.PlayerState.PLAYING);
+  atualizarBotaoPlay(musicPlaying);
+  if (event.data === YT.PlayerState.PLAYING) {
+    try {
+      const info = ytPlayer.getVideoData();
+      if (info?.title) document.getElementById('music-now-playing').textContent = '🎵 ' + info.title;
+    } catch(e) {}
+  }
+  if (event.data === YT.PlayerState.ENDED && isMaster) {
+    const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+    if (idx >= 0 && idx < musicSaved.length - 1) tocarSalva(musicSaved[idx+1].videoId);
+  }
+}
+
+function atualizarBotaoPlay(playing) {
+  const btn = document.getElementById('mc-play');
+  if (btn) btn.textContent = playing ? '⏸' : '▶';
+}
+
+function musicPlayPause() {
+  if (!isMaster) return;
+  if (!ytPlayer) return;
+  if (musicPlaying) { ytPlayer.pauseVideo(); db.ref('musica/estado').update({ paused: true }); }
+  else              { ytPlayer.playVideo();  db.ref('musica/estado').update({ paused: false }); }
+}
+
+function musicNext() {
+  if (!isMaster || !musicSaved.length) return;
+  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+  const next = musicSaved[idx+1] || musicSaved[0];
+  if (next) tocarSalva(next.videoId);
+}
+
+function musicPrev() {
+  if (!isMaster || !musicSaved.length) return;
+  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
+  const prev = idx > 0 ? musicSaved[idx-1] : musicSaved[musicSaved.length-1];
+  if (prev) tocarSalva(prev.videoId);
+}
+
+function musicVolume(val) {
+  if (ytPlayer) ytPlayer.setVolume(parseInt(val));
+  document.getElementById('mc-vol-val').textContent = val + '%';
+  const slider = document.getElementById('mc-volume');
+  if (slider) slider.style.background = `linear-gradient(to right, #C8960C ${val}%, rgba(255,255,255,0.2) ${val}%)`;
+}
+
+function extrairVideoId(url) {
+  url = url.trim();
+  try {
+    const u = new URL(url);
+    let v = u.searchParams.get('v');
+    if (!v && u.hostname === 'youtu.be') v = u.pathname.slice(1);
+    return v || null;
+  } catch { return null; }
+}
+
+async function carregarMusica() {
+  if (!isMaster) return;
+  const input  = document.getElementById('music-url-input');
+  const status = document.getElementById('music-add-status');
+  const url    = input.value.trim();
+  if (!url) { status.textContent = '⚠️ Cole um link do YouTube!'; return; }
+  const videoId = extrairVideoId(url);
+  if (!videoId) { status.textContent = '❌ Link inválido.'; return; }
+  status.textContent = '⏳ Buscando informações...';
+  let label = 'Música ' + (musicSaved.length + 1);
+  let artist = 'YouTube';
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (res.ok) { const j = await res.json(); label = j.title || label; artist = j.author_name || artist; }
+  } catch {}
+  const jaExiste = musicSaved.find(s => s.videoId === videoId);
+  if (!jaExiste) {
+    musicSaved.push({ videoId, label, artist, url });
+    await db.ref('musica/saved').set(musicSaved);
+  }
+  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+  input.value = '';
+  status.textContent = '✅ Adicionado: ' + label;
+  setTimeout(() => status.textContent = '', 3000);
+}
+
+async function tocarSalva(videoId) {
+  if (!isMaster) return;
+  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+}
+
+async function deletarMusica(videoId) {
+  if (!isMaster) return;
+  musicSaved = musicSaved.filter(s => s.videoId !== videoId);
+  await db.ref('musica/saved').set(musicSaved.length > 0 ? musicSaved : null);
+  renderMusicList();
+}
+
+async function moverMusica(idx, dir) {
+  if (!isMaster) return;
+  const novo = idx + dir;
+  if (novo < 0 || novo >= musicSaved.length) return;
+  const tmp = musicSaved[idx]; musicSaved[idx] = musicSaved[novo]; musicSaved[novo] = tmp;
+  await db.ref('musica/saved').set(musicSaved);
+}
+
+function renderMusicList() {
+  const container = document.getElementById('music-saved-list-items');
+  const countEl   = document.getElementById('music-playlist-count');
+  const wrapEl    = document.getElementById('music-playlist-wrap');
+  if (!container) return;
+  if (wrapEl) wrapEl.style.display = 'block';
+  if (countEl) countEl.textContent = (musicSaved ? musicSaved.length : 0) + ' músicas';
+  if (!musicSaved || musicSaved.length === 0) {
+    container.innerHTML = `<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:24px 16px;">Nenhuma música ainda<br><span style="font-size:10px;opacity:0.6;">Cole um link do YouTube acima!</span></div>`;
+    return;
+  }
+  container.innerHTML = '';
+  musicSaved.forEach((s, idx) => {
+    const isActive = s.videoId === currentVideoId;
+    const thumb    = `https://img.youtube.com/vi/${s.videoId}/mqdefault.jpg`;
+    const artist   = s.artist || 'YouTube';
+    const item = document.createElement('div');
+    item.className = 'music-playlist-item' + (isActive ? ' active' : '');
+    item.innerHTML = `
+      <div class="mpi-num ${isActive ? 'playing' : ''}">${isActive ? '▶' : (idx+1)}</div>
+      <div class="mpi-thumb-wrap">
+        <img class="mpi-thumb" src="${thumb}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect fill=\'%23222\' width=\'80\' height=\'50\'/%3E%3C/svg%3E'" />
+      </div>
+      <div class="mpi-info">
+        <div class="mpi-title ${isActive ? 'active' : ''}" title="${s.label}">${s.label}</div>
+        <div class="mpi-artist">${artist}</div>
+      </div>
+      ${isMaster ? `<div class="mpi-actions">
+        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},-1)">↑</button>
+        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},1)">↓</button>
+        <button class="mpi-btn del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')">✕</button>
+      </div>` : ''}`;
+    if (isMaster) { item.onclick = () => tocarSalva(s.videoId); item.style.cursor = 'pointer'; }
+    else { item.style.cursor = 'default'; item.title = 'Só o Mestre pode trocar a música'; }
+    container.appendChild(item);
+  });
+}
+
 // ---- Listener Firebase ----
 function iniciarListenerMusica() {
   carregarYTScript();
