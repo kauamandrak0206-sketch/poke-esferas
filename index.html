@@ -34,7 +34,8 @@
     min-height: 100vh; display: flex;
     align-items: center; justify-content: center;
     background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 45%, #7B3F00 80%, #C46A00 100%);
-    position: relative; overflow: hidden;
+    position: relative; overflow-y: auto; overflow-x: hidden;
+    padding: 20px 0;
   }
   #login-page::before {
     content: ''; position: absolute; inset: 0;
@@ -50,6 +51,7 @@
     padding: 50px 45px; width: 420px; text-align: center;
     position: relative;
     box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 40px rgba(255,140,0,0.15);
+    max-height: 100vh; overflow-y: auto;
   }
   .pokemon-real-img {
     width: 100%; max-width: 320px; object-fit: contain;
@@ -589,18 +591,23 @@
     .history-textarea { min-height: 80px; }
 
     /* Login */
-    .login-box { width: 93vw; padding: 26px 18px; }
-    .pokemon-real-img { max-width: 200px; }
+    .login-box { width: 93vw; padding: 20px 16px; max-height: none; }
+    .pokemon-real-img { max-width: 180px; }
     .welcome-title { font-size: 15px; }
+    .login-subtitle { margin-bottom: 20px; }
+    .welcome-text { margin-bottom: 18px; }
   }
 
   @media (max-width: 480px) {
     .app-header-title { display: none !important; }
     .header-pokemon-img { height: 26px; }
     .rules-obrigatorio { font-size: 17px; }
-    .login-box { padding: 20px 13px; }
+    .login-box { padding: 16px 12px; width: 96vw; }
     .welcome-title { font-size: 13px; }
     .btn-action { padding: 7px 9px; font-size: 11px; }
+    .pokemon-real-img { max-width: 150px; }
+    .pokeball-icon { width: 50px; height: 50px; margin-bottom: 12px; }
+    .login-subtitle { font-size: 15px; margin-bottom: 16px; }
   }
 
 
@@ -3040,14 +3047,70 @@ async function enviarIA() {
   input.focus();
 }
 
-window.addEventListener('load', async () => {
+// ===== AUTO-LOGIN =====
+async function autoLogin() {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
-  if (savedUser && savedPass) {
-    document.getElementById('login-username').value = savedUser;
-    document.getElementById('login-password').value = savedPass;
-    await doLogin();
+  if (!savedUser || !savedPass) return;
+
+  // Verifica se a conta ainda existe no localStorage
+  const accounts = getAccounts();
+  const account = accounts[savedUser.toLowerCase()];
+  if (!account || account.password !== savedPass) {
+    // Conta não existe mais — limpa e mostra login
+    localStorage.removeItem('poke-logged-user');
+    localStorage.removeItem('poke-logged-pass');
+    return;
   }
+
+  // Faz login direto sem passar pelo campo de input
+  isMaster    = (account.role === 'master');
+  currentUser = account.name;
+
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app-page').style.display   = 'block';
+  document.getElementById('header-username').textContent = isMaster
+    ? '👑 ' + account.name + ' (Mestre)' : '👤 ' + account.name;
+  document.getElementById('btn-new').style.display = isMaster ? 'flex' : 'none';
+
+  const jaAceitou = localStorage.getItem('poke-rules-' + account.name.toLowerCase());
+  if (jaAceitou) {
+    document.getElementById('rules-section').style.display   = 'none';
+    document.getElementById('howto-section').style.display   = 'none';
+    document.getElementById('sheet-container').style.display = 'block';
+  } else {
+    document.getElementById('rules-section').style.display   = 'block';
+    document.getElementById('howto-section').style.display   = 'none';
+    document.getElementById('sheet-container').style.display = 'none';
+    const cb  = document.getElementById('rules-checkbox');
+    const btn = document.getElementById('rules-close-btn');
+    cb.checked = false; btn.disabled = true;
+    btn.textContent = '🔒 Li e Entendi — Jogar!';
+  }
+
+  buildTable();
+  renderUserChips();
+  iniciarListeners();
+  iniciarListenerMusica();
+  aplicarPermissoesMusica();
+  gerarTabelaTipos();
+  iniciarListenerTipos();
+
+  // Carrega ficha da nuvem em segundo plano
+  try {
+    const dados = await fbGet('trainers');
+    if (dados && Object.keys(dados).length > 0) {
+      allData = dados;
+      loadSheet(currentUser);
+      renderUserChips();
+    }
+  } catch(e) {
+    console.warn('Erro ao carregar fichas no auto-login:', e);
+  }
+}
+
+window.addEventListener('load', () => {
+  setTimeout(autoLogin, 200);
 });
 </script>
 </body>
