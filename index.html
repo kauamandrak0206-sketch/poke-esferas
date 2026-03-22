@@ -2321,6 +2321,7 @@ async function exportPDF() {
 // ============================================================
 let _trainerListener = null;
 let _dadosListener   = null;
+let _lastDadosCount  = 0;
 
 function iniciarListeners() {
   // Listener fichas — atualiza automaticamente para todos
@@ -2347,7 +2348,6 @@ function iniciarListeners() {
 
   // Listener dados (lançamento de dados)
   if (_dadosListener) db.ref('dados').off('value', _dadosListener);
-  let _lastDadosCount = 0;
   _dadosListener = db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
     const list = document.getElementById('dice-history-list');
     if (!list) return;
@@ -2368,7 +2368,6 @@ function iniciarListeners() {
       const time    = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const isOwn   = (e.user === currentUser);
       const div     = document.createElement('div');
-      // Destaca o próprio lançamento + anima novo
       div.className = 'history-entry' + (isOwn ? ' mine' : '') + (idx === 0 && isNew ? ' new-entry' : '');
       div.innerHTML = `
         <span class="he-time">${time}</span>
@@ -2379,8 +2378,25 @@ function iniciarListeners() {
       list.appendChild(div);
     });
 
-    // Se foi lançamento novo, rola para o topo do histórico
-    if (isNew) {
+    // Se foi lançamento novo, mostra o resultado na tela E rola para o topo
+    if (isNew && entries.length > 0) {
+      const ultimo = entries[0]; // mais recente (já revertido)
+      // Atualiza o painel de resultado para TODOS verem
+      const resDiv   = document.getElementById('dice-results');
+      const indDiv   = document.getElementById('dice-individual');
+      const totalDiv = document.getElementById('dice-total');
+      if (resDiv && indDiv && totalDiv) {
+        resDiv.style.display = 'block';
+        indDiv.innerHTML = '';
+        (ultimo.resultados || []).forEach(v => {
+          const d = document.createElement('div');
+          d.className   = 'die-result';
+          d.textContent = v;
+          indDiv.appendChild(d);
+        });
+        totalDiv.textContent = ultimo.soma;
+      }
+      // Rola histórico para o topo
       const parent = list.closest('.dice-history');
       if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2598,13 +2614,14 @@ function atualizarBotaoPlay(playing) {
 
 // ---- Controles ----
 function musicPlayPause() {
+  if (!isMaster) return; // Só mestre controla
   if (!ytPlayer) return;
   if (musicPlaying) {
     ytPlayer.pauseVideo();
-    if (isMaster) db.ref('musica/estado').update({ paused: true });
+    db.ref('musica/estado').update({ paused: true });
   } else {
     ytPlayer.playVideo();
-    if (isMaster) db.ref('musica/estado').update({ paused: false });
+    db.ref('musica/estado').update({ paused: false });
   }
 }
 
@@ -2810,9 +2827,9 @@ function aplicarPermissoesMusica() {
   const mcNext = document.getElementById('mc-next');
   const mcPlay = document.getElementById('mc-play');
   if (!isMaster) {
-    if (mcPrev) { mcPrev.disabled = true; mcPrev.title = 'Só o Mestre pode controlar'; }
-    if (mcNext) { mcNext.disabled = true; mcNext.title = 'Só o Mestre pode controlar'; }
-    if (mcPlay) { mcPlay.disabled = true; mcPlay.title = 'Só o Mestre pode controlar'; }
+    if (mcPrev) { mcPrev.disabled = true; mcPrev.style.pointerEvents = 'none'; mcPrev.title = 'Só o Mestre pode controlar'; }
+    if (mcNext) { mcNext.disabled = true; mcNext.style.pointerEvents = 'none'; mcNext.title = 'Só o Mestre pode controlar'; }
+    if (mcPlay) { mcPlay.disabled = true; mcPlay.style.pointerEvents = 'none'; mcPlay.title = 'Só o Mestre pode controlar'; }
   }
 }
 
