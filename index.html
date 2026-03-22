@@ -3239,31 +3239,156 @@ async function deletarNotaTipo(key) {
 // ============================================================
 // POKÉDEX IA — usa Claude via API Anthropic
 // ============================================================
-const IA_SYSTEM_PROMPT = `Você é a Pokédex IA, um assistente especialista em Pokémon integrado a um sistema de RPG chamado "Segredo das Poké Esferas". Responda SEMPRE em português brasileiro.
+// Pokédex IA — usa PokeAPI (gratuita, sem CORS) + base de conhecimento local
+const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
 
-Você sabe tudo sobre:
-- Todos os Pokémon, seus tipos, stats, evoluções, habilidades e movimentos
-- Mecânicas de batalha, status (paralisia, sono, veneno, queimadura, congelamento)
-- Tipos e efetividade (super efetivo, pouco efetivo, imune)
-- Itens, bagas, TMs e MTs
-- Pokémon lendários e míticos
-- Regiões (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea)
-- Estratégias competitivas e de RPG
+const TIPOS_PT = {
+  normal:'Normal', fire:'Fogo', water:'Água', electric:'Elétrico',
+  grass:'Planta', ice:'Gelo', fighting:'Lutador', poison:'Veneno',
+  ground:'Terra', flying:'Voador', psychic:'Psíquico', bug:'Inseto',
+  rock:'Pedra', ghost:'Fantasma', dragon:'Dragão', dark:'Sombrio',
+  steel:'Aço', fairy:'Fada'
+};
 
-SITES DE REFERÊNCIA — recomende estes sites quando o usuário precisar de mais detalhes:
-- Bulbapedia: https://bulbapedia.bulbagarden.net (wiki completa, em inglês)
-- Serebii: https://www.serebii.net (dados de jogos, movesets, itens)
-- Smogon: https://www.smogon.com (estratégias competitivas)
-- Pokémon Wiki BR: https://pokemon.fandom.com/pt-br (wiki em português)
-- PokémonDB: https://pokemondb.net (banco de dados completo)
+const STATS_PT = {
+  hp:'HP', attack:'Ataque', defense:'Defesa',
+  'special-attack':'Atk. Esp.', 'special-defense':'Def. Esp.', speed:'Velocidade'
+};
 
-Quando recomendar um site, mostre o link no formato: Nome — URL
+async function buscarPokemon(nome) {
+  const n = nome.toLowerCase().trim()
+    .replace(/[áàâã]/g,'a').replace(/[éèê]/g,'e')
+    .replace(/ç/g,'c').replace(/[íì]/g,'i')
+    .replace(/[óòôõ]/g,'o').replace(/[úù]/g,'u')
+    .replace(/\s+/g,'-');
+  try {
+    const res = await fetch(POKEAPI_BASE + '/pokemon/' + n);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
 
-Instruções gerais:
-- Mantenha respostas claras e organizadas, use emojis quando apropriado
-- Se a pergunta pedir listas muito grandes ou dados específicos, responda o essencial e recomende o site adequado
-- Se a pergunta não for sobre Pokémon, redirecione gentilmente para tópicos de Pokémon`;
+async function buscarEspecie(id) {
+  try {
+    const res = await fetch(POKEAPI_BASE + '/pokemon-species/' + id);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
 
+function formatarPokemon(p, esp) {
+  const tipos = p.types.map(t => TIPOS_PT[t.type.name] || t.type.name).join(' / ');
+  const stats = p.stats.map(s => (STATS_PT[s.stat.name]||s.stat.name) + ': **' + s.base_stat + '**').join(' | ');
+  const habs  = p.abilities.map(a => a.ability.name.replace(/-/g,' ')).join(', ');
+  const altura = (p.height/10).toFixed(1) + 'm';
+  const peso   = (p.weight/10).toFixed(1) + 'kg';
+  let desc = '';
+  if (esp) {
+    const e = esp.flavor_text_entries.find(e => e.language.name === 'pt-BR')
+           || esp.flavor_text_entries.find(e => e.language.name === 'pt')
+           || esp.flavor_text_entries.find(e => e.language.name === 'en');
+    if (e) desc = e.flavor_text.replace(/[\f\n]/g,' ');
+  }
+  const nomePT = (esp?.names.find(n => n.language.name==='pt-BR' || n.language.name==='pt')?.name || p.name);
+  const nomeDisplay = nomePT.charAt(0).toUpperCase() + nomePT.slice(1);
+  return '🔵 **' + nomeDisplay + '** (#' + p.id + ')\n\n' +
+    '🏷️ **Tipo:** ' + tipos + '\n' +
+    '📏 **Altura:** ' + altura + ' | ⚖️ **Peso:** ' + peso + '\n' +
+    '✨ **Habilidades:** ' + habs + '\n\n' +
+    '📊 **Stats Base:**\n' + stats +
+    (desc ? '\n\n📖 *' + desc + '*' : '') +
+    '\n\n🌐 Mais: **pokemondb.net/pokedex/' + p.name + '**';
+}
+
+const RESPOSTAS_LOCAIS = {
+  tipos: `⚔️ **Tipos Pokémon e fraquezas:**
+
+🔥 Fogo → fraco: Água, Pedra, Terra | forte: Planta, Inseto, Gelo, Aço
+💧 Água → fraco: Elétrico, Planta | forte: Fogo, Terra, Pedra
+🌿 Planta → fraco: Fogo, Gelo, Veneno, Voador, Inseto | forte: Água, Terra, Pedra
+⚡ Elétrico → fraco: Terra | forte: Água, Voador | imune: Terra
+❄️ Gelo → fraco: Fogo, Luta, Pedra, Aço | forte: Planta, Terra, Voador, Dragão
+🥊 Lutador → fraco: Voador, Psíquico, Fada | forte: Normal, Gelo, Pedra, Sombrio
+☠️ Veneno → fraco: Terra, Psíquico | forte: Planta, Fada
+🌍 Terra → fraco: Água, Planta, Gelo | forte: Fogo, Elétrico, Veneno, Pedra | imune: Elétrico
+✈️ Voador → fraco: Elétrico, Gelo, Pedra | forte: Planta, Lutador, Inseto | imune: Terra
+🔮 Psíquico → fraco: Inseto, Fantasma, Sombrio | forte: Lutador, Veneno
+🐛 Inseto → fraco: Fogo, Voador, Pedra | forte: Planta, Psíquico, Sombrio
+🪨 Pedra → fraco: Água, Planta, Lutador, Terra, Aço | forte: Fogo, Gelo, Voador, Inseto
+👻 Fantasma → fraco: Fantasma, Sombrio | forte: Psíquico, Fantasma | imune: Normal
+🐉 Dragão → fraco: Gelo, Dragão, Fada | forte: Dragão
+🌑 Sombrio → fraco: Lutador, Inseto, Fada | forte: Psíquico, Fantasma | imune: Psíquico
+🔩 Aço → fraco: Fogo, Lutador, Terra | forte: Gelo, Pedra, Fada | imune: Veneno
+🧚 Fada → fraco: Veneno, Aço | forte: Lutador, Dragão, Sombrio | imune: Dragão
+
+📌 Veja a tabela completa na aba **⚔️ Tipos** do sistema!`,
+
+  status: `😴 **Status de Batalha:**
+
+🟡 **Paralisia** — velocidade -50%, 25% chance de não agir
+🔴 **Queimadura** — -1/16 HP/turno, Ataque físico -50%
+💜 **Veneno** — -1/8 HP/turno (veneno grave aumenta progressivamente)
+💤 **Sono** — não age por 1-3 turnos
+🔵 **Congelamento** — não age; 20% de descongelar por turno
+😵 **Confusão** — 33% de se machucar (temporário)
+
+💊 Curas: Antídoto, Despertar, Descongelante, Cura Total, Poção Completa`,
+
+  lendarios_alola: `🌟 **Lendários de Alola (Sun & Moon):**
+
+☀️ **Solgaleo** (#791) — Psíquico/Aço | Armadura Total
+🌙 **Lunala** (#792) — Psíquico/Fantasma | Sombra Fantasma
+🌺 **Tapu Koko** (#785) — Elétrico/Fada
+🌊 **Tapu Lele** (#786) — Psíquico/Fada
+🌿 **Tapu Bulu** (#787) — Planta/Fada
+💧 **Tapu Fini** (#788) — Água/Fada
+⚡ **Necrozma** (#800) — Psíquico (funde com Solgaleo/Lunala)
+Cosmog (#789) → Cosmoem (#790) → Solgaleo/Lunala
+
+🌐 **bulbapedia.bulbagarden.net/wiki/Legendary_Pokémon**`,
+
+  evolucao: `🔄 **Como funciona a Evolução:**
+
+📈 **Por Nível** — Charmander→16→Charmeleon→36→Charizard
+🌙 **Por Pedra** — Pikachu→Raichu (Pedra Trovão), Eevee→Vaporeon (Pedra Água)
+🤝 **Por Troca** — Haunter→Gengar, Machoke→Machamp
+💕 **Por Amizade** — Pichu→Pikachu, Eevee→Espeon/Umbreon
+📍 **Por Local** — Magneton→Magnezone (Campo Magnético)
+⏰ **Por Hora** — Espeon (amizade+dia), Umbreon (amizade+noite)
+
+🌐 **pokemondb.net/evolution**`,
+
+  habilidades: `✨ **Habilidades Especiais:**
+
+🔥 **Chama/Torrent/Espessura** — move do tipo sobe 50% com HP baixo
+⚡ **Estática** — 30% de paralisar ao contato físico
+🛡️ **Levitação** — imune a moves de Terra
+☀️ **Seca** — invoca sol intenso ao entrar
+🌧️ **Chuvarada** — invoca chuva ao entrar
+👁️ **Intimidação** — reduz Ataque do oponente ao entrar
+🏃 **Impulso** — aumenta Velocidade a cada turno
+🔮 **Impressão** — copia habilidade do oponente
+
+🌐 **bulbapedia.bulbagarden.net/wiki/Ability**`
+};
+
+function detectarIntencao(t) {
+  t = t.toLowerCase();
+  if (/tipo|fraqueza|efetiv|resistên|imune|super efet/.test(t)) return 'tipos';
+  if (/status|paralisi|queimad|veneno|sono|congelam/.test(t)) return 'status';
+  if (/lendári|solgaleo|lunala|alola|tapu|ultra.beast/.test(t)) return 'lendarios_alola';
+  if (/evolu/.test(t)) return 'evolucao';
+  if (/habilidad/.test(t)) return 'habilidades';
+  return null;
+}
+
+function extrairNomePokemon(texto) {
+  const limpo = texto.toLowerCase()
+    .replace(/me fale sobre|fale sobre|o que é|quem é|sobre o|sobre a|pokémon|pokemon|qual|como|informaç|dados|stats/g,'')
+    .trim();
+  const words = limpo.split(/\s+/).filter(p => p.length > 2);
+  return words[0] || null;
+}
 let iaHistorico = [];
 
 function iaAdicionarMensagem(texto, tipo) {
@@ -3282,52 +3407,167 @@ function iaQuick(pergunta) {
   enviarIA();
 }
 
+// Respostas locais para perguntas comuns
+const RESPOSTAS_LOCAIS = {
+  tipos: `⚔️ **Tipos Pokémon e suas relações:**
+
+🔥 **Fogo** → fraco para Água, Pedra, Terra | forte contra Planta, Inseto, Gelo, Aço
+💧 **Água** → fraco para Elétrico, Planta | forte contra Fogo, Terra, Pedra
+🌿 **Planta** → fraco para Fogo, Gelo, Veneno, Voador, Inseto | forte contra Água, Terra, Pedra
+⚡ **Elétrico** → fraco para Terra | forte contra Água, Voador | imune: Terra
+❄️ **Gelo** → fraco para Fogo, Luta, Pedra, Aço | forte contra Planta, Terra, Voador, Dragão
+🥊 **Lutador** → fraco para Voador, Psíquico, Fada | forte contra Normal, Gelo, Pedra, Sombrio, Aço
+☠️ **Veneno** → fraco para Terra, Psíquico | forte contra Planta, Fada
+🌍 **Terra** → fraco para Água, Planta, Gelo | forte contra Fogo, Elétrico, Veneno, Pedra, Aço | imune: Elétrico
+✈️ **Voador** → fraco para Elétrico, Gelo, Pedra | forte contra Planta, Lutador, Inseto | imune: Terra
+🔮 **Psíquico** → fraco para Inseto, Fantasma, Sombrio | forte contra Lutador, Veneno
+🐛 **Inseto** → fraco para Fogo, Voador, Pedra | forte contra Planta, Psíquico, Sombrio
+🪨 **Pedra** → fraco para Água, Planta, Lutador, Terra, Aço | forte contra Fogo, Gelo, Voador, Inseto
+👻 **Fantasma** → fraco para Fantasma, Sombrio | forte contra Psíquico, Fantasma | imune: Normal, Luta
+🐉 **Dragão** → fraco para Gelo, Dragão, Fada | forte contra Dragão
+🌑 **Sombrio** → fraco para Lutador, Inseto, Fada | forte contra Psíquico, Fantasma | imune: Psíquico
+🔩 **Aço** → fraco para Fogo, Lutador, Terra | forte contra Gelo, Pedra, Fada | imune: Veneno
+🧚 **Fada** → fraco para Veneno, Aço | forte contra Lutador, Dragão, Sombrio | imune: Dragão
+
+📌 Veja a tabela completa na aba **⚔️ Tipos** do sistema!`,
+
+  status: `😴 **Status de Batalha Pokémon:**
+
+🟡 **Paralisia** — velocidade cai 50%, 25% de chance de não agir
+🔴 **Queimadura** — perde 1/16 do HP por turno, ataque físico cai 50%
+💜 **Veneno** — perde 1/8 do HP por turno (veneno grave aumenta o dano)
+💤 **Sono** — não pode agir por 1-3 turnos
+🔵 **Congelamento** — não pode agir; 20% de chance de descongelar por turno
+😵 **Confusão** — 33% de chance de se machucar (não é status permanente)
+😍 **Atração** — 50% de chance de não agir contra o Pokémon amado
+
+💊 **Curas:** Antídoto, Cura Total, Despertar, Descongelante, Paralisan, Água Fresca, Poção Completa`,
+
+  lendarios_alola: `🌟 **Lendários de Alola (Pokémon Sun & Moon):**
+
+☀️ **Solgaleo** (#791) — Psíquico/Aço | Habilidade: Armadura Total | "O León Estelar que devora o sol"
+🌙 **Lunala** (#792) — Psíquico/Fantasma | Habilidade: Sombra Fantasma | "A Pokémon que evoca a lua cheia"
+🌺 **Tapu Koko** (#785) — Elétrico/Fada | Protetor de Melemele Island
+🌊 **Tapu Lele** (#786) — Psíquico/Fada | Protetora de Akala Island
+🌿 **Tapu Bulu** (#787) — Planta/Fada | Protetor de Ula'ula Island
+🌊 **Tapu Fini** (#788) — Água/Fada | Protetora de Poni Island
+🎶 **Lunala** e **Solgaleo** evoluem de **Cosmoem** (#790) ← **Cosmog** (#789)
+⚡ **Necrozma** (#800) — Psíquico | pode fundir com Solgaleo e Lunala
+🦟 **Nihilego** (#793) — Pedra/Veneno | Ultra-Beasts UB-01
+🐛 e mais 10 Ultra-Beasts disponíveis!
+
+🌐 Detalhes: **bulbapedia.bulbagarden.net/wiki/Legendary_Pokémon**`,
+
+  evolucao: `🔄 **Como funciona a Evolução Pokémon:**
+
+📈 **Por Nível** — Charmander→Charmeleon (16), →Charizard (36)
+🌙 **Por Pedra** — Pikachu→Raichu (Pedra do Trovão), Eevee→Vaporeon (Pedra d'Água)
+🤝 **Por Troca** — Haunter→Gengar, Machoke→Machamp
+💕 **Por Amizade** — Eevee→Espeon/Umbreon (dia/noite), Pichu→Pikachu
+🎭 **Especial** — Eevee→Sylveon (Amizade + Movimento Fada)
+📍 **Por Local** — Magneton→Magnezone (Campo Magnético)
+⏰ **Por Hora** — Espeon (amizade, dia), Umbreon (amizade, noite)
+🔢 **Forma** — Tyrogue→Hitmonlee/Hitmonchan/Hitmontop (stats)
+
+🌐 Mais: **pokemondb.net/evolution**`,
+
+  habilidades: `✨ **Habilidades Especiais Pokémon:**
+
+🔥 **Blaze/Chama** — aumenta moves Fogo em 50% quando HP < 1/3
+💧 **Torrent/Torrente** — aumenta moves Água em 50% quando HP < 1/3
+🌿 **Overgrow/Espessura** — aumenta moves Planta em 50% quando HP < 1/3
+⚡ **Static/Estática** — 30% de paralisar ao contato físico
+🛡️ **Levitate/Levitação** — imune a moves Terra
+☀️ **Drought/Seca** — invoca sol intenso ao entrar em batalha
+🌧️ **Drizzle/Chuvarada** — invoca chuva ao entrar em batalha
+🌪️ **Sand Stream/Tempestade de Areia** — invoca tempestade de areia
+❄️ **Snow Warning/Nevasca** — invoca granizo
+👁️ **Intimidate/Intimidação** — reduz Ataque do oponente ao entrar
+🏃 **Speed Boost/Impulso** — aumenta Velocidade a cada turno
+🔮 **Trace/Impressão** — copia a habilidade do oponente
+
+🌐 Lista completa: **bulbapedia.bulbagarden.net/wiki/Ability**`
+};
+
+function detectarIntencao(texto) {
+  const t = texto.toLowerCase();
+  if (/tipo|fraqueza|efetiv|resistên|imune|super efet/.test(t)) return 'tipos';
+  if (/status|paralisi|queimad|veneno|sono|congelam|confus/.test(t)) return 'status';
+  if (/lendári|solgaleo|lunala|alola|tapu|ultra.beast|necrozma/.test(t)) return 'lendarios_alola';
+  if (/evolu|evolv|evolução|pedra/.test(t)) return 'evolucao';
+  if (/habilidad|abilit|ability/.test(t)) return 'habilidades';
+  return null;
+}
+
+function extrairNomePokemon(texto) {
+  // Remove palavras comuns para isolar possível nome
+  const limpo = texto.toLowerCase()
+    .replace(/me fale sobre|fale sobre|me conta sobre|quem é|o que é|sobre o|sobre a|pokémon|pokemon|qual|como/g, '')
+    .trim();
+  const palavras = limpo.split(/\s+/).filter(p => p.length > 2);
+  return palavras[0] || null;
+}
+
 async function enviarIA() {
   const input   = document.getElementById('ia-input');
   const sendBtn = document.getElementById('ia-send-btn');
   const pergunta = input.value.trim();
   if (!pergunta) return;
 
-  input.value     = '';
+  input.value      = '';
   sendBtn.disabled = true;
 
-  // Mostra mensagem do usuário
   iaAdicionarMensagem(pergunta, 'user');
-
-  // Adiciona ao histórico
-  iaHistorico.push({ role: 'user', content: pergunta });
-
-  // Mostra indicador de digitação
   const typingDiv = iaAdicionarMensagem('🔍 Consultando a Pokédex...', 'bot typing');
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: IA_SYSTEM_PROMPT,
-        messages: iaHistorico
-      })
-    });
+    let resposta = null;
 
-    const data = await response.json();
-    const resposta = data.content?.[0]?.text || 'Desculpe, não consegui responder. Tente novamente!';
+    // 1. Verifica respostas locais
+    const intencao = detectarIntencao(pergunta);
+    if (intencao) {
+      resposta = RESPOSTAS_LOCAIS[intencao];
+    }
 
-    // Remove typing indicator
+    // 2. Tenta buscar Pokémon específico na PokeAPI (sem CORS)
+    if (!resposta) {
+      const nomePoke = extrairNomePokemon(pergunta);
+      if (nomePoke) {
+        const poke = await buscarPokemon(nomePoke);
+        if (poke) {
+          const esp = await buscarEspecie(poke.id);
+          resposta = formatarPokemon(poke, esp);
+        }
+      }
+    }
+
+    // 3. Resposta genérica com sugestões
+    if (!resposta) {
+      resposta = `🎮 Olá! Posso ajudar com:
+
+• **Pokémon específico** — digite o nome (ex: "pikachu", "charizard")
+• **Tipos** — "quais são as fraquezas de Fogo?"
+• **Status** — "como funciona paralisia?"
+• **Lendários de Alola** — "quais lendários tem em Alola?"
+• **Evoluções** — "como funciona a evolução?"
+• **Habilidades** — "o que são habilidades especiais?"
+
+Ou use os botões rápidos abaixo! 👇
+
+🌐 Para mais detalhes:
+• **bulbapedia.bulbagarden.net**
+• **pokemondb.net**
+• **smogon.com** (competitivo)`;
+    }
+
     typingDiv.remove();
-
-    // Adiciona resposta ao histórico e tela
-    iaHistorico.push({ role: 'assistant', content: resposta });
     iaAdicionarMensagem(resposta, 'bot');
-
-    // Limita histórico a 20 mensagens para não explodir o contexto
-    if (iaHistorico.length > 20) iaHistorico = iaHistorico.slice(-20);
 
   } catch (e) {
     typingDiv.remove();
-    iaAdicionarMensagem('❌ Erro ao conectar com a Pokédex IA. Verifique sua conexão e tente novamente.', 'bot');
+    iaAdicionarMensagem(`❌ Erro ao consultar. Tente perguntar o nome de um Pokémon ou use os botões rápidos! 
+
+🌐 Acesse diretamente: **pokemondb.net** ou **bulbapedia.bulbagarden.net**`, 'bot');
     console.error('IA error:', e);
   }
 
