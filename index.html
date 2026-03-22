@@ -2843,18 +2843,33 @@ function carregarYTScript() {
 
 window.onYouTubeIframeAPIReady = function() {
   ytReady = true;
-  if (currentVideoId) criarPlayer(currentVideoId);
+  if (currentVideoId) criarPlayerParaTodos(currentVideoId, _shouldPause);
 };
+
+// _shouldPause: controla se ao criar o player ele deve pausar
+let _shouldPause = false;
+
+function criarPlayerParaTodos(videoId, paused) {
+  _shouldPause = !!paused;
+  criarPlayer(videoId);
+}
 
 function criarPlayer(videoId) {
   if (!ytReady) { currentVideoId = videoId; return; }
-  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} }
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
   const wrap = document.getElementById('yt-player');
   if (!wrap) return;
   wrap.innerHTML = '';
   ytPlayer = new YT.Player('yt-player', {
     height: '340', width: '100%', videoId: videoId,
-    playerVars: { autoplay:1, rel:0, modestbranding:1, controls:1, enablejsapi:1, origin: window.location.origin },
+    playerVars: {
+      autoplay:       1,
+      rel:            0,
+      modestbranding: 1,
+      controls:       1,
+      enablejsapi:    1,
+      origin:         window.location.origin
+    },
     events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
   });
 }
@@ -2862,8 +2877,14 @@ function criarPlayer(videoId) {
 function onPlayerReady(event) {
   const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
   event.target.setVolume(vol);
-  event.target.playVideo();
-  atualizarBotaoPlay(true);
+  // Se a música estava pausada quando o jogador entrou, mantém pausada
+  if (_shouldPause) {
+    event.target.pauseVideo();
+    atualizarBotaoPlay(false);
+  } else {
+    event.target.playVideo();
+    atualizarBotaoPlay(true);
+  }
 }
 
 function onPlayerStateChange(event) {
@@ -3021,16 +3042,17 @@ function iniciarListenerMusica() {
   // Listener do estado (toca/pausa) — sincroniza todos
   db.ref('musica/estado').on('value', snap => {
     const estado = snap.val();
-    if (!estado) return;
+    if (!estado || !estado.videoId) return;
 
-    // Se mudou o vídeo, cria/atualiza o player
-    if (estado.videoId && estado.videoId !== currentVideoId) {
+    // Se o vídeo mudou OU se o player ainda não foi criado, cria agora
+    if (estado.videoId !== currentVideoId || !ytPlayer) {
       currentVideoId = estado.videoId;
-      criarPlayer(currentVideoId);
+      criarPlayerParaTodos(currentVideoId, estado.paused);
       renderMusicList();
+      return;
     }
 
-    // Sincroniza play/pause para jogadores (não mestre pra não conflitar)
+    // Mesmo vídeo — só sincroniza play/pause para jogadores
     if (!isMaster && ytPlayer && ytReady) {
       try {
         if (estado.paused) ytPlayer.pauseVideo();
