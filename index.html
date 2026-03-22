@@ -3239,33 +3239,30 @@ async function deletarNotaTipo(key) {
 // ============================================================
 // POKÉDEX IA — usa Claude via API Anthropic
 // ============================================================
-// Pokédex IA — usa PokeAPI (gratuita, sem CORS) + base de conhecimento local
+// Pokédex IA — base de conhecimento local + PokeAPI
 const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
 
 const TIPOS_PT = {
-  normal:'Normal', fire:'Fogo', water:'Água', electric:'Elétrico',
+  normal:'Normal', fire:'Fogo', water:'Agua', electric:'Eletrico',
   grass:'Planta', ice:'Gelo', fighting:'Lutador', poison:'Veneno',
-  ground:'Terra', flying:'Voador', psychic:'Psíquico', bug:'Inseto',
-  rock:'Pedra', ghost:'Fantasma', dragon:'Dragão', dark:'Sombrio',
-  steel:'Aço', fairy:'Fada'
+  ground:'Terra', flying:'Voador', psychic:'Psiquico', bug:'Inseto',
+  rock:'Pedra', ghost:'Fantasma', dragon:'Dragao', dark:'Sombrio',
+  steel:'Aco', fairy:'Fada'
 };
 
 const STATS_PT = {
   hp:'HP', attack:'Ataque', defense:'Defesa',
-  'special-attack':'Atk. Esp.', 'special-defense':'Def. Esp.', speed:'Velocidade'
+  'special-attack':'Atk.Esp', 'special-defense':'Def.Esp', speed:'Velocidade'
 };
 
 async function buscarPokemon(nome) {
-  const n = nome.toLowerCase().trim()
-    .replace(/[áàâã]/g,'a').replace(/[éèê]/g,'e')
-    .replace(/ç/g,'c').replace(/[íì]/g,'i')
-    .replace(/[óòôõ]/g,'o').replace(/[úù]/g,'u')
-    .replace(/\s+/g,'-');
   try {
+    const n = nome.toLowerCase().trim().replace(/\s+/g, '-')
+      .replace(/a/g,'a').replace(/e/g,'e'); // nome simples
     const res = await fetch(POKEAPI_BASE + '/pokemon/' + n);
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
+  } catch(e) { return null; }
 }
 
 async function buscarEspecie(id) {
@@ -3273,120 +3270,56 @@ async function buscarEspecie(id) {
     const res = await fetch(POKEAPI_BASE + '/pokemon-species/' + id);
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
+  } catch(e) { return null; }
 }
 
 function formatarPokemon(p, esp) {
-  const tipos = p.types.map(t => TIPOS_PT[t.type.name] || t.type.name).join(' / ');
-  const stats = p.stats.map(s => (STATS_PT[s.stat.name]||s.stat.name) + ': **' + s.base_stat + '**').join(' | ');
-  const habs  = p.abilities.map(a => a.ability.name.replace(/-/g,' ')).join(', ');
+  const tipos = p.types.map(function(t){ return TIPOS_PT[t.type.name] || t.type.name; }).join(' / ');
+  const stats = p.stats.map(function(s){ return (STATS_PT[s.stat.name]||s.stat.name) + ': ' + s.base_stat; }).join(' | ');
+  const habs  = p.abilities.map(function(a){ return a.ability.name.replace(/-/g,' '); }).join(', ');
   const altura = (p.height/10).toFixed(1) + 'm';
   const peso   = (p.weight/10).toFixed(1) + 'kg';
-  let desc = '';
+  var desc = '';
   if (esp) {
-    const e = esp.flavor_text_entries.find(e => e.language.name === 'pt-BR')
-           || esp.flavor_text_entries.find(e => e.language.name === 'pt')
-           || esp.flavor_text_entries.find(e => e.language.name === 'en');
-    if (e) desc = e.flavor_text.replace(/[\f\n]/g,' ');
+    var e = esp.flavor_text_entries.find(function(x){ return x.language.name === 'en'; });
+    if (e) desc = e.flavor_text.replace(/[\f\n\r]/g,' ');
   }
-  const nomePT = (esp?.names.find(n => n.language.name==='pt-BR' || n.language.name==='pt')?.name || p.name);
-  const nomeDisplay = nomePT.charAt(0).toUpperCase() + nomePT.slice(1);
-  return '🔵 **' + nomeDisplay + '** (#' + p.id + ')\n\n' +
-    '🏷️ **Tipo:** ' + tipos + '\n' +
-    '📏 **Altura:** ' + altura + ' | ⚖️ **Peso:** ' + peso + '\n' +
-    '✨ **Habilidades:** ' + habs + '\n\n' +
-    '📊 **Stats Base:**\n' + stats +
-    (desc ? '\n\n📖 *' + desc + '*' : '') +
-    '\n\n🌐 Mais: **pokemondb.net/pokedex/' + p.name + '**';
+  var nome = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+  return '**' + nome + '** (#' + p.id + ')\n' +
+    'Tipo: ' + tipos + ' | Altura: ' + altura + ' | Peso: ' + peso + '\n' +
+    'Habilidades: ' + habs + '\n' +
+    'Stats: ' + stats +
+    (desc ? '\n\n' + desc : '') +
+    '\n\nMais detalhes: pokemondb.net/pokedex/' + p.name;
 }
 
-const RESPOSTAS_LOCAIS = {
-  tipos: `⚔️ **Tipos Pokémon e fraquezas:**
+var RESP = {
+  tipos: 'Tipos e fraquezas:\n\nFogo: fraco Agua/Pedra/Terra | forte Planta/Inseto/Gelo/Aco\nAgua: fraco Eletrico/Planta | forte Fogo/Terra/Pedra\nPlanta: fraco Fogo/Gelo/Veneno/Voador/Inseto | forte Agua/Terra/Pedra\nEletrico: fraco Terra | forte Agua/Voador\nGelo: fraco Fogo/Luta/Pedra/Aco | forte Planta/Terra/Voador/Dragao\nLutador: fraco Voador/Psiquico/Fada | forte Normal/Gelo/Pedra/Sombrio\nVeneno: fraco Terra/Psiquico | forte Planta/Fada\nTerra: fraco Agua/Planta/Gelo | forte Fogo/Eletrico/Veneno/Pedra | imune Eletrico\nVoador: fraco Eletrico/Gelo/Pedra | forte Planta/Lutador/Inseto | imune Terra\nPsiquico: fraco Inseto/Fantasma/Sombrio | forte Lutador/Veneno\nInseto: fraco Fogo/Voador/Pedra | forte Planta/Psiquico/Sombrio\nPedra: fraco Agua/Planta/Lutador/Terra/Aco | forte Fogo/Gelo/Voador/Inseto\nFantasma: fraco Fantasma/Sombrio | forte Psiquico/Fantasma | imune Normal\nDragao: fraco Gelo/Dragao/Fada | forte Dragao\nSombrio: fraco Lutador/Inseto/Fada | forte Psiquico/Fantasma\nAco: fraco Fogo/Lutador/Terra | forte Gelo/Pedra/Fada | imune Veneno\nFada: fraco Veneno/Aco | forte Lutador/Dragao/Sombrio | imune Dragao\n\nVeja a tabela completa na aba Tipos do sistema!',
 
-🔥 Fogo → fraco: Água, Pedra, Terra | forte: Planta, Inseto, Gelo, Aço
-💧 Água → fraco: Elétrico, Planta | forte: Fogo, Terra, Pedra
-🌿 Planta → fraco: Fogo, Gelo, Veneno, Voador, Inseto | forte: Água, Terra, Pedra
-⚡ Elétrico → fraco: Terra | forte: Água, Voador | imune: Terra
-❄️ Gelo → fraco: Fogo, Luta, Pedra, Aço | forte: Planta, Terra, Voador, Dragão
-🥊 Lutador → fraco: Voador, Psíquico, Fada | forte: Normal, Gelo, Pedra, Sombrio
-☠️ Veneno → fraco: Terra, Psíquico | forte: Planta, Fada
-🌍 Terra → fraco: Água, Planta, Gelo | forte: Fogo, Elétrico, Veneno, Pedra | imune: Elétrico
-✈️ Voador → fraco: Elétrico, Gelo, Pedra | forte: Planta, Lutador, Inseto | imune: Terra
-🔮 Psíquico → fraco: Inseto, Fantasma, Sombrio | forte: Lutador, Veneno
-🐛 Inseto → fraco: Fogo, Voador, Pedra | forte: Planta, Psíquico, Sombrio
-🪨 Pedra → fraco: Água, Planta, Lutador, Terra, Aço | forte: Fogo, Gelo, Voador, Inseto
-👻 Fantasma → fraco: Fantasma, Sombrio | forte: Psíquico, Fantasma | imune: Normal
-🐉 Dragão → fraco: Gelo, Dragão, Fada | forte: Dragão
-🌑 Sombrio → fraco: Lutador, Inseto, Fada | forte: Psíquico, Fantasma | imune: Psíquico
-🔩 Aço → fraco: Fogo, Lutador, Terra | forte: Gelo, Pedra, Fada | imune: Veneno
-🧚 Fada → fraco: Veneno, Aço | forte: Lutador, Dragão, Sombrio | imune: Dragão
+  status: 'Status de Batalha:\n\nParalisia: velocidade -50%, 25% chance de nao agir\nQueimadura: -1/16 HP por turno, Ataque fisico -50%\nVeneno: -1/8 HP por turno\nSono: nao age por 1-3 turnos\nCongelamento: nao age, 20% chance de descongelar por turno\nConfusao: 33% de se machucar\n\nCuras: Antidoto, Despertar, Descongelante, Cura Total',
 
-📌 Veja a tabela completa na aba **⚔️ Tipos** do sistema!`,
+  lendarios: 'Lendarios de Alola:\n\nSolgaleo #791 - Psiquico/Aco | Armadura Total\nLunala #792 - Psiquico/Fantasma | Sombra Fantasma\nTapu Koko #785 - Eletrico/Fada\nTapu Lele #786 - Psiquico/Fada\nTapu Bulu #787 - Planta/Fada\nTapu Fini #788 - Agua/Fada\nNecrozma #800 - Psiquico\nCosmog #789 > Cosmoem #790 > Solgaleo ou Lunala\n\nMais: bulbapedia.bulbagarden.net',
 
-  status: `😴 **Status de Batalha:**
+  evolucao: 'Como funciona a Evolucao:\n\nPor Nivel: Charmander>16>Charmeleon>36>Charizard\nPor Pedra: Pikachu>Raichu (Pedra Trovao)\nPor Troca: Haunter>Gengar, Machoke>Machamp\nPor Amizade: Pichu>Pikachu, Eevee>Espeon/Umbreon\nPor Local: Magneton>Magnezone (Campo Magnetico)\nPor Hora: Espeon (amizade+dia), Umbreon (amizade+noite)\n\nMais: pokemondb.net/evolution',
 
-🟡 **Paralisia** — velocidade -50%, 25% chance de não agir
-🔴 **Queimadura** — -1/16 HP/turno, Ataque físico -50%
-💜 **Veneno** — -1/8 HP/turno (veneno grave aumenta progressivamente)
-💤 **Sono** — não age por 1-3 turnos
-🔵 **Congelamento** — não age; 20% de descongelar por turno
-😵 **Confusão** — 33% de se machucar (temporário)
-
-💊 Curas: Antídoto, Despertar, Descongelante, Cura Total, Poção Completa`,
-
-  lendarios_alola: `🌟 **Lendários de Alola (Sun & Moon):**
-
-☀️ **Solgaleo** (#791) — Psíquico/Aço | Armadura Total
-🌙 **Lunala** (#792) — Psíquico/Fantasma | Sombra Fantasma
-🌺 **Tapu Koko** (#785) — Elétrico/Fada
-🌊 **Tapu Lele** (#786) — Psíquico/Fada
-🌿 **Tapu Bulu** (#787) — Planta/Fada
-💧 **Tapu Fini** (#788) — Água/Fada
-⚡ **Necrozma** (#800) — Psíquico (funde com Solgaleo/Lunala)
-Cosmog (#789) → Cosmoem (#790) → Solgaleo/Lunala
-
-🌐 **bulbapedia.bulbagarden.net/wiki/Legendary_Pokémon**`,
-
-  evolucao: `🔄 **Como funciona a Evolução:**
-
-📈 **Por Nível** — Charmander→16→Charmeleon→36→Charizard
-🌙 **Por Pedra** — Pikachu→Raichu (Pedra Trovão), Eevee→Vaporeon (Pedra Água)
-🤝 **Por Troca** — Haunter→Gengar, Machoke→Machamp
-💕 **Por Amizade** — Pichu→Pikachu, Eevee→Espeon/Umbreon
-📍 **Por Local** — Magneton→Magnezone (Campo Magnético)
-⏰ **Por Hora** — Espeon (amizade+dia), Umbreon (amizade+noite)
-
-🌐 **pokemondb.net/evolution**`,
-
-  habilidades: `✨ **Habilidades Especiais:**
-
-🔥 **Chama/Torrent/Espessura** — move do tipo sobe 50% com HP baixo
-⚡ **Estática** — 30% de paralisar ao contato físico
-🛡️ **Levitação** — imune a moves de Terra
-☀️ **Seca** — invoca sol intenso ao entrar
-🌧️ **Chuvarada** — invoca chuva ao entrar
-👁️ **Intimidação** — reduz Ataque do oponente ao entrar
-🏃 **Impulso** — aumenta Velocidade a cada turno
-🔮 **Impressão** — copia habilidade do oponente
-
-🌐 **bulbapedia.bulbagarden.net/wiki/Ability**`
+  habilidades: 'Habilidades Especiais:\n\nChama/Torrente/Espessura: move do tipo +50% com HP baixo\nEstatica: 30% de paralisar ao contato fisico\nLevitacao: imune a moves de Terra\nSeca: invoca sol intenso ao entrar\nChuvarada: invoca chuva ao entrar\nIntimidacao: reduz Ataque do oponente ao entrar\nImpulso: aumenta Velocidade a cada turno\n\nMais: bulbapedia.bulbagarden.net/wiki/Ability'
 };
 
 function detectarIntencao(t) {
   t = t.toLowerCase();
-  if (/tipo|fraqueza|efetiv|resistên|imune|super efet/.test(t)) return 'tipos';
-  if (/status|paralisi|queimad|veneno|sono|congelam/.test(t)) return 'status';
-  if (/lendári|solgaleo|lunala|alola|tapu|ultra.beast/.test(t)) return 'lendarios_alola';
-  if (/evolu/.test(t)) return 'evolucao';
-  if (/habilidad/.test(t)) return 'habilidades';
+  if (t.indexOf('tipo') >= 0 || t.indexOf('fraqueza') >= 0 || t.indexOf('efetiv') >= 0) return 'tipos';
+  if (t.indexOf('status') >= 0 || t.indexOf('paralisi') >= 0 || t.indexOf('veneno') >= 0 || t.indexOf('sono') >= 0) return 'status';
+  if (t.indexOf('lendari') >= 0 || t.indexOf('solgaleo') >= 0 || t.indexOf('lunala') >= 0 || t.indexOf('alola') >= 0) return 'lendarios';
+  if (t.indexOf('evolu') >= 0) return 'evolucao';
+  if (t.indexOf('habilidad') >= 0) return 'habilidades';
   return null;
 }
 
-function extrairNomePokemon(texto) {
-  const limpo = texto.toLowerCase()
-    .replace(/me fale sobre|fale sobre|o que é|quem é|sobre o|sobre a|pokémon|pokemon|qual|como|informaç|dados|stats/g,'')
-    .trim();
-  const words = limpo.split(/\s+/).filter(p => p.length > 2);
+function extrairNome(texto) {
+  var limpo = texto.toLowerCase()
+    .replace('fale sobre','').replace('me conta','').replace('quem e','')
+    .replace('o que e','').replace('pokemon','').replace('sobre','').trim();
+  var words = limpo.split(' ').filter(function(w){ return w.length > 2; });
   return words[0] || null;
 }
 let iaHistorico = [];
@@ -3526,12 +3459,12 @@ async function enviarIA() {
     // 1. Verifica respostas locais
     const intencao = detectarIntencao(pergunta);
     if (intencao) {
-      resposta = RESPOSTAS_LOCAIS[intencao];
+      resposta = RESP[intencao];
     }
 
     // 2. Tenta buscar Pokémon específico na PokeAPI (sem CORS)
     if (!resposta) {
-      const nomePoke = extrairNomePokemon(pergunta);
+      const nomePoke = extrairNome(pergunta);
       if (nomePoke) {
         const poke = await buscarPokemon(nomePoke);
         if (poke) {
