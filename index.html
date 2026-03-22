@@ -1680,8 +1680,14 @@
       <div class="music-title">🎵 Playlist da Campanha</div>
 
       <!-- Player YouTube IFrame API -->
-      <div class="music-player-wrap">
+      <div class="music-player-wrap" style="position:relative;">
         <div id="yt-player"></div>
+        <!-- Banner para primeira interação do usuário -->
+        <div id="music-click-banner" onclick="ativarAudio()" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;flex-direction:column;cursor:pointer;z-index:10;border-radius:14px;">
+          <div style="font-size:60px;margin-bottom:12px;">▶</div>
+          <div style="font-family:'Cinzel',serif;font-size:16px;color:#C8960C;letter-spacing:2px;text-align:center;">Clique para ouvir a música</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;">O navegador requer uma interação para tocar áudio</div>
+        </div>
       </div>
 
       <!-- Nome da música tocando -->
@@ -2455,6 +2461,61 @@ let _trainerListener = null;
 let _dadosListener   = null;
 let _lastDadosCount  = 0;
 
+function renderDiceHistory(entries, animateFirst) {
+  const list = document.getElementById('dice-history-list');
+  if (!list) return;
+  list.innerHTML = '';
+  entries.forEach((e, idx) => {
+    const div = criarEntradaHistorico(e, idx === 0 && animateFirst);
+    list.appendChild(div);
+  });
+}
+
+function adicionarEntradaHistorico(e, animate) {
+  const list = document.getElementById('dice-history-list');
+  if (!list) return;
+
+  // Remove placeholder
+  const placeholder = list.querySelector('div[style]');
+  if (placeholder) placeholder.remove();
+
+  const div = criarEntradaHistorico(e, animate);
+  list.insertBefore(div, list.firstChild); // insere no topo
+
+  // Atualiza resultado na tela para todos
+  const resDiv   = document.getElementById('dice-results');
+  const indDiv   = document.getElementById('dice-individual');
+  const totalDiv = document.getElementById('dice-total');
+  if (resDiv && indDiv && totalDiv) {
+    resDiv.style.display = 'block';
+    indDiv.innerHTML = '';
+    (e.resultados || []).forEach(v => {
+      const d = document.createElement('div');
+      d.className = 'die-result'; d.textContent = v;
+      indDiv.appendChild(d);
+    });
+    totalDiv.textContent = e.soma;
+  }
+
+  // Rola para o topo
+  const parent = list.closest('.dice-history');
+  if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function criarEntradaHistorico(e, animate) {
+  const time  = new Date(e.time).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const isOwn = (e.user === currentUser);
+  const div   = document.createElement('div');
+  div.className = 'history-entry' + (isOwn ? ' mine' : '') + (animate ? ' new-entry' : '');
+  div.innerHTML = `
+    <span class="he-time">${time}</span>
+    <span class="he-user" style="${isOwn ? 'color:#fff;' : ''}">${isOwn ? '👤 Você' : e.user}</span> lançou
+    <strong>${e.qtd}D${e.lados}</strong>:
+    [${e.resultados.join(', ')}] =
+    <span class="he-total">${e.soma}</span>`;
+  return div;
+}
+
 function iniciarListeners() {
   // Listener fichas — atualiza automaticamente para todos
   if (_trainerListener) db.ref('trainers').off('value', _trainerListener);
@@ -2478,43 +2539,40 @@ function iniciarListeners() {
     showToast('⚠️ Conexão instável. Tentando reconectar...', true);
   });
 
-  // Listener dados (lançamento de dados)
-  if (_dadosListener) db.ref('dados').off('value', _dadosListener);
-  _dadosListener = db.ref('dados').orderByChild('time').limitToLast(30).on('value', (snapshot) => {
+  // Listener dados — usa child_added para detectar APENAS entradas novas
+  if (_dadosListener) { db.ref('dados').off(); _dadosListener = null; }
+
+  let _dadosInicializado = false;
+  const _dadosBuffer = [];
+
+  // Primeiro carrega o histórico existente com once()
+  db.ref('dados').orderByChild('time').limitToLast(30).once('value', (snapshot) => {
     const list = document.getElementById('dice-history-list');
     if (!list) return;
     const entries = [];
     snapshot.forEach(child => entries.push(child.val()));
     if (entries.length === 0) {
       list.innerHTML = '<div style="color:rgba(200,150,12,0.4);font-size:13px;text-align:center;">Nenhum lançamento ainda...</div>';
-      _lastDadosCount = 0;
+    } else {
+      entries.reverse();
+      renderDiceHistory(entries, false);
+    }
+    _dadosInicializado = true;
+
+    // Agora aplica qualquer entrada que chegou enquanto carregava
+    _dadosBuffer.forEach(e => adicionarEntradaHistorico(e, true));
+    _dadosBuffer.length = 0;
+  });
+
+  // Escuta APENAS novas entradas em tempo real
+  _dadosListener = db.ref('dados').orderByChild('time').limitToLast(1).on('child_added', (snapshot) => {
+    const e = snapshot.val();
+    if (!e) return;
+    if (!_dadosInicializado) {
+      _dadosBuffer.push(e);
       return;
     }
-    const isNew = entries.length > _lastDadosCount;
-    _lastDadosCount = entries.length;
-
-    // Mais recente primeiro
-    entries.reverse();
-    list.innerHTML = '';
-    entries.forEach((e, idx) => {
-      const time    = new Date(e.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const isOwn   = (e.user === currentUser);
-      const div     = document.createElement('div');
-      div.className = 'history-entry' + (isOwn ? ' mine' : '') + (idx === 0 && isNew ? ' new-entry' : '');
-      div.innerHTML = `
-        <span class="he-time">${time}</span>
-        <span class="he-user" style="${isOwn ? 'color:#fff;' : ''}">${isOwn ? '👤 Você' : e.user}</span> lançou
-        <strong>${e.qtd}D${e.lados}</strong>:
-        [${e.resultados.join(', ')}] =
-        <span class="he-total">${e.soma}</span>`;
-      list.appendChild(div);
-    });
-
-    // Se foi lançamento novo, rola para o topo do histórico
-    if (isNew && entries.length > 0) {
-      const parent = list.closest('.dice-history');
-      if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    adicionarEntradaHistorico(e, true);
   }, (err) => {
     console.error('Dados listener error:', err);
   });
@@ -2558,6 +2616,8 @@ function showTab(tab) {
     if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
     if (btn) btn.classList.toggle('active', t === tab);
   });
+  // Quando entra na aba de música, marca interação do usuário
+  if (tab === 'musica') marcarInteracao();
 }
 
 // ============================================================
@@ -2686,7 +2746,7 @@ async function carregarMusica() {
   }
 
   // Define como música atual e toca
-  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
 
   input.value = '';
   status.textContent = '✅ Adicionado: ' + label;
@@ -2695,7 +2755,7 @@ async function carregarMusica() {
 
 async function tocarSalva(videoId) {
   if (!isMaster) return;
-  await db.ref('musica/estado').set({ videoId, paused: false, ts: Date.now() });
+  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
 }
 
 async function deletarMusica(videoId) {
@@ -2791,27 +2851,68 @@ function carregarYTScript() {
 
 window.onYouTubeIframeAPIReady = function() {
   ytReady = true;
-  if (currentVideoId) criarPlayer(currentVideoId);
+  if (currentVideoId) criarPlayer(currentVideoId, 0);
 };
 
-function criarPlayer(videoId) {
+let _shouldPause  = false;
+let _userInteracted = false; // rastrea se o usuário já clicou algo
+
+// Chamada quando usuário interage pela primeira vez
+function marcarInteracao() { _userInteracted = true; }
+
+function criarPlayerParaTodos(videoId, paused, startTime) {
+  _shouldPause = !!paused;
+  criarPlayer(videoId, startTime || 0);
+}
+
+function criarPlayer(videoId, startSeconds) {
   if (!ytReady) { currentVideoId = videoId; return; }
-  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} }
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
   const wrap = document.getElementById('yt-player');
   if (!wrap) return;
   wrap.innerHTML = '';
+
   ytPlayer = new YT.Player('yt-player', {
     height: '340', width: '100%', videoId: videoId,
-    playerVars: { autoplay:1, rel:0, modestbranding:1, controls:1, enablejsapi:1, origin: window.location.origin },
+    playerVars: {
+      autoplay:       _userInteracted ? 1 : 0, // autoplay só após interação
+      rel:            0,
+      modestbranding: 1,
+      controls:       1,
+      enablejsapi:    1,
+      start:          Math.floor(startSeconds || 0),
+      origin:         window.location.origin
+    },
     events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
   });
+
+  // Mostra/esconde o banner de "clique para ouvir"
+  const banner = document.getElementById('music-click-banner');
+  if (banner) banner.style.display = _userInteracted ? 'none' : 'flex';
 }
 
 function onPlayerReady(event) {
   const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
   event.target.setVolume(vol);
-  event.target.playVideo();
-  atualizarBotaoPlay(true);
+  if (_shouldPause) {
+    event.target.pauseVideo();
+    atualizarBotaoPlay(false);
+  } else if (_userInteracted) {
+    event.target.playVideo();
+    atualizarBotaoPlay(true);
+  }
+  // Se não houve interação, o player fica pronto mas não toca
+  // O banner aparece pedindo para clicar
+}
+
+// Ativado quando jogador clica no banner "▶ Clique para ouvir"
+function ativarAudio() {
+  _userInteracted = true;
+  const banner = document.getElementById('music-click-banner');
+  if (banner) banner.style.display = 'none';
+  if (ytPlayer && !_shouldPause) {
+    try { ytPlayer.playVideo(); atualizarBotaoPlay(true); } catch(e){}
+  }
 }
 
 function onPlayerStateChange(event) {
@@ -2969,16 +3070,19 @@ function iniciarListenerMusica() {
   // Listener do estado (toca/pausa) — sincroniza todos
   db.ref('musica/estado').on('value', snap => {
     const estado = snap.val();
-    if (!estado) return;
+    if (!estado || !estado.videoId) return;
 
-    // Se mudou o vídeo, cria/atualiza o player
-    if (estado.videoId && estado.videoId !== currentVideoId) {
+    // Se o vídeo mudou OU se o player ainda não foi criado, cria agora
+    if (estado.videoId !== currentVideoId || !ytPlayer) {
       currentVideoId = estado.videoId;
-      criarPlayer(currentVideoId);
+      // Calcula quantos segundos já se passaram desde que a música começou
+      const elapsed = estado.startTime ? Math.floor((Date.now() - estado.startTime) / 1000) : 0;
+      criarPlayerParaTodos(currentVideoId, estado.paused, elapsed);
       renderMusicList();
+      return;
     }
 
-    // Sincroniza play/pause para jogadores (não mestre pra não conflitar)
+    // Mesmo vídeo — só sincroniza play/pause para jogadores
     if (!isMaster && ytPlayer && ytReady) {
       try {
         if (estado.paused) ytPlayer.pauseVideo();
@@ -3135,31 +3239,89 @@ async function deletarNotaTipo(key) {
 // ============================================================
 // POKÉDEX IA — usa Claude via API Anthropic
 // ============================================================
-const IA_SYSTEM_PROMPT = `Você é a Pokédex IA, um assistente especialista em Pokémon integrado a um sistema de RPG chamado "Segredo das Poké Esferas". Responda SEMPRE em português brasileiro.
+// Pokédex IA — base de conhecimento local + PokeAPI
+const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
 
-Você sabe tudo sobre:
-- Todos os Pokémon, seus tipos, stats, evoluções, habilidades e movimentos
-- Mecânicas de batalha, status (paralisia, sono, veneno, queimadura, congelamento)
-- Tipos e efetividade (super efetivo, pouco efetivo, imune)
-- Itens, bagas, TMs e MTs
-- Pokémon lendários e míticos
-- Regiões (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea)
-- Estratégias competitivas e de RPG
+const TIPOS_PT = {
+  normal:'Normal', fire:'Fogo', water:'Agua', electric:'Eletrico',
+  grass:'Planta', ice:'Gelo', fighting:'Lutador', poison:'Veneno',
+  ground:'Terra', flying:'Voador', psychic:'Psiquico', bug:'Inseto',
+  rock:'Pedra', ghost:'Fantasma', dragon:'Dragao', dark:'Sombrio',
+  steel:'Aco', fairy:'Fada'
+};
 
-SITES DE REFERÊNCIA — recomende estes sites quando o usuário precisar de mais detalhes:
-- Bulbapedia: https://bulbapedia.bulbagarden.net (wiki completa, em inglês)
-- Serebii: https://www.serebii.net (dados de jogos, movesets, itens)
-- Smogon: https://www.smogon.com (estratégias competitivas)
-- Pokémon Wiki BR: https://pokemon.fandom.com/pt-br (wiki em português)
-- PokémonDB: https://pokemondb.net (banco de dados completo)
+const STATS_PT = {
+  hp:'HP', attack:'Ataque', defense:'Defesa',
+  'special-attack':'Atk.Esp', 'special-defense':'Def.Esp', speed:'Velocidade'
+};
 
-Quando recomendar um site, mostre o link no formato: Nome — URL
+async function buscarPokemon(nome) {
+  try {
+    const n = nome.toLowerCase().trim().replace(/\s+/g, '-')
+      .replace(/a/g,'a').replace(/e/g,'e'); // nome simples
+    const res = await fetch(POKEAPI_BASE + '/pokemon/' + n);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
 
-Instruções gerais:
-- Mantenha respostas claras e organizadas, use emojis quando apropriado
-- Se a pergunta pedir listas muito grandes ou dados específicos, responda o essencial e recomende o site adequado
-- Se a pergunta não for sobre Pokémon, redirecione gentilmente para tópicos de Pokémon`;
+async function buscarEspecie(id) {
+  try {
+    const res = await fetch(POKEAPI_BASE + '/pokemon-species/' + id);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
 
+function formatarPokemon(p, esp) {
+  const tipos = p.types.map(function(t){ return TIPOS_PT[t.type.name] || t.type.name; }).join(' / ');
+  const stats = p.stats.map(function(s){ return (STATS_PT[s.stat.name]||s.stat.name) + ': ' + s.base_stat; }).join(' | ');
+  const habs  = p.abilities.map(function(a){ return a.ability.name.replace(/-/g,' '); }).join(', ');
+  const altura = (p.height/10).toFixed(1) + 'm';
+  const peso   = (p.weight/10).toFixed(1) + 'kg';
+  var desc = '';
+  if (esp) {
+    var e = esp.flavor_text_entries.find(function(x){ return x.language.name === 'en'; });
+    if (e) desc = e.flavor_text.replace(/[\f\n\r]/g,' ');
+  }
+  var nome = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+  return '**' + nome + '** (#' + p.id + ')\n' +
+    'Tipo: ' + tipos + ' | Altura: ' + altura + ' | Peso: ' + peso + '\n' +
+    'Habilidades: ' + habs + '\n' +
+    'Stats: ' + stats +
+    (desc ? '\n\n' + desc : '') +
+    '\n\nMais detalhes: pokemondb.net/pokedex/' + p.name;
+}
+
+var RESP = {
+  tipos: 'Tipos e fraquezas:\n\nFogo: fraco Agua/Pedra/Terra | forte Planta/Inseto/Gelo/Aco\nAgua: fraco Eletrico/Planta | forte Fogo/Terra/Pedra\nPlanta: fraco Fogo/Gelo/Veneno/Voador/Inseto | forte Agua/Terra/Pedra\nEletrico: fraco Terra | forte Agua/Voador\nGelo: fraco Fogo/Luta/Pedra/Aco | forte Planta/Terra/Voador/Dragao\nLutador: fraco Voador/Psiquico/Fada | forte Normal/Gelo/Pedra/Sombrio\nVeneno: fraco Terra/Psiquico | forte Planta/Fada\nTerra: fraco Agua/Planta/Gelo | forte Fogo/Eletrico/Veneno/Pedra | imune Eletrico\nVoador: fraco Eletrico/Gelo/Pedra | forte Planta/Lutador/Inseto | imune Terra\nPsiquico: fraco Inseto/Fantasma/Sombrio | forte Lutador/Veneno\nInseto: fraco Fogo/Voador/Pedra | forte Planta/Psiquico/Sombrio\nPedra: fraco Agua/Planta/Lutador/Terra/Aco | forte Fogo/Gelo/Voador/Inseto\nFantasma: fraco Fantasma/Sombrio | forte Psiquico/Fantasma | imune Normal\nDragao: fraco Gelo/Dragao/Fada | forte Dragao\nSombrio: fraco Lutador/Inseto/Fada | forte Psiquico/Fantasma\nAco: fraco Fogo/Lutador/Terra | forte Gelo/Pedra/Fada | imune Veneno\nFada: fraco Veneno/Aco | forte Lutador/Dragao/Sombrio | imune Dragao\n\nVeja a tabela completa na aba Tipos do sistema!',
+
+  status: 'Status de Batalha:\n\nParalisia: velocidade -50%, 25% chance de nao agir\nQueimadura: -1/16 HP por turno, Ataque fisico -50%\nVeneno: -1/8 HP por turno\nSono: nao age por 1-3 turnos\nCongelamento: nao age, 20% chance de descongelar por turno\nConfusao: 33% de se machucar\n\nCuras: Antidoto, Despertar, Descongelante, Cura Total',
+
+  lendarios: 'Lendarios de Alola:\n\nSolgaleo #791 - Psiquico/Aco | Armadura Total\nLunala #792 - Psiquico/Fantasma | Sombra Fantasma\nTapu Koko #785 - Eletrico/Fada\nTapu Lele #786 - Psiquico/Fada\nTapu Bulu #787 - Planta/Fada\nTapu Fini #788 - Agua/Fada\nNecrozma #800 - Psiquico\nCosmog #789 > Cosmoem #790 > Solgaleo ou Lunala\n\nMais: bulbapedia.bulbagarden.net',
+
+  evolucao: 'Como funciona a Evolucao:\n\nPor Nivel: Charmander>16>Charmeleon>36>Charizard\nPor Pedra: Pikachu>Raichu (Pedra Trovao)\nPor Troca: Haunter>Gengar, Machoke>Machamp\nPor Amizade: Pichu>Pikachu, Eevee>Espeon/Umbreon\nPor Local: Magneton>Magnezone (Campo Magnetico)\nPor Hora: Espeon (amizade+dia), Umbreon (amizade+noite)\n\nMais: pokemondb.net/evolution',
+
+  habilidades: 'Habilidades Especiais:\n\nChama/Torrente/Espessura: move do tipo +50% com HP baixo\nEstatica: 30% de paralisar ao contato fisico\nLevitacao: imune a moves de Terra\nSeca: invoca sol intenso ao entrar\nChuvarada: invoca chuva ao entrar\nIntimidacao: reduz Ataque do oponente ao entrar\nImpulso: aumenta Velocidade a cada turno\n\nMais: bulbapedia.bulbagarden.net/wiki/Ability'
+};
+
+function detectarIntencao(t) {
+  t = t.toLowerCase();
+  if (t.indexOf('tipo') >= 0 || t.indexOf('fraqueza') >= 0 || t.indexOf('efetiv') >= 0) return 'tipos';
+  if (t.indexOf('status') >= 0 || t.indexOf('paralisi') >= 0 || t.indexOf('veneno') >= 0 || t.indexOf('sono') >= 0) return 'status';
+  if (t.indexOf('lendari') >= 0 || t.indexOf('solgaleo') >= 0 || t.indexOf('lunala') >= 0 || t.indexOf('alola') >= 0) return 'lendarios';
+  if (t.indexOf('evolu') >= 0) return 'evolucao';
+  if (t.indexOf('habilidad') >= 0) return 'habilidades';
+  return null;
+}
+
+function extrairNome(texto) {
+  var limpo = texto.toLowerCase()
+    .replace('fale sobre','').replace('me conta','').replace('quem e','')
+    .replace('o que e','').replace('pokemon','').replace('sobre','').trim();
+  var words = limpo.split(' ').filter(function(w){ return w.length > 2; });
+  return words[0] || null;
+}
 let iaHistorico = [];
 
 function iaAdicionarMensagem(texto, tipo) {
@@ -3178,52 +3340,167 @@ function iaQuick(pergunta) {
   enviarIA();
 }
 
+// Respostas locais para perguntas comuns
+const RESPOSTAS_LOCAIS = {
+  tipos: `⚔️ **Tipos Pokémon e suas relações:**
+
+🔥 **Fogo** → fraco para Água, Pedra, Terra | forte contra Planta, Inseto, Gelo, Aço
+💧 **Água** → fraco para Elétrico, Planta | forte contra Fogo, Terra, Pedra
+🌿 **Planta** → fraco para Fogo, Gelo, Veneno, Voador, Inseto | forte contra Água, Terra, Pedra
+⚡ **Elétrico** → fraco para Terra | forte contra Água, Voador | imune: Terra
+❄️ **Gelo** → fraco para Fogo, Luta, Pedra, Aço | forte contra Planta, Terra, Voador, Dragão
+🥊 **Lutador** → fraco para Voador, Psíquico, Fada | forte contra Normal, Gelo, Pedra, Sombrio, Aço
+☠️ **Veneno** → fraco para Terra, Psíquico | forte contra Planta, Fada
+🌍 **Terra** → fraco para Água, Planta, Gelo | forte contra Fogo, Elétrico, Veneno, Pedra, Aço | imune: Elétrico
+✈️ **Voador** → fraco para Elétrico, Gelo, Pedra | forte contra Planta, Lutador, Inseto | imune: Terra
+🔮 **Psíquico** → fraco para Inseto, Fantasma, Sombrio | forte contra Lutador, Veneno
+🐛 **Inseto** → fraco para Fogo, Voador, Pedra | forte contra Planta, Psíquico, Sombrio
+🪨 **Pedra** → fraco para Água, Planta, Lutador, Terra, Aço | forte contra Fogo, Gelo, Voador, Inseto
+👻 **Fantasma** → fraco para Fantasma, Sombrio | forte contra Psíquico, Fantasma | imune: Normal, Luta
+🐉 **Dragão** → fraco para Gelo, Dragão, Fada | forte contra Dragão
+🌑 **Sombrio** → fraco para Lutador, Inseto, Fada | forte contra Psíquico, Fantasma | imune: Psíquico
+🔩 **Aço** → fraco para Fogo, Lutador, Terra | forte contra Gelo, Pedra, Fada | imune: Veneno
+🧚 **Fada** → fraco para Veneno, Aço | forte contra Lutador, Dragão, Sombrio | imune: Dragão
+
+📌 Veja a tabela completa na aba **⚔️ Tipos** do sistema!`,
+
+  status: `😴 **Status de Batalha Pokémon:**
+
+🟡 **Paralisia** — velocidade cai 50%, 25% de chance de não agir
+🔴 **Queimadura** — perde 1/16 do HP por turno, ataque físico cai 50%
+💜 **Veneno** — perde 1/8 do HP por turno (veneno grave aumenta o dano)
+💤 **Sono** — não pode agir por 1-3 turnos
+🔵 **Congelamento** — não pode agir; 20% de chance de descongelar por turno
+😵 **Confusão** — 33% de chance de se machucar (não é status permanente)
+😍 **Atração** — 50% de chance de não agir contra o Pokémon amado
+
+💊 **Curas:** Antídoto, Cura Total, Despertar, Descongelante, Paralisan, Água Fresca, Poção Completa`,
+
+  lendarios_alola: `🌟 **Lendários de Alola (Pokémon Sun & Moon):**
+
+☀️ **Solgaleo** (#791) — Psíquico/Aço | Habilidade: Armadura Total | "O León Estelar que devora o sol"
+🌙 **Lunala** (#792) — Psíquico/Fantasma | Habilidade: Sombra Fantasma | "A Pokémon que evoca a lua cheia"
+🌺 **Tapu Koko** (#785) — Elétrico/Fada | Protetor de Melemele Island
+🌊 **Tapu Lele** (#786) — Psíquico/Fada | Protetora de Akala Island
+🌿 **Tapu Bulu** (#787) — Planta/Fada | Protetor de Ula'ula Island
+🌊 **Tapu Fini** (#788) — Água/Fada | Protetora de Poni Island
+🎶 **Lunala** e **Solgaleo** evoluem de **Cosmoem** (#790) ← **Cosmog** (#789)
+⚡ **Necrozma** (#800) — Psíquico | pode fundir com Solgaleo e Lunala
+🦟 **Nihilego** (#793) — Pedra/Veneno | Ultra-Beasts UB-01
+🐛 e mais 10 Ultra-Beasts disponíveis!
+
+🌐 Detalhes: **bulbapedia.bulbagarden.net/wiki/Legendary_Pokémon**`,
+
+  evolucao: `🔄 **Como funciona a Evolução Pokémon:**
+
+📈 **Por Nível** — Charmander→Charmeleon (16), →Charizard (36)
+🌙 **Por Pedra** — Pikachu→Raichu (Pedra do Trovão), Eevee→Vaporeon (Pedra d'Água)
+🤝 **Por Troca** — Haunter→Gengar, Machoke→Machamp
+💕 **Por Amizade** — Eevee→Espeon/Umbreon (dia/noite), Pichu→Pikachu
+🎭 **Especial** — Eevee→Sylveon (Amizade + Movimento Fada)
+📍 **Por Local** — Magneton→Magnezone (Campo Magnético)
+⏰ **Por Hora** — Espeon (amizade, dia), Umbreon (amizade, noite)
+🔢 **Forma** — Tyrogue→Hitmonlee/Hitmonchan/Hitmontop (stats)
+
+🌐 Mais: **pokemondb.net/evolution**`,
+
+  habilidades: `✨ **Habilidades Especiais Pokémon:**
+
+🔥 **Blaze/Chama** — aumenta moves Fogo em 50% quando HP < 1/3
+💧 **Torrent/Torrente** — aumenta moves Água em 50% quando HP < 1/3
+🌿 **Overgrow/Espessura** — aumenta moves Planta em 50% quando HP < 1/3
+⚡ **Static/Estática** — 30% de paralisar ao contato físico
+🛡️ **Levitate/Levitação** — imune a moves Terra
+☀️ **Drought/Seca** — invoca sol intenso ao entrar em batalha
+🌧️ **Drizzle/Chuvarada** — invoca chuva ao entrar em batalha
+🌪️ **Sand Stream/Tempestade de Areia** — invoca tempestade de areia
+❄️ **Snow Warning/Nevasca** — invoca granizo
+👁️ **Intimidate/Intimidação** — reduz Ataque do oponente ao entrar
+🏃 **Speed Boost/Impulso** — aumenta Velocidade a cada turno
+🔮 **Trace/Impressão** — copia a habilidade do oponente
+
+🌐 Lista completa: **bulbapedia.bulbagarden.net/wiki/Ability**`
+};
+
+function detectarIntencao(texto) {
+  const t = texto.toLowerCase();
+  if (/tipo|fraqueza|efetiv|resistên|imune|super efet/.test(t)) return 'tipos';
+  if (/status|paralisi|queimad|veneno|sono|congelam|confus/.test(t)) return 'status';
+  if (/lendári|solgaleo|lunala|alola|tapu|ultra.beast|necrozma/.test(t)) return 'lendarios_alola';
+  if (/evolu|evolv|evolução|pedra/.test(t)) return 'evolucao';
+  if (/habilidad|abilit|ability/.test(t)) return 'habilidades';
+  return null;
+}
+
+function extrairNomePokemon(texto) {
+  // Remove palavras comuns para isolar possível nome
+  const limpo = texto.toLowerCase()
+    .replace(/me fale sobre|fale sobre|me conta sobre|quem é|o que é|sobre o|sobre a|pokémon|pokemon|qual|como/g, '')
+    .trim();
+  const palavras = limpo.split(/\s+/).filter(p => p.length > 2);
+  return palavras[0] || null;
+}
+
 async function enviarIA() {
   const input   = document.getElementById('ia-input');
   const sendBtn = document.getElementById('ia-send-btn');
   const pergunta = input.value.trim();
   if (!pergunta) return;
 
-  input.value     = '';
+  input.value      = '';
   sendBtn.disabled = true;
 
-  // Mostra mensagem do usuário
   iaAdicionarMensagem(pergunta, 'user');
-
-  // Adiciona ao histórico
-  iaHistorico.push({ role: 'user', content: pergunta });
-
-  // Mostra indicador de digitação
   const typingDiv = iaAdicionarMensagem('🔍 Consultando a Pokédex...', 'bot typing');
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: IA_SYSTEM_PROMPT,
-        messages: iaHistorico
-      })
-    });
+    let resposta = null;
 
-    const data = await response.json();
-    const resposta = data.content?.[0]?.text || 'Desculpe, não consegui responder. Tente novamente!';
+    // 1. Verifica respostas locais
+    const intencao = detectarIntencao(pergunta);
+    if (intencao) {
+      resposta = RESP[intencao];
+    }
 
-    // Remove typing indicator
+    // 2. Tenta buscar Pokémon específico na PokeAPI (sem CORS)
+    if (!resposta) {
+      const nomePoke = extrairNome(pergunta);
+      if (nomePoke) {
+        const poke = await buscarPokemon(nomePoke);
+        if (poke) {
+          const esp = await buscarEspecie(poke.id);
+          resposta = formatarPokemon(poke, esp);
+        }
+      }
+    }
+
+    // 3. Resposta genérica com sugestões
+    if (!resposta) {
+      resposta = `🎮 Olá! Posso ajudar com:
+
+• **Pokémon específico** — digite o nome (ex: "pikachu", "charizard")
+• **Tipos** — "quais são as fraquezas de Fogo?"
+• **Status** — "como funciona paralisia?"
+• **Lendários de Alola** — "quais lendários tem em Alola?"
+• **Evoluções** — "como funciona a evolução?"
+• **Habilidades** — "o que são habilidades especiais?"
+
+Ou use os botões rápidos abaixo! 👇
+
+🌐 Para mais detalhes:
+• **bulbapedia.bulbagarden.net**
+• **pokemondb.net**
+• **smogon.com** (competitivo)`;
+    }
+
     typingDiv.remove();
-
-    // Adiciona resposta ao histórico e tela
-    iaHistorico.push({ role: 'assistant', content: resposta });
     iaAdicionarMensagem(resposta, 'bot');
-
-    // Limita histórico a 20 mensagens para não explodir o contexto
-    if (iaHistorico.length > 20) iaHistorico = iaHistorico.slice(-20);
 
   } catch (e) {
     typingDiv.remove();
-    iaAdicionarMensagem('❌ Erro ao conectar com a Pokédex IA. Verifique sua conexão e tente novamente.', 'bot');
+    iaAdicionarMensagem(`❌ Erro ao consultar. Tente perguntar o nome de um Pokémon ou use os botões rápidos! 
+
+🌐 Acesse diretamente: **pokemondb.net** ou **bulbapedia.bulbagarden.net**`, 'bot');
     console.error('IA error:', e);
   }
 
