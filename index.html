@@ -1197,6 +1197,89 @@
     .tipos-table th, .tipos-table td { padding: 3px 4px; }
   }
 
+
+  /* ===== POKÉDEX IA ===== */
+  .ia-container { padding: 24px; max-width: 800px; margin: 0 auto; }
+  .ia-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .ia-subtitle {
+    text-align: center; font-size: 13px; color: rgba(200,150,12,0.5);
+    font-family: 'Exo 2', sans-serif; margin-bottom: 20px;
+  }
+  .ia-chat-wrap {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C; border-radius: 16px; overflow: hidden;
+  }
+  .ia-messages {
+    height: 420px; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    scrollbar-width: thin; scrollbar-color: #C8960C #1a1035;
+  }
+  .ia-messages::-webkit-scrollbar { width: 5px; }
+  .ia-messages::-webkit-scrollbar-track { background: #1a1035; }
+  .ia-messages::-webkit-scrollbar-thumb { background: #C8960C; border-radius: 3px; }
+  .ia-msg {
+    max-width: 85%; padding: 12px 16px; border-radius: 12px;
+    font-family: 'Exo 2', sans-serif; font-size: 14px; line-height: 1.6;
+  }
+  .ia-msg.user {
+    background: linear-gradient(135deg, #4A2C8A, #6A3DB8);
+    color: #fff; align-self: flex-end; border-bottom-right-radius: 4px;
+  }
+  .ia-msg.bot {
+    background: rgba(255,255,255,0.07); color: #E8D5A8;
+    border: 1px solid rgba(200,150,12,0.2);
+    align-self: flex-start; border-bottom-left-radius: 4px;
+  }
+  .ia-msg.bot strong { color: #C8960C; }
+  .ia-msg.typing { opacity: 0.6; font-style: italic; }
+  .ia-input-bar {
+    display: flex; gap: 10px; padding: 14px 16px;
+    border-top: 1px solid rgba(200,150,12,0.2);
+    background: rgba(0,0,0,0.2);
+  }
+  .ia-input {
+    flex: 1; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.3); border-radius: 10px;
+    padding: 10px 14px; color: #fff;
+    font-family: 'Exo 2', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .ia-input:focus { border-color: #C8960C; }
+  .ia-input::placeholder { color: rgba(255,255,255,0.3); }
+  .ia-send-btn {
+    padding: 10px 20px; border-radius: 10px;
+    background: linear-gradient(135deg, #C46A00, #C8960C);
+    color: #1A1035; border: none;
+    font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .ia-send-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(200,150,12,0.4); }
+  .ia-send-btn:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+  .ia-quick-btns {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 12px 16px; border-top: 1px solid rgba(200,150,12,0.1);
+  }
+  .ia-quick-btn {
+    padding: 5px 12px; border-radius: 20px;
+    background: rgba(200,150,12,0.1); border: 1px solid rgba(200,150,12,0.3);
+    color: #C8960C; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .ia-quick-btn:hover { background: rgba(200,150,12,0.25); border-color: #C8960C; }
+
+  @media (max-width: 900px) {
+    .ia-container { padding: 12px; }
+    .ia-messages { height: 320px; }
+    .ia-msg { max-width: 95%; font-size: 13px; }
+    .ia-input-bar { flex-direction: column; }
+    .ia-send-btn { width: 100%; }
+  }
+
   @media print {
     .app-header, .action-bar, .users-bar { display: none !important; }
     .sheet-container { padding: 0; }
@@ -1300,6 +1383,7 @@
     <button class="nav-tab" id="tab-dados" onclick="showTab('dados')">🎲 Dados</button>
     <button class="nav-tab" id="tab-musica" onclick="showTab('musica')">🎵 Música</button>
     <button class="nav-tab" id="tab-tipos" onclick="showTab('tipos')">⚔️ Tipos</button>
+    <button class="nav-tab" id="tab-ia" onclick="showTab('ia')">🤖 Pokédex IA</button>
   </div>
   <div id="section-fichas">
   <div class="users-bar">
@@ -1642,6 +1726,47 @@
 
     </div>
   </div><!-- end section-musica -->
+
+  <!-- ABA POKÉDEX IA -->
+  <div id="section-ia" style="display:none;">
+    <div class="ia-container">
+      <div class="ia-title">🤖 Pokédex IA</div>
+      <div class="ia-subtitle">Tire dúvidas sobre Pokémon, habilidades, tipos e muito mais!</div>
+
+      <div class="ia-chat-wrap">
+        <div class="ia-messages" id="ia-messages">
+          <div class="ia-msg bot">
+            👋 Olá, Treinador! Sou a <strong>Pokédex IA</strong>. Posso te ajudar com:<br><br>
+            • <strong>Informações sobre Pokémon</strong> (tipos, stats, evoluções)<br>
+            • <strong>Habilidades e movimentos</strong><br>
+            • <strong>Estratégias de batalha</strong><br>
+            • <strong>Dúvidas do RPG</strong><br><br>
+            O que você quer saber? 🎮
+          </div>
+        </div>
+
+        <!-- Botões rápidos -->
+        <div class="ia-quick-btns" id="ia-quick-btns">
+          <button class="ia-quick-btn" onclick="iaQuick('Quais são os tipos de Pokémon e suas fraquezas?')">⚔️ Tipos e fraquezas</button>
+          <button class="ia-quick-btn" onclick="iaQuick('Como funcionam as habilidades especiais no Pokémon?')">✨ Habilidades</button>
+          <button class="ia-quick-btn" onclick="iaQuick('Quais são os Pokémon mais fortes do jogo?')">💪 Pokémon mais fortes</button>
+          <button class="ia-quick-btn" onclick="iaQuick('Como funciona a evolução dos Pokémon?')">🔄 Evoluções</button>
+          <button class="ia-quick-btn" onclick="iaQuick('Explique os status de batalha: paralisia, sono, veneno, etc')">😴 Status de batalha</button>
+          <button class="ia-quick-btn" onclick="iaQuick('Quais Pokémon lendários existem em Alola (Sun e Moon)?')">🌟 Lendários de Alola</button>
+        </div>
+
+        <!-- Input -->
+        <div class="ia-input-bar">
+          <input class="ia-input" id="ia-input"
+            placeholder="Pergunte sobre Pokémon, habilidades, batalhas..."
+            onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); enviarIA(); }" />
+          <button class="ia-send-btn" id="ia-send-btn" onclick="enviarIA()">🔍 Perguntar</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end section-ia -->
+
 
   <!-- ABA TIPOS -->
   <div id="section-tipos" style="display:none;">
@@ -2378,25 +2503,8 @@ function iniciarListeners() {
       list.appendChild(div);
     });
 
-    // Se foi lançamento novo, mostra o resultado na tela E rola para o topo
+    // Se foi lançamento novo, rola para o topo do histórico
     if (isNew && entries.length > 0) {
-      const ultimo = entries[0]; // mais recente (já revertido)
-      // Atualiza o painel de resultado para TODOS verem
-      const resDiv   = document.getElementById('dice-results');
-      const indDiv   = document.getElementById('dice-individual');
-      const totalDiv = document.getElementById('dice-total');
-      if (resDiv && indDiv && totalDiv) {
-        resDiv.style.display = 'block';
-        indDiv.innerHTML = '';
-        (ultimo.resultados || []).forEach(v => {
-          const d = document.createElement('div');
-          d.className   = 'die-result';
-          d.textContent = v;
-          indDiv.appendChild(d);
-        });
-        totalDiv.textContent = ultimo.soma;
-      }
-      // Rola histórico para o topo
       const parent = list.closest('.dice-history');
       if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2437,7 +2545,7 @@ async function atualizarFichas() {
 // NAVEGAÇÃO POR ABAS (Fichas / Dados)
 // ============================================================
 function showTab(tab) {
-  ['fichas','dados','musica','tipos'].forEach(t => {
+  ['fichas','dados','musica','tipos','ia'].forEach(t => {
     const sec = document.getElementById('section-' + t);
     const btn = document.getElementById('tab-' + t);
     if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
@@ -2480,182 +2588,62 @@ function rolarDado(lados) {
 
 async function lancarDados() {
   if (!currentUser) return;
-  const btn   = document.getElementById('dice-roll-btn');
-  btn.disabled = true;
+
+  // Captura o nome do jogador AGORA para evitar bug de nome errado
+  const nomeJogador = currentUser;
+
+  const btn = document.getElementById('dice-roll-btn');
+  btn.disabled    = true;
   btn.textContent = '🎲 Rolando...';
 
   const lados = parseInt(document.getElementById('dice-sides').value) || 6;
   const qtd   = diceCount;
 
-  await new Promise(r => setTimeout(r, 350));
+  // BUG 3: Aleatoriedade 100% com múltiplas chamadas crypto
+  // Gera entropia extra misturando múltiplas fontes
+  const resultados = Array.from({ length: qtd }, () => {
+    const buf = new Uint32Array(4);
+    crypto.getRandomValues(buf);
+    // Combina 4 valores aleatórios para máxima entropia
+    const raw = (buf[0] ^ (buf[1] >>> 7) ^ (buf[2] << 3) ^ buf[3]) >>> 0;
+    return (raw % lados) + 1;
+  });
+  const soma = resultados.reduce((a, b) => a + b, 0);
 
-  const resultados = Array.from({ length: qtd }, () => rolarDado(lados));
-  const soma       = resultados.reduce((a, b) => a + b, 0);
-
-  // Mostra resultados na tela
+  // Mostra resultados na tela IMEDIATAMENTE (sem delay)
   const resDiv   = document.getElementById('dice-results');
   const indDiv   = document.getElementById('dice-individual');
   const totalDiv = document.getElementById('dice-total');
   resDiv.style.display = 'block';
   indDiv.innerHTML = '';
   resultados.forEach(v => {
-    const d = document.createElement('div');
+    const d       = document.createElement('div');
     d.className   = 'die-result';
     d.textContent = v;
     indDiv.appendChild(d);
   });
   totalDiv.textContent = soma;
 
-  // Salva no Firebase para todos verem em tempo real
+  // Salva no Firebase com o nome correto capturado no início
   try {
     await db.ref('dados').push({
-      user: currentUser,
+      user: nomeJogador,
       qtd, lados, resultados, soma,
       time: Date.now()
     });
-    // Scroll automático para o histórico após lançar
-    setTimeout(() => {
-      const hist = document.getElementById('dice-history-list');
-      if (hist) {
-        const parent = hist.closest('.dice-history');
-        if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }, 300);
+    // Scroll para o histórico
+    const hist = document.getElementById('dice-history-list');
+    if (hist) {
+      const parent = hist.closest('.dice-history');
+      if (parent) parent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   } catch (e) {
     console.error('Erro ao salvar lançamento:', e);
+    showToast('⚠️ Erro ao salvar lançamento.', true);
   }
 
   btn.disabled    = false;
   btn.textContent = '⚡ JOGAR';
-}
-
-// ============================================================
-// AUTO-LOGIN ao carregar a página
-// ============================================================
-
-// ============================================================
-// MÚSICA — YouTube IFrame API + Firebase sincronizado
-// ============================================================
-let ytPlayer       = null;
-let ytReady        = false;
-let musicPlaying   = false;
-let currentVideoId = null;
-let musicSaved     = [];
-
-// Carrega a API do YouTube IFrame
-function carregarYTScript() {
-  if (document.getElementById('yt-api-script')) return;
-  const tag = document.createElement('script');
-  tag.id  = 'yt-api-script';
-  tag.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(tag);
-}
-
-// Callback obrigatório da API do YouTube
-window.onYouTubeIframeAPIReady = function() {
-  ytReady = true;
-  if (currentVideoId) criarPlayer(currentVideoId);
-};
-
-function criarPlayer(videoId) {
-  if (!ytReady) { currentVideoId = videoId; return; }
-  if (ytPlayer) { ytPlayer.destroy(); }
-  ytPlayer = new YT.Player('yt-player', {
-    height: '340',
-    width:  '100%',
-    videoId: videoId,
-    playerVars: {
-      autoplay:       1,
-      rel:            0,
-      modestbranding: 1,
-      controls:       1,
-      fs:             1,
-      enablejsapi:    1,
-      origin:         window.location.origin,
-    },
-    events: {
-      onReady:       onPlayerReady,
-      onStateChange: onPlayerStateChange,
-    }
-  });
-}
-
-function onPlayerReady(event) {
-  const vol = parseInt(document.getElementById('mc-volume')?.value || 80);
-  event.target.setVolume(vol);
-  event.target.playVideo();
-  atualizarBotaoPlay(true);
-}
-
-function onPlayerStateChange(event) {
-  musicPlaying = (event.data === YT.PlayerState.PLAYING);
-  atualizarBotaoPlay(musicPlaying);
-  if (event.data === YT.PlayerState.PLAYING) {
-    try {
-      const info = ytPlayer.getVideoData();
-      if (info && info.title) {
-        document.getElementById('music-now-playing').textContent = '🎵 ' + info.title;
-      }
-    } catch(e) {}
-  }
-  // Auto-próxima quando termina (só mestre sincroniza)
-  if (event.data === YT.PlayerState.ENDED && isMaster) {
-    const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
-    if (idx >= 0 && idx < musicSaved.length - 1) {
-      tocarSalva(musicSaved[idx + 1].videoId);
-    }
-  }
-}
-
-function atualizarBotaoPlay(playing) {
-  const btn = document.getElementById('mc-play');
-  if (btn) btn.textContent = playing ? '⏸' : '▶';
-}
-
-// ---- Controles ----
-function musicPlayPause() {
-  if (!isMaster) return; // Só mestre controla
-  if (!ytPlayer) return;
-  if (musicPlaying) {
-    ytPlayer.pauseVideo();
-    db.ref('musica/estado').update({ paused: true });
-  } else {
-    ytPlayer.playVideo();
-    db.ref('musica/estado').update({ paused: false });
-  }
-}
-
-function musicNext() {
-  if (!isMaster || !musicSaved.length) return;
-  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
-  const next = musicSaved[idx + 1] || musicSaved[0];
-  if (next) tocarSalva(next.videoId);
-}
-
-function musicPrev() {
-  if (!isMaster || !musicSaved.length) return;
-  const idx = musicSaved.findIndex(s => s.videoId === currentVideoId);
-  const prev = idx > 0 ? musicSaved[idx - 1] : musicSaved[musicSaved.length - 1];
-  if (prev) tocarSalva(prev.videoId);
-}
-
-function musicVolume(val) {
-  if (ytPlayer) ytPlayer.setVolume(parseInt(val));
-  document.getElementById('mc-vol-val').textContent = val + '%';
-  // Atualiza gradiente do slider
-  const slider = document.getElementById('mc-volume');
-  if (slider) slider.style.background = `linear-gradient(to right, #C8960C ${val}%, rgba(255,255,255,0.2) ${val}%)`;
-}
-
-// ---- Carregar música nova (mestre) ----
-function extrairVideoId(url) {
-  url = url.trim();
-  try {
-    const u = new URL(url);
-    let v = u.searchParams.get('v');
-    if (!v && u.hostname === 'youtu.be') v = u.pathname.slice(1);
-    return v || null;
-  } catch { return null; }
 }
 
 async function carregarMusica() {
@@ -2950,6 +2938,95 @@ async function deletarNotaTipo(key) {
   if (!isMaster) return;
   await db.ref('tipos_notas/' + key).remove();
   showToast('🗑️ Nota removida.');
+}
+
+
+// ============================================================
+// POKÉDEX IA — usa Claude via API Anthropic
+// ============================================================
+const IA_SYSTEM_PROMPT = `Você é a Pokédex IA, um assistente especialista em Pokémon integrado a um sistema de RPG chamado "Segredo das Poké Esferas". Responda SEMPRE em português brasileiro.
+
+Você sabe tudo sobre:
+- Todos os Pokémon, seus tipos, stats, evoluções, habilidades e movimentos
+- Mecânicas de batalha, status (paralisia, sono, veneno, queimadura, congelamento)
+- Tipos e efetividade (super efetivo, pouco efetivo, imune)
+- Itens, bagas, TMs e MTs
+- Pokémon lendários e míticos
+- Regiões (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea)
+- Estratégias competitivas e de RPG
+
+Mantenha as respostas claras, organizadas e focadas em Pokémon. Use emojis quando apropriado para deixar a resposta mais animada. Se a pergunta não for sobre Pokémon, redirecione gentilmente para tópicos de Pokémon.`;
+
+let iaHistorico = [];
+
+function iaAdicionarMensagem(texto, tipo) {
+  const container = document.getElementById('ia-messages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'ia-msg ' + tipo;
+  div.innerHTML = texto.replace(/
+/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function iaQuick(pergunta) {
+  document.getElementById('ia-input').value = pergunta;
+  enviarIA();
+}
+
+async function enviarIA() {
+  const input   = document.getElementById('ia-input');
+  const sendBtn = document.getElementById('ia-send-btn');
+  const pergunta = input.value.trim();
+  if (!pergunta) return;
+
+  input.value     = '';
+  sendBtn.disabled = true;
+
+  // Mostra mensagem do usuário
+  iaAdicionarMensagem(pergunta, 'user');
+
+  // Adiciona ao histórico
+  iaHistorico.push({ role: 'user', content: pergunta });
+
+  // Mostra indicador de digitação
+  const typingDiv = iaAdicionarMensagem('🔍 Consultando a Pokédex...', 'bot typing');
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: IA_SYSTEM_PROMPT,
+        messages: iaHistorico
+      })
+    });
+
+    const data = await response.json();
+    const resposta = data.content?.[0]?.text || 'Desculpe, não consegui responder. Tente novamente!';
+
+    // Remove typing indicator
+    typingDiv.remove();
+
+    // Adiciona resposta ao histórico e tela
+    iaHistorico.push({ role: 'assistant', content: resposta });
+    iaAdicionarMensagem(resposta, 'bot');
+
+    // Limita histórico a 20 mensagens para não explodir o contexto
+    if (iaHistorico.length > 20) iaHistorico = iaHistorico.slice(-20);
+
+  } catch (e) {
+    typingDiv.remove();
+    iaAdicionarMensagem('❌ Erro ao conectar com a Pokédex IA. Verifique sua conexão e tente novamente.', 'bot');
+    console.error('IA error:', e);
+  }
+
+  sendBtn.disabled = false;
+  input.focus();
 }
 
 window.addEventListener('load', async () => {
