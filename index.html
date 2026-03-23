@@ -2416,37 +2416,115 @@ function showToast(msg, error = false) {
 // ============================================================
 // CONTAS — Firebase (principal) + localStorage (cache local)
 // ============================================================
-function getAccountsLocal() {
-  try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); }
-  catch { return {}; }
-}
-function saveAccountsLocal(a) {
-  try { localStorage.setItem('poke-accounts', JSON.stringify(a)); } catch {}
+// ============================================================
+// CONTAS — Firebase como fonte única de verdade
+// Token único salvo no localStorage para auto-login seguro
+// ============================================================
+const TOKEN_KEY  = 'poke-session-token';
+const TOKEN_USER = 'poke-session-user';
+
+function gerarToken() {
+  const arr = new Uint8Array(24);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
 }
 
-// Busca contas do Firebase e sincroniza no localStorage
+// Lê contas do Firebase (com fallback localStorage legado)
 async function getAccounts() {
   try {
     const snap = await db.ref('accounts').once('value');
-    const fbData = snap.val() || {};
-    if (Object.keys(fbData).length > 0) {
-      saveAccountsLocal(fbData); // atualiza cache local
-      return fbData;
+    const fb   = snap.val() || {};
+    if (Object.keys(fb).length > 0) {
+      // Salva cache para offline
+      try { localStorage.setItem('poke-accounts-cache', JSON.stringify(fb)); } catch {}
+      return fb;
     }
-  } catch(e) {
-    console.warn('Firebase offline, usando cache local:', e.message);
-  }
-  // Fallback: usa cache local
-  return getAccountsLocal();
+  } catch {}
+  // Fallback: cache local
+  try { return JSON.parse(localStorage.getItem('poke-accounts-cache') || localStorage.getItem('poke-accounts') || '{}'); }
+  catch { return {}; }
 }
 
-// Salva contas no Firebase E no localStorage
+// Salva contas no Firebase E cache local
 async function saveAccounts(a) {
-  saveAccountsLocal(a);
+  try { localStorage.setItem('poke-accounts-cache', JSON.stringify(a)); } catch {}
   try { await db.ref('accounts').set(a); } catch(e) {
-    console.warn('Erro ao salvar contas no Firebase:', e.message);
+    console.warn('Erro Firebase ao salvar contas:', e.message);
   }
 }
+
+// Salva token de sessão no Firebase e localStorage
+async function salvarTokenSessao(userName, token) {
+  const expiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 dias
+  try {
+    localStorage.setItem(TOKEN_KEY,  token);
+    localStorage.setItem(TOKEN_USER, userName);
+  } catch {}
+  try {
+    await db.ref('sessions/' + token).set({ user: userName, expiry });
+  } catch {}
+}
+
+// Remove sessão do Firebase e localStorage
+async function removerSessao() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_USER); } catch {}
+  // Limpa chaves legadas
+  try { localStorage.removeItem('poke-logged-user'); localStorage.removeItem('poke-logged-pass'); } catch {}
+  if (token) {
+    try { await db.ref('sessions/' + token).remove(); } catch {}
+  }
+}
+
+// Valida token no Firebase
+async function validarSessao(token) {
+  if (!token) return null;
+  try {
+    const snap = await db.ref('sessions/' + token).once('value');
+    const sess = snap.val();
+    if (!sess) return null;
+    if (sess.expiry < Date.now()) {
+      db.ref('sessions/' + token).remove();
+      return null;
+    }
+    return sess.user; // retorna o nome do usuário
+  } catch { return null; }
+}
+
+// Migra contas legadas do localStorage para Firebase (roda 1x)
+async function migrarContasLegadas() {
+  try {
+    const legado = localStorage.getItem('poke-accounts');
+    if (!legado) return;
+    const localAcc = JSON.parse(legado);
+    if (Object.keys(localAcc).length === 0) return;
+    const snap = await db.ref('accounts').once('value');
+    const fbAcc = snap.val() || {};
+    let changed = false;
+    for (const [k, v] of Object.entries(localAcc)) {
+      if (!fbAcc[k]) { fbAcc[k] = v; changed = true; }
+    }
+    if (changed) {
+      await db.ref('accounts').set(fbAcc);
+      console.log('✅ Contas legadas migradas para Firebase.');
+    }
+    // Migra credenciais legadas para tokens
+    const legUser = localStorage.getItem('poke-logged-user');
+    const legPass = localStorage.getItem('poke-logged-pass');
+    if (legUser && legPass) {
+      const acc = fbAcc[legUser.toLowerCase()];
+      if (acc && acc.password === legPass) {
+        const token = gerarToken();
+        await salvarTokenSessao(acc.name, token);
+      }
+      localStorage.removeItem('poke-logged-user');
+      localStorage.removeItem('poke-logged-pass');
+    }
+  } catch(e) {
+    console.warn('Migração legada falhou:', e.message);
+  }
+}
+setTimeout(migrarContasLegadas, 1500);
 
 // ============================================================
 // LOGIN UI
@@ -2514,7 +2592,6 @@ async function doLogin() {
   if (!name) return showError('Digite seu nome de treinador!');
   if (!pass) return showError('Digite sua senha!');
 
-  // Feedback visual de carregando
   const btn = document.querySelector('.login-btn[onclick="doLogin()"]');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Entrando...'; }
   document.getElementById('login-error').style.display = 'none';
@@ -2527,11 +2604,9 @@ async function doLogin() {
   if (!account)                  return showError('Treinador não encontrado. Cadastre-se primeiro!');
   if (account.password !== pass) return showError('Senha incorreta!');
 
-  // Salva credenciais para auto-login futuro
-  localStorage.setItem('poke-logged-user', account.name);
-  localStorage.setItem('poke-logged-pass', pass);
-  // Garante cache local atualizado
-  saveAccountsLocal(accounts);
+  // Gera e salva token de sessão persistente
+  const token = gerarToken();
+  await salvarTokenSessao(account.name, token);
 
   await entrarNoApp(account);
 }
@@ -2593,8 +2668,7 @@ async function doLogout() {
   await salvarFicha(true);
   pararListeners();
   currentUser = null; isMaster = false; allData = {};
-  localStorage.removeItem('poke-logged-user');
-  localStorage.removeItem('poke-logged-pass');
+  await removerSessao(); // Remove token do Firebase e localStorage
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('app-page').style.display   = 'none';
   document.getElementById('login-username').value = '';
@@ -2602,7 +2676,6 @@ async function doLogout() {
   setSheetReadonly(false);
   document.getElementById('login-error').style.display   = 'none';
   document.getElementById('login-success').style.display = 'none';
-  // Volta para aba fichas
   showTab('fichas');
 }
 
@@ -4992,76 +5065,79 @@ function pkdxAbrirModal(p) {
 // ============================================================
 // AUTO-LOGIN — busca contas no Firebase, fallback no localStorage
 // ============================================================
+// ============================================================
+// AUTO-LOGIN — baseado em token único no Firebase
+// Funciona em qualquer dispositivo, qualquer navegador
+// ============================================================
 async function autoLogin() {
-  const savedUser = localStorage.getItem('poke-logged-user');
-  const savedPass = localStorage.getItem('poke-logged-pass');
-  if (!savedUser || !savedPass) return;
+  const token    = localStorage.getItem(TOKEN_KEY);
+  const userName = localStorage.getItem(TOKEN_USER);
 
-  // Mostra indicador de carregando na tela de login
-  const loginPage = document.getElementById('login-page');
+  // Sem token salvo → mostra login normalmente
+  if (!token || !userName) return;
+
+  // Spinner de reconexão
   const loadingDiv = document.createElement('div');
   loadingDiv.id = 'autologin-loading';
   loadingDiv.style.cssText = `
-    position:fixed; inset:0; background:rgba(26,16,53,0.92);
-    display:flex; flex-direction:column; align-items:center;
-    justify-content:center; z-index:99999; gap:16px;
-  `;
+    position:fixed;inset:0;background:linear-gradient(160deg,#1A1035,#2D1B5E 50%,#7B3F00 80%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:99999;gap:18px;`;
   loadingDiv.innerHTML = `
-    <div style="width:52px;height:52px;border:4px solid rgba(200,150,12,0.3);
-      border-top-color:#C8960C;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-    <div style="font-family:'Cinzel',serif;color:#C8960C;font-size:14px;letter-spacing:2px;">
-      Reconectando, ${savedUser}...
-    </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  `;
+    <div style="font-size:48px;animation:pulse-glow 1.4s ease-in-out infinite;">⚡</div>
+    <div style="width:56px;height:56px;border:4px solid rgba(200,150,12,0.25);
+      border-top-color:#C8960C;border-radius:50%;animation:spin 0.75s linear infinite;"></div>
+    <div style="font-family:'Cinzel',serif;color:#C8960C;font-size:15px;
+      letter-spacing:3px;text-align:center;">Reconectando...<br>
+      <span style="font-size:12px;opacity:.7;letter-spacing:1px;">${userName}</span></div>
+    <style>
+      @keyframes spin{to{transform:rotate(360deg)}}
+      @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 8px #C8960C)}50%{filter:drop-shadow(0 0 20px #C8960C)}}
+    </style>`;
   document.body.appendChild(loadingDiv);
 
   try {
-    // 1. Tenta buscar contas do Firebase (mais confiável)
-    let account = null;
-    try {
-      const snap = await db.ref('accounts/' + savedUser.toLowerCase()).once('value');
-      const fbAccount = snap.val();
-      if (fbAccount && fbAccount.password === savedPass) {
-        account = fbAccount;
-        // Atualiza cache local com dados frescos do Firebase
-        const allAccounts = getAccountsLocal();
-        allAccounts[savedUser.toLowerCase()] = fbAccount;
-        saveAccountsLocal(allAccounts);
-      }
-    } catch(e) {
-      console.warn('Firebase indisponível no auto-login, tentando cache local...');
-    }
+    // 1. Valida token no Firebase
+    const validUser = await validarSessao(token);
 
-    // 2. Fallback: tenta cache local
-    if (!account) {
-      const localAccounts = getAccountsLocal();
-      const localAccount  = localAccounts[savedUser.toLowerCase()];
-      if (localAccount && localAccount.password === savedPass) {
-        account = localAccount;
+    if (validUser) {
+      // Token válido → busca dados da conta no Firebase
+      const accounts = await getAccounts();
+      const account  = accounts[validUser.toLowerCase()];
+
+      if (account) {
+        // Renova o token por mais 30 dias
+        await salvarTokenSessao(account.name, token);
+        loadingDiv.remove();
+        await entrarNoApp(account);
+        return;
       }
     }
 
-    // 3. Conta não encontrada em nenhum lugar — limpa e mostra login
-    if (!account) {
-      localStorage.removeItem('poke-logged-user');
-      localStorage.removeItem('poke-logged-pass');
-      loadingDiv.remove();
-      return;
-    }
-
-    // 4. Credenciais válidas — entra no app
+    // 2. Token inválido ou conta não encontrada → limpa e mostra login
+    await removerSessao();
     loadingDiv.remove();
-    await entrarNoApp(account);
 
   } catch(e) {
     console.error('Erro no auto-login:', e);
+
+    // 3. Firebase offline → tenta cache local como último recurso
+    try {
+      const cache = JSON.parse(localStorage.getItem('poke-accounts-cache') || '{}');
+      const acc   = cache[userName.toLowerCase()];
+      if (acc) {
+        loadingDiv.remove();
+        await entrarNoApp(acc);
+        return;
+      }
+    } catch {}
+
     loadingDiv.remove();
   }
 }
 
 window.addEventListener('load', () => {
-  setTimeout(autoLogin, 300);
+  setTimeout(autoLogin, 200);
 });
 </script>
 </body>
