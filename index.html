@@ -2327,6 +2327,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// Migra contas do localStorage para o Firebase (executa uma vez)
+async function migrarContasParaFirebase() {
+  try {
+    const localAccounts = JSON.parse(localStorage.getItem('poke-accounts') || '{}');
+    if (Object.keys(localAccounts).length === 0) return;
+    const snap = await db.ref('accounts').once('value');
+    const fbAccounts = snap.val() || {};
+    // Só migra contas que ainda não existem no Firebase
+    let temNovo = false;
+    for (const [key, val] of Object.entries(localAccounts)) {
+      if (!fbAccounts[key]) { fbAccounts[key] = val; temNovo = true; }
+    }
+    if (temNovo) {
+      await db.ref('accounts').set(fbAccounts);
+      console.log('✅ Contas migradas para o Firebase com sucesso!');
+    }
+  } catch(e) {
+    console.warn('Migração de contas falhou (sem conexão):', e.message);
+  }
+}
+// Executa migração em background após 2s
+setTimeout(migrarContasParaFirebase, 2000);
+
 // Configura presença online e reconexão automática
 db.ref('.info/connected').on('value', (snap) => {
   const online = snap.val();
@@ -2390,12 +2413,39 @@ function showToast(msg, error = false) {
 // ============================================================
 // CONTAS (localStorage)
 // ============================================================
-function getAccounts() {
+// ============================================================
+// CONTAS — Firebase (principal) + localStorage (cache local)
+// ============================================================
+function getAccountsLocal() {
   try { return JSON.parse(localStorage.getItem('poke-accounts') || '{}'); }
   catch { return {}; }
 }
-function saveAccounts(a) {
-  localStorage.setItem('poke-accounts', JSON.stringify(a));
+function saveAccountsLocal(a) {
+  try { localStorage.setItem('poke-accounts', JSON.stringify(a)); } catch {}
+}
+
+// Busca contas do Firebase e sincroniza no localStorage
+async function getAccounts() {
+  try {
+    const snap = await db.ref('accounts').once('value');
+    const fbData = snap.val() || {};
+    if (Object.keys(fbData).length > 0) {
+      saveAccountsLocal(fbData); // atualiza cache local
+      return fbData;
+    }
+  } catch(e) {
+    console.warn('Firebase offline, usando cache local:', e.message);
+  }
+  // Fallback: usa cache local
+  return getAccountsLocal();
+}
+
+// Salva contas no Firebase E no localStorage
+async function saveAccounts(a) {
+  saveAccountsLocal(a);
+  try { await db.ref('accounts').set(a); } catch(e) {
+    console.warn('Erro ao salvar contas no Firebase:', e.message);
+  }
 }
 
 // ============================================================
@@ -2424,21 +2474,29 @@ function showSuccess(msg) {
 // ============================================================
 // CADASTRO
 // ============================================================
-function doRegister() {
+async function doRegister() {
   const name  = document.getElementById('reg-username').value.trim();
   const pass  = document.getElementById('reg-password').value;
   const pass2 = document.getElementById('reg-password2').value;
   if (!name)           return showError('Digite seu nome de treinador!');
   if (pass.length < 3) return showError('A senha precisa ter pelo menos 3 caracteres.');
   if (pass !== pass2)  return showError('As senhas não coincidem!');
-  const accounts = getAccounts();
-  if (accounts[name.toLowerCase()]) return showError('Esse nome já está cadastrado!');
+
+  const btnReg = document.querySelector('.login-btn[onclick="doRegister()"]');
+  if (btnReg) { btnReg.disabled = true; btnReg.textContent = '⏳ Criando conta...'; }
+
+  const accounts = await getAccounts();
+  if (accounts[name.toLowerCase()]) {
+    if (btnReg) { btnReg.disabled = false; btnReg.textContent = '🌟 CRIAR CONTA'; }
+    return showError('Esse nome já está cadastrado!');
+  }
   accounts[name.toLowerCase()] = {
     name,
     password: pass,
     role: pass === MASTER_PASSWORD ? 'master' : 'player'
   };
-  saveAccounts(accounts);
+  await saveAccounts(accounts);
+  if (btnReg) { btnReg.disabled = false; btnReg.textContent = '🌟 CRIAR CONTA'; }
   document.getElementById('reg-username').value  = '';
   document.getElementById('reg-password').value  = '';
   document.getElementById('reg-password2').value = '';
@@ -2456,15 +2514,32 @@ async function doLogin() {
   if (!name) return showError('Digite seu nome de treinador!');
   if (!pass) return showError('Digite sua senha!');
 
-  const accounts = getAccounts();
+  // Feedback visual de carregando
+  const btn = document.querySelector('.login-btn[onclick="doLogin()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Entrando...'; }
+  document.getElementById('login-error').style.display = 'none';
+
+  const accounts = await getAccounts();
   const account  = accounts[name.toLowerCase()];
+
+  if (btn) { btn.disabled = false; btn.textContent = '⚡ ENTRAR NA AVENTURA'; }
+
   if (!account)                  return showError('Treinador não encontrado. Cadastre-se primeiro!');
   if (account.password !== pass) return showError('Senha incorreta!');
 
-  isMaster    = (account.role === 'master');
-  currentUser = account.name;
+  // Salva credenciais para auto-login futuro
   localStorage.setItem('poke-logged-user', account.name);
   localStorage.setItem('poke-logged-pass', pass);
+  // Garante cache local atualizado
+  saveAccountsLocal(accounts);
+
+  await entrarNoApp(account);
+}
+
+// Função central de entrada no app (usada pelo login manual E auto-login)
+async function entrarNoApp(account) {
+  isMaster    = (account.role === 'master');
+  currentUser = account.name;
 
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-page').style.display   = 'block';
@@ -2490,13 +2565,25 @@ async function doLogin() {
 
   buildTable();
   renderUserChips();
-  iniciarListeners(); // Firebase real-time
+  iniciarListeners();
   iniciarListenerMusica();
   aplicarPermissoesMusica();
   gerarTabelaTipos();
   iniciarListenerTipos();
   iniciarListenerHistorico();
   iniciarListenerSessao();
+
+  // Carrega fichas do Firebase
+  try {
+    const dados = await fbGet('trainers');
+    if (dados && Object.keys(dados).length > 0) {
+      allData = dados;
+      loadSheet(currentUser);
+      renderUserChips();
+    }
+  } catch(e) {
+    console.warn('Erro ao carregar fichas:', e);
+  }
 }
 
 // ============================================================
@@ -4902,71 +4989,79 @@ function pkdxAbrirModal(p) {
 // ============================================================
 // AUTO-LOGIN — adicionar inicialização dos listeners novos
 // ============================================================
+// ============================================================
+// AUTO-LOGIN — busca contas no Firebase, fallback no localStorage
+// ============================================================
 async function autoLogin() {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
   if (!savedUser || !savedPass) return;
 
-  // Verifica se a conta ainda existe no localStorage
-  const accounts = getAccounts();
-  const account = accounts[savedUser.toLowerCase()];
-  if (!account || account.password !== savedPass) {
-    // Conta não existe mais — limpa e mostra login
-    localStorage.removeItem('poke-logged-user');
-    localStorage.removeItem('poke-logged-pass');
-    return;
-  }
+  // Mostra indicador de carregando na tela de login
+  const loginPage = document.getElementById('login-page');
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'autologin-loading';
+  loadingDiv.style.cssText = `
+    position:fixed; inset:0; background:rgba(26,16,53,0.92);
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; z-index:99999; gap:16px;
+  `;
+  loadingDiv.innerHTML = `
+    <div style="width:52px;height:52px;border:4px solid rgba(200,150,12,0.3);
+      border-top-color:#C8960C;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <div style="font-family:'Cinzel',serif;color:#C8960C;font-size:14px;letter-spacing:2px;">
+      Reconectando, ${savedUser}...
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  `;
+  document.body.appendChild(loadingDiv);
 
-  // Faz login direto sem passar pelo campo de input
-  isMaster    = (account.role === 'master');
-  currentUser = account.name;
-
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app-page').style.display   = 'block';
-  document.getElementById('header-username').textContent = isMaster
-    ? '👑 ' + account.name + ' (Mestre)' : '👤 ' + account.name;
-  document.getElementById('btn-new').style.display = isMaster ? 'flex' : 'none';
-
-  const jaAceitou = localStorage.getItem('poke-rules-' + account.name.toLowerCase());
-  if (jaAceitou) {
-    document.getElementById('rules-section').style.display   = 'none';
-    document.getElementById('howto-section').style.display   = 'none';
-    document.getElementById('sheet-container').style.display = 'block';
-  } else {
-    document.getElementById('rules-section').style.display   = 'block';
-    document.getElementById('howto-section').style.display   = 'none';
-    document.getElementById('sheet-container').style.display = 'none';
-    const cb  = document.getElementById('rules-checkbox');
-    const btn = document.getElementById('rules-close-btn');
-    cb.checked = false; btn.disabled = true;
-    btn.textContent = '🔒 Li e Entendi — Jogar!';
-  }
-
-  buildTable();
-  renderUserChips();
-  iniciarListeners();
-  iniciarListenerMusica();
-  aplicarPermissoesMusica();
-  gerarTabelaTipos();
-  iniciarListenerTipos();
-  iniciarListenerHistorico();
-  iniciarListenerSessao();
-
-  // Carrega ficha da nuvem em segundo plano
   try {
-    const dados = await fbGet('trainers');
-    if (dados && Object.keys(dados).length > 0) {
-      allData = dados;
-      loadSheet(currentUser);
-      renderUserChips();
+    // 1. Tenta buscar contas do Firebase (mais confiável)
+    let account = null;
+    try {
+      const snap = await db.ref('accounts/' + savedUser.toLowerCase()).once('value');
+      const fbAccount = snap.val();
+      if (fbAccount && fbAccount.password === savedPass) {
+        account = fbAccount;
+        // Atualiza cache local com dados frescos do Firebase
+        const allAccounts = getAccountsLocal();
+        allAccounts[savedUser.toLowerCase()] = fbAccount;
+        saveAccountsLocal(allAccounts);
+      }
+    } catch(e) {
+      console.warn('Firebase indisponível no auto-login, tentando cache local...');
     }
+
+    // 2. Fallback: tenta cache local
+    if (!account) {
+      const localAccounts = getAccountsLocal();
+      const localAccount  = localAccounts[savedUser.toLowerCase()];
+      if (localAccount && localAccount.password === savedPass) {
+        account = localAccount;
+      }
+    }
+
+    // 3. Conta não encontrada em nenhum lugar — limpa e mostra login
+    if (!account) {
+      localStorage.removeItem('poke-logged-user');
+      localStorage.removeItem('poke-logged-pass');
+      loadingDiv.remove();
+      return;
+    }
+
+    // 4. Credenciais válidas — entra no app
+    loadingDiv.remove();
+    await entrarNoApp(account);
+
   } catch(e) {
-    console.warn('Erro ao carregar fichas no auto-login:', e);
+    console.error('Erro no auto-login:', e);
+    loadingDiv.remove();
   }
 }
 
 window.addEventListener('load', () => {
-  setTimeout(autoLogin, 200);
+  setTimeout(autoLogin, 300);
 });
 </script>
 </body>
