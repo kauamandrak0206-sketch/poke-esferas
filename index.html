@@ -1293,6 +1293,180 @@
     #trainer-sheet { border: none; }
     .img-overlay { display: none !important; }
   }
+
+  /* ===== GALAR ===== */
+  .galar-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .galar-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .galar-subtitle { text-align: center; font-size: 13px; color: rgba(200,150,12,0.5); font-family: 'Exo 2',sans-serif; margin-bottom: 20px; }
+  .galar-search-wrap { margin-bottom: 20px; }
+  .galar-search {
+    width: 100%; background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(255,180,0,0.3); border-radius: 12px;
+    padding: 12px 18px; color: #fff; font-family: 'Exo 2',sans-serif;
+    font-size: 15px; outline: none; transition: border-color 0.2s; margin-bottom: 12px;
+  }
+  .galar-search:focus { border-color: #C8960C; }
+  .galar-search::placeholder { color: rgba(255,255,255,0.3); }
+  .galar-filter-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .galar-type-btn {
+    padding: 4px 12px; border-radius: 20px; border: 2px solid transparent;
+    font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    font-family: 'Exo 2',sans-serif; letter-spacing: 0.5px;
+  }
+  .galar-type-btn.active { transform: scale(1.05); border-color: #fff; }
+  .galar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  .galar-card {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 100%);
+    border: 1px solid rgba(200,150,12,0.25); border-radius: 12px;
+    padding: 12px 8px; text-align: center; cursor: pointer;
+    transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .galar-card:hover { transform: translateY(-4px); border-color: #C8960C; box-shadow: 0 8px 24px rgba(200,150,12,0.25); }
+  .galar-card-num { font-size: 10px; color: rgba(200,150,12,0.4); font-family: 'Cinzel',serif; margin-bottom: 4px; }
+  .galar-card-img { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
+  .galar-card-name { font-family: 'Exo 2',sans-serif; font-size: 12px; font-weight: 700; color: #fff; margin: 6px 0 4px; }
+  .galar-card-types { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+  .galar-type-tag {
+    padding: 2px 7px; border-radius: 8px; font-size: 9px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    font-family: 'Exo 2',sans-serif;
+  }
+  @media (max-width: 900px) {
+    .galar-container { padding: 12px; }
+    .galar-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+    .galar-card-img { width: 56px; height: 56px; }
+  }
+
+  /* ===== HISTÓRICO DE BATALHA ===== */
+  .hbat-container { padding: 24px; max-width: 860px; margin: 0 auto; }
+  .hbat-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .hbat-subtitle { text-align: center; font-size: 13px; color: rgba(200,150,12,0.5); font-family: 'Exo 2',sans-serif; margin-bottom: 20px; }
+  .hbat-master-panel {
+    background: rgba(74,44,138,0.25); border: 1px solid rgba(106,61,184,0.5);
+    border-radius: 14px; padding: 20px; margin-bottom: 24px;
+  }
+  .hbat-master-title { font-family: 'Cinzel',serif; font-size: 13px; color: #C8960C; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+  .hbat-form { display: flex; flex-direction: column; gap: 10px; }
+  .hbat-form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hbat-input {
+    flex: 1; min-width: 200px; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.3); border-radius: 8px;
+    padding: 10px 14px; color: #fff; font-family: 'Exo 2',sans-serif;
+    font-size: 13px; outline: none; transition: border-color 0.2s;
+  }
+  .hbat-input:focus { border-color: #C8960C; }
+  .hbat-input::placeholder { color: rgba(255,255,255,0.3); }
+  .hbat-textarea {
+    width: 100%; min-height: 100px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,180,0,0.3);
+    border-radius: 8px; padding: 10px 14px; color: #fff;
+    font-family: 'Exo 2',sans-serif; font-size: 13px; outline: none;
+    resize: vertical; transition: border-color 0.2s;
+  }
+  .hbat-textarea:focus { border-color: #C8960C; }
+  .hbat-textarea::placeholder { color: rgba(255,255,255,0.3); }
+  .hbat-add-btn {
+    padding: 12px 24px; background: linear-gradient(135deg,#C46A00,#C8960C);
+    color: #1A1035; border: none; border-radius: 10px;
+    font-family: 'Cinzel',serif; font-size: 13px; font-weight: 900;
+    letter-spacing: 1px; cursor: pointer; transition: all 0.2s; align-self: flex-end;
+  }
+  .hbat-add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,150,12,0.4); }
+  .hbat-list { display: flex; flex-direction: column; gap: 14px; }
+  .hbat-empty { text-align: center; padding: 40px; color: rgba(200,150,12,0.4); font-family: 'Cinzel',serif; font-size: 14px; }
+  .hbat-entry {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid rgba(200,150,12,0.3); border-radius: 14px; padding: 20px;
+    position: relative; animation: slideIn 0.4s ease-out;
+  }
+  .hbat-entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .hbat-entry-titulo { font-family: 'Cinzel',serif; font-size: 15px; color: #C8960C; font-weight: 700; }
+  .hbat-entry-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .hbat-entry-data { font-size: 11px; color: rgba(200,150,12,0.5); font-family: 'Exo 2',sans-serif; }
+  .hbat-entry-resultado {
+    padding: 3px 10px; border-radius: 10px; font-size: 11px;
+    font-weight: 700; background: rgba(200,150,12,0.15);
+    border: 1px solid rgba(200,150,12,0.4); color: #C8960C; font-family: 'Exo 2',sans-serif;
+  }
+  .hbat-entry-desc { font-size: 13px; color: #E8D5A8; line-height: 1.7; white-space: pre-wrap; }
+  .hbat-del-btn {
+    position: absolute; top: 12px; right: 14px;
+    background: transparent; border: none; color: rgba(255,100,100,0.3);
+    cursor: pointer; font-size: 16px; transition: color 0.2s; padding: 4px;
+  }
+  .hbat-del-btn:hover { color: #e53935; }
+  @media (max-width: 900px) { .hbat-container { padding: 12px; } .hbat-form-row { flex-direction: column; } .hbat-add-btn { align-self: stretch; } }
+
+  /* ===== ÚLTIMA SESSÃO ===== */
+  .sessao-container { padding: 24px; max-width: 800px; margin: 0 auto; }
+  .sessao-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #C8960C;
+    text-shadow: 2px 2px 0 #8B6508, 0 0 20px rgba(200,150,12,0.5);
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .sessao-subtitle { text-align: center; font-size: 13px; color: rgba(200,150,12,0.5); font-family: 'Exo 2',sans-serif; margin-bottom: 24px; }
+  .sessao-master-panel {
+    background: rgba(74,44,138,0.25); border: 1px solid rgba(106,61,184,0.5);
+    border-radius: 14px; padding: 20px; margin-bottom: 24px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .sessao-master-title { font-family: 'Cinzel',serif; font-size: 13px; color: #C8960C; letter-spacing: 2px; text-transform: uppercase; }
+  .sessao-input {
+    width: 100%; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,180,0,0.3); border-radius: 8px;
+    padding: 10px 14px; color: #fff; font-family: 'Exo 2',sans-serif;
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .sessao-input:focus { border-color: #C8960C; }
+  .sessao-input::placeholder { color: rgba(255,255,255,0.3); }
+  .sessao-textarea {
+    width: 100%; min-height: 180px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,180,0,0.3);
+    border-radius: 8px; padding: 12px 14px; color: #fff;
+    font-family: 'Exo 2',sans-serif; font-size: 14px; outline: none;
+    resize: vertical; transition: border-color 0.2s; line-height: 1.6;
+  }
+  .sessao-textarea:focus { border-color: #C8960C; }
+  .sessao-textarea::placeholder { color: rgba(255,255,255,0.3); }
+  .sessao-save-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg,#C46A00,#C8960C);
+    color: #1A1035; border: none; border-radius: 10px;
+    font-family: 'Cinzel',serif; font-size: 14px; font-weight: 900;
+    letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
+  }
+  .sessao-save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,150,12,0.4); }
+  .sessao-card {
+    background: linear-gradient(160deg, #1A1035 0%, #2D1B5E 60%, #3D2000 100%);
+    border: 2px solid #C8960C; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .sessao-card-header {
+    padding: 20px 24px 14px;
+    background: rgba(200,150,12,0.1);
+    border-bottom: 1px solid rgba(200,150,12,0.3);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .sessao-card-titulo { font-family: 'Cinzel',serif; font-size: 18px; font-weight: 900; color: #C8960C; text-shadow: 0 0 12px rgba(200,150,12,0.4); }
+  .sessao-card-data { font-size: 12px; color: rgba(200,150,12,0.5); font-family: 'Exo 2',sans-serif; }
+  .sessao-card-texto { padding: 24px; font-family: 'Exo 2',sans-serif; font-size: 15px; color: #E8D5A8; line-height: 1.8; white-space: pre-wrap; }
+  .sessao-empty { text-align: center; padding: 60px 20px; color: rgba(200,150,12,0.4); font-family: 'Cinzel',serif; font-size: 14px; line-height: 2; }
+  @media (max-width: 900px) { .sessao-container { padding: 12px; } .sessao-card-texto { padding: 16px; font-size: 14px; } }
 </style>
 </head>
 <body>
@@ -1391,6 +1565,9 @@
     <button class="nav-tab" id="tab-musica" onclick="showTab('musica')">🎵 Música</button>
     <button class="nav-tab" id="tab-tipos" onclick="showTab('tipos')">⚔️ Tipos</button>
     <button class="nav-tab" id="tab-ia" onclick="showTab('ia')">🤖 Pokédex IA</button>
+    <button class="nav-tab" id="tab-galar" onclick="showTab('galar')">🗺️ Galar</button>
+    <button class="nav-tab" id="tab-historico" onclick="showTab('historico')">⚔️ Batalhas</button>
+    <button class="nav-tab" id="tab-sessao" onclick="showTab('sessao')">📖 Sessão</button>
   </div>
   <div id="section-fichas">
   <div class="users-bar">
@@ -1567,8 +1744,8 @@
           <div class="poke-table-wrap">
             <table class="poke-table">
               <thead>
-                <tr><th colspan="3" class="header-title">POKÉMONS NO TIME</th></tr>
-                <tr><th>NOMES</th><th>LEVEL</th><th class="hp-col">HP</th></tr>
+                <tr><th colspan="4" class="header-title">POKÉMONS NO TIME</th></tr>
+                <tr><th style="width:44px;">📷</th><th>NOMES</th><th>LEVEL</th><th class="hp-col">HP</th></tr>
               </thead>
               <tbody id="team-tbody"></tbody>
             </table>
@@ -1590,13 +1767,14 @@
           <div class="items-table-wrap">
             <table class="items-table">
               <thead>
-                <tr class="title-row"><th colspan="5">🎒 ITENS</th></tr>
+                <tr class="title-row"><th colspan="6">🎒 ITENS</th></tr>
                 <tr class="col-row">
-                  <th>POKÉ BOLAS</th>
-                  <th>ULTRA BALL</th>
-                  <th>MASTER BALL</th>
-                  <th>POÇÃO DE CURA</th>
-                  <th>REVIVAL</th>
+                  <th>🔴 POKÉ BOLAS</th>
+                  <th>⚫ ULTRA BALL</th>
+                  <th>🟣 MASTER BALL</th>
+                  <th>💊 POÇÃO DE CURA</th>
+                  <th>✨ RIVAVI</th>
+                  <th>💰 IENES</th>
                 </tr>
               </thead>
               <tbody id="items-tbody"></tbody>
@@ -1714,6 +1892,9 @@
       <!-- Painel do Mestre -->
       <div class="music-master-only" id="music-master-panel">
         <div class="music-master-title">👑 Controles do Mestre</div>
+        <div style="background:rgba(200,150,12,0.08);border:1px solid rgba(200,150,12,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:rgba(200,150,12,0.8);font-family:'Exo 2',sans-serif;line-height:1.6;">
+          ℹ️ <strong>Sobre músicas locais:</strong> Por segurança dos navegadores, não é possível transmitir arquivos do seu computador diretamente. Cole links do <strong>YouTube</strong> abaixo para adicionar músicas à playlist da campanha!
+        </div>
 
         <div class="music-input-row">
           <input class="music-url-input" id="music-url-input"
@@ -1866,6 +2047,75 @@
 
 
 
+
+
+<!-- ABA GALAR -->
+<div id="section-galar" style="display:none;">
+  <div class="galar-container">
+    <div class="galar-title">🗺️ Pokémon de Galar</div>
+    <div class="galar-subtitle">Todos os Pokémon disponíveis em Sword &amp; Shield</div>
+    <div class="galar-search-wrap">
+      <input class="galar-search" id="galar-search" type="text" placeholder="🔍 Buscar Pokémon..." oninput="filtrarGalar()" />
+      <div class="galar-filter-row" id="galar-type-filters"></div>
+    </div>
+    <div class="galar-grid" id="galar-grid">
+      <div style="color:rgba(200,150,12,0.5);text-align:center;padding:40px;font-family:'Cinzel',serif;">Carregando Pokémon de Galar...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA HISTÓRICO DE BATALHA -->
+<div id="section-historico" style="display:none;">
+  <div class="hbat-container">
+    <div class="hbat-title">⚔️ Histórico de Batalha</div>
+    <div class="hbat-subtitle">Registros das batalhas da campanha</div>
+    <!-- Painel do Mestre -->
+    <div class="hbat-master-panel" id="hbat-master-panel" style="display:none;">
+      <div class="hbat-master-title">👑 Adicionar Registro de Batalha</div>
+      <div class="hbat-form">
+        <div class="hbat-form-row">
+          <input class="hbat-input" id="hbat-titulo" type="text" placeholder="Título da batalha (ex: Batalha no Ginásio de Turffield)" />
+        </div>
+        <div class="hbat-form-row">
+          <input class="hbat-input" id="hbat-data" type="text" placeholder="Data da sessão (ex: 22/03/2026)" />
+          <input class="hbat-input" id="hbat-resultado" type="text" placeholder="Resultado (ex: Vitória! 🏆)" style="max-width:250px;" />
+        </div>
+        <textarea class="hbat-textarea" id="hbat-desc" placeholder="Descreva o que aconteceu na batalha..."></textarea>
+        <button class="hbat-add-btn" onclick="adicionarBatalha()">⚔️ Registrar Batalha</button>
+      </div>
+    </div>
+    <div class="hbat-list" id="hbat-list">
+      <div class="hbat-empty">Nenhuma batalha registrada ainda...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA ÚLTIMA SESSÃO -->
+<div id="section-sessao" style="display:none;">
+  <div class="sessao-container">
+    <div class="sessao-title">📖 Última Sessão</div>
+    <div class="sessao-subtitle">Resumo do que aconteceu na última aventura</div>
+    <!-- Painel do Mestre -->
+    <div class="sessao-master-panel" id="sessao-master-panel" style="display:none;">
+      <div class="sessao-master-title">👑 Escrever Resumo da Sessão</div>
+      <input class="sessao-input" id="sessao-titulo" type="text" placeholder="Título da sessão (ex: A Chegada em Motostoke)" />
+      <textarea class="sessao-textarea" id="sessao-texto" placeholder="Escreva o resumo do que aconteceu na última sessão de RPG..."></textarea>
+      <button class="sessao-save-btn" onclick="salvarSessao()">💾 Salvar Resumo</button>
+    </div>
+    <!-- Visualização para todos -->
+    <div class="sessao-card" id="sessao-card" style="display:none;">
+      <div class="sessao-card-header">
+        <div class="sessao-card-titulo" id="sessao-card-titulo"></div>
+        <div class="sessao-card-data" id="sessao-card-data"></div>
+      </div>
+      <div class="sessao-card-texto" id="sessao-card-texto"></div>
+    </div>
+    <div class="sessao-empty" id="sessao-empty">
+      <div style="font-size:48px;margin-bottom:16px;">📜</div>
+      <div>O Mestre ainda não escreveu o resumo da última sessão.</div>
+    </div>
+  </div>
+</div>
 
 
 <div class="modal-overlay" id="delete-modal">
@@ -2065,6 +2315,8 @@ async function doLogin() {
   aplicarPermissoesMusica();
   gerarTabelaTipos();
   iniciarListenerTipos();
+  iniciarListenerHistorico();
+  iniciarListenerSessao();
 }
 
 // ============================================================
@@ -2097,7 +2349,12 @@ function buildTable() {
   for (let i = 0; i < 6; i++) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="text" class="team-name"  data-i="${i}"/></td>
+      <td style="text-align:center;padding:2px;width:44px;">
+        <img class="team-sprite" data-i="${i}" src="" alt="" 
+          style="width:38px;height:38px;object-fit:contain;display:block;margin:0 auto;opacity:0;transition:opacity 0.3s;"
+          onerror="this.style.opacity='0'" />
+      </td>
+      <td><input type="text" class="team-name"  data-i="${i}" oninput="atualizarSprite(${i})"/></td>
       <td><input type="text" class="team-level" data-i="${i}"/></td>
       <td><input type="text" class="team-hp"    data-i="${i}"/></td>`;
     tbody.appendChild(tr);
@@ -2141,7 +2398,8 @@ function buildTable() {
         <td><input type="text" class="item-ultraball" data-i="${i}" placeholder=""/></td>
         <td><input type="text" class="item-masterball" data-i="${i}" placeholder=""/></td>
         <td><input type="text" class="item-pocao"     data-i="${i}" placeholder=""/></td>
-        <td><input type="text" class="item-revival"   data-i="${i}" placeholder=""/></td>`;
+        <td><input type="text" class="item-rivavi"    data-i="${i}" placeholder=""/></td>
+        <td><input type="text" class="item-ienes"     data-i="${i}" placeholder=""/></td>`;
       itemsTbody.appendChild(tr);
     }
   }
@@ -2181,7 +2439,8 @@ function getSheetData() {
       ultraball:  document.querySelector(`.item-ultraball[data-i="${i}"]`)?.value || '',
       masterball: document.querySelector(`.item-masterball[data-i="${i}"]`)?.value|| '',
       pocao:      document.querySelector(`.item-pocao[data-i="${i}"]`)?.value     || '',
-      revival:    document.querySelector(`.item-revival[data-i="${i}"]`)?.value   || '',
+      rivavi:     document.querySelector(`.item-rivavi[data-i="${i}"]`)?.value    || '',
+      ienes:      document.querySelector(`.item-ienes[data-i="${i}"]`)?.value     || '',
     });
   }
 
@@ -2225,8 +2484,10 @@ function populateSheet(data) {
     const ub = document.querySelector(`.item-ultraball[data-i="${i}"]`);  if (ub) ub.value = it.ultraball  || '';
     const mb = document.querySelector(`.item-masterball[data-i="${i}"]`); if (mb) mb.value = it.masterball || '';
     const po = document.querySelector(`.item-pocao[data-i="${i}"]`);      if (po) po.value = it.pocao      || '';
-    const rv = document.querySelector(`.item-revival[data-i="${i}"]`);    if (rv) rv.value = it.revival    || '';
+    const rv = document.querySelector(`.item-rivavi[data-i="${i}"]`);     if (rv) rv.value = it.rivavi     || '';
+    const ie = document.querySelector(`.item-ienes[data-i="${i}"]`);      if (ie) ie.value = it.ienes      || '';
   });
+  setTimeout(atualizarTodosSprites, 150);
 }
 
 function loadSheet(u)  { populateSheet(allData[u]); }
@@ -2610,7 +2871,7 @@ async function atualizarFichas() {
 // NAVEGAÇÃO POR ABAS (Fichas / Dados)
 // ============================================================
 function showTab(tab) {
-  ['fichas','dados','musica','tipos','ia'].forEach(t => {
+  ['fichas','dados','musica','tipos','ia','galar','historico','sessao'].forEach(t => {
     const sec = document.getElementById('section-' + t);
     const btn = document.getElementById('tab-' + t);
     if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
@@ -2618,6 +2879,9 @@ function showTab(tab) {
   });
   // Quando entra na aba de música, marca interação do usuário
   if (tab === 'musica') marcarInteracao();
+  if (tab === 'galar') carregarGalar();
+  if (tab === 'historico') carregarHistoricoBatalha();
+  if (tab === 'sessao') carregarSessao();
 }
 
 // ============================================================
@@ -3508,7 +3772,336 @@ Ou use os botões rápidos abaixo! 👇
   input.focus();
 }
 
-// ===== AUTO-LOGIN =====
+// ============================================================
+// SPRITE POKÉMON NO TIME
+// ============================================================
+function atualizarSprite(i) {
+  const nameEl = document.querySelector(`.team-name[data-i="${i}"]`);
+  const spriteEl = document.querySelector(`.team-sprite[data-i="${i}"]`);
+  if (!nameEl || !spriteEl) return;
+  const nome = nameEl.value.trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+  if (!nome) { spriteEl.style.opacity = '0'; return; }
+  const url = `https://img.pokemondb.net/sprites/sword-shield/icon/${nome}.png`;
+  spriteEl.src = url;
+  spriteEl.style.opacity = '1';
+  spriteEl.onerror = () => {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${nome}`)
+      .then(r=>r.json())
+      .then(d=>{ if(d.sprites?.front_default){ spriteEl.src=d.sprites.front_default; spriteEl.style.opacity='1'; } else spriteEl.style.opacity='0'; })
+      .catch(()=>{ spriteEl.style.opacity='0'; });
+  };
+}
+
+function atualizarTodosSprites() {
+  for(let i=0;i<6;i++) atualizarSprite(i);
+}
+
+// ============================================================
+// GALAR — Pokémon de Sword & Shield
+// ============================================================
+let _galarCarregado = false;
+const TIPO_CORES = {
+  fire:'#c62828',water:'#1565c0',grass:'#2e7d32',electric:'#f9a825',
+  ice:'#006064',fighting:'#bf360c',poison:'#6a1b9a',ground:'#795548',
+  flying:'#546e7a',psychic:'#ad1457',bug:'#558b2f',rock:'#78909c',
+  ghost:'#4a148c',dragon:'#0d47a1',dark:'#212121',steel:'#607d8b',
+  fairy:'#e91e63',normal:'#9e9e9e'
+};
+const TIPO_PT = {
+  fire:'Fogo',water:'Água',grass:'Planta',electric:'Elétrico',ice:'Gelo',
+  fighting:'Lutador',poison:'Veneno',ground:'Terra',flying:'Voador',
+  psychic:'Psíquico',bug:'Inseto',rock:'Pedra',ghost:'Fantasma',
+  dragon:'Dragão',dark:'Sombrio',steel:'Aço',fairy:'Fada',normal:'Normal'
+};
+
+// IDs de Galar (Sword & Shield): #810–#898 + formas regionais chave
+const GALAR_IDS = Array.from({length:89}, (_,i)=>810+i).concat([
+  // Formas de Galar de outros
+  52,77,78,79,80,83,110,122,144,145,146,199,222,263,264,554,555
+]);
+
+let _galarPokes = [];
+let _galarFiltroTipo = null;
+
+async function carregarGalar() {
+  if (_galarCarregado) { renderGalar(); return; }
+  const grid = document.getElementById('galar-grid');
+  grid.innerHTML = '<div style="color:rgba(200,150,12,0.5);text-align:center;padding:40px;font-family:\'Cinzel\',serif;grid-column:1/-1;">⏳ Carregando Pokémon de Galar...</div>';
+
+  try {
+    const chunks = [];
+    for(let i=0;i<GALAR_IDS.length;i+=20) chunks.push(GALAR_IDS.slice(i,i+20));
+    for(const chunk of chunks) {
+      const results = await Promise.all(chunk.map(id =>
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(r=>r.ok?r.json():null).catch(()=>null)
+      ));
+      results.forEach(p => { if(p) _galarPokes.push(p); });
+    }
+    _galarPokes.sort((a,b)=>a.id-b.id);
+    _galarCarregado = true;
+    renderFiltrosTipo();
+    renderGalar();
+  } catch(e) {
+    grid.innerHTML = '<div style="color:#e53935;text-align:center;padding:40px;grid-column:1/-1;">❌ Erro ao carregar. Verifique a conexão.</div>';
+  }
+}
+
+function renderFiltrosTipo() {
+  const wrap = document.getElementById('galar-type-filters');
+  if (!wrap) return;
+  const tipos = [...new Set(_galarPokes.flatMap(p=>p.types.map(t=>t.type.name)))].sort();
+  wrap.innerHTML = '<button class="galar-type-btn active" style="background:rgba(200,150,12,0.2);color:#C8960C;border-color:#C8960C;" onclick="filtrarPorTipo(null,this)">Todos</button>';
+  tipos.forEach(tipo => {
+    const cor = TIPO_CORES[tipo] || '#666';
+    const btn = document.createElement('button');
+    btn.className = 'galar-type-btn';
+    btn.style.background = cor + '33';
+    btn.style.color = '#fff';
+    btn.style.borderColor = cor;
+    btn.textContent = TIPO_PT[tipo] || tipo;
+    btn.onclick = () => filtrarPorTipo(tipo, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function filtrarPorTipo(tipo, btn) {
+  _galarFiltroTipo = tipo;
+  document.querySelectorAll('.galar-type-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderGalar();
+}
+
+function filtrarGalar() {
+  renderGalar();
+}
+
+function renderGalar() {
+  const grid = document.getElementById('galar-grid');
+  const busca = (document.getElementById('galar-search')?.value || '').toLowerCase().trim();
+  let pokes = _galarPokes;
+  if (_galarFiltroTipo) pokes = pokes.filter(p=>p.types.some(t=>t.type.name===_galarFiltroTipo));
+  if (busca) pokes = pokes.filter(p=>traduzirNomePoke(p.name).toLowerCase().includes(busca) || String(p.id).includes(busca));
+
+  if (pokes.length === 0) {
+    grid.innerHTML = '<div style="color:rgba(200,150,12,0.4);text-align:center;padding:40px;font-family:\'Cinzel\',serif;grid-column:1/-1;">Nenhum Pokémon encontrado</div>';
+    return;
+  }
+  grid.innerHTML = pokes.map(p => {
+    const sprite = p.sprites.front_default || '';
+    const nome = traduzirNomePoke(p.name);
+    const tipos = p.types.map(t => {
+      const cor = TIPO_CORES[t.type.name] || '#666';
+      const pt  = TIPO_PT[t.type.name] || t.type.name;
+      return `<span class="galar-type-tag" style="background:${cor};color:#fff;">${pt}</span>`;
+    }).join('');
+    return `<div class="galar-card" onclick="abrirDetalheGalar(${p.id})">
+      <div class="galar-card-num">#${String(p.id).padStart(3,'0')}</div>
+      ${sprite ? `<img class="galar-card-img" src="${sprite}" alt="${nome}" loading="lazy" />` : '<div style="height:72px;"></div>'}
+      <div class="galar-card-name">${nome}</div>
+      <div class="galar-card-types">${tipos}</div>
+    </div>`;
+  }).join('');
+}
+
+// Traduz nome inglês → português (mapa parcial dos mais conhecidos)
+const POKE_NOMES_PT = {
+  bulbasaur:'Bulbasaur',charmander:'Charmander',squirtle:'Squirtle',
+  grookey:'Grookey',thwackey:'Thwackey',rillaboom:'Rillaboom',
+  scorbunny:'Scorbunny',raboot:'Raboot',cinderace:'Cinderace',
+  sobble:'Sobble',drizzile:'Drizzile',inteleon:'Inteleon',
+  skwovet:'Skwovet',greedent:'Greedent',rookidee:'Rookidee',
+  corvisquire:'Corvisquire',corviknight:'Corviknight',
+  blipbug:'Blipbug',dottler:'Dottler',orbeetle:'Orbeetle',
+  nickit:'Nickit',thievul:'Thievul',gossifleur:'Gossifleur',
+  eldegoss:'Eldegoss',wooloo:'Wooloo',dubwool:'Dubwool',
+  chewtle:'Chewtle',drednaw:'Drednaw',yamper:'Yamper',
+  boltund:'Boltund',rolycoly:'Rolycoly',carkol:'Carkol',
+  coalossal:'Coalossal',applin:'Applin',flapple:'Flapple',
+  appletun:'Appletun',silicobra:'Silicobra',sandaconda:'Sandaconda',
+  cramorant:'Cramorant',arrokuda:'Arrokuda',barraskewda:'Barraskewda',
+  toxel:'Toxel',toxtricity:'Toxtricity',sizzlipede:'Sizzlipede',
+  centiskorch:'Centiskorch',clobbopus:'Clobbopus',grapploct:'Grapploct',
+  sinistea:'Sinistea',polteageist:'Polteageist',hatenna:'Hatenna',
+  hattrem:'Hattrem',hatterene:'Hatterene',impidimp:'Impidimp',
+  morgrem:'Morgrem',grimmsnarl:'Grimmsnarl',obstagoon:'Obstagoon',
+  perrserker:'Perrserker',cursola:'Cursola',sirfetchd:'Sirfetch\'d',
+  'sirfetch-d':'Sirfetch\'d',
+  'mr-rime':'Sr. Mime-G',runerigus:'Runerigus',milcery:'Milcery',
+  alcremie:'Alcremie',falinks:'Falinks',pincurchin:'Pincurchin',
+  snom:'Snom',frosmoth:'Frosmoth',stonjourner:'Stonjourner',
+  eiscue:'Eiscue',indeedee:'Indeedee',morpeko:'Morpeko',
+  cufant:'Cufant',copperajah:'Copperajah',dracozolt:'Dracozolt',
+  arctozolt:'Arctozolt',dracovish:'Dracovish',arctovish:'Arctovish',
+  duraludon:'Duraludon',dreepy:'Dreepy',drakloak:'Drakloak',
+  dragapult:'Dragapult',zacian:'Zacian',zamazenta:'Zamazenta',
+  eternatus:'Eternatus',kubfu:'Kubfu',urshifu:'Urshifu',
+  zarude:'Zarude',regieleki:'Regieleki',regidrago:'Regidrago',
+  glastrier:'Glastrier',spectrier:'Spectrier',calyrex:'Calyrex',
+  meowth:'Meowth',ponyta:'Ponyta',rapidash:'Rapidash',
+  slowpoke:'Slowpoke',slowbro:'Slowbro',farfetchd:'Farfetch\'d',
+  'farfetch-d':'Farfetch\'d',weezing:'Weezing',
+  zigzagoon:'Zigzagoon',linoone:'Linoone',darumaka:'Darumaka',
+  darmanitan:'Darmanitan',yamask:'Yamask',corsola:'Corsola',
+  stunfisk:'Stunfisk','mr-mime':'Sr. Mime',articuno:'Articuno',
+  zapdos:'Zapdos',moltres:'Moltres',slowking:'Slowking'
+};
+function traduzirNomePoke(nome) {
+  if (POKE_NOMES_PT[nome]) return POKE_NOMES_PT[nome];
+  return nome.split('-').map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+}
+
+function abrirDetalheGalar(id) {
+  const p = _galarPokes.find(x=>x.id===id);
+  if (!p) return;
+  const nome = traduzirNomePoke(p.name);
+  const tipos = p.types.map(t=>{
+    const cor=TIPO_CORES[t.type.name]||'#666';
+    const pt=TIPO_PT[t.type.name]||t.type.name;
+    return `<span class="galar-type-tag" style="background:${cor};color:#fff;padding:4px 12px;font-size:12px;">${pt}</span>`;
+  }).join('');
+  const stats = p.stats.map(s=>{
+    const n = {hp:'HP',attack:'Ataque',defense:'Defesa','special-attack':'Atq. Esp.','special-defense':'Def. Esp.',speed:'Velocidade'}[s.stat.name]||s.stat.name;
+    const pct = Math.min(100, Math.round(s.base_stat/255*100));
+    return `<div style="margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#C8960C;margin-bottom:2px;"><span>${n}</span><span>${s.base_stat}</span></div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#C46A00,#C8960C);border-radius:4px;"></div>
+      </div></div>`;
+  }).join('');
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;';
+  overlay.innerHTML = `<div style="background:linear-gradient(160deg,#1A1035,#2D1B5E 60%,#3D2000);border:2px solid #C8960C;border-radius:16px;padding:28px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;line-height:1;">×</button>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:11px;color:rgba(200,150,12,0.5);font-family:'Cinzel',serif;">#${String(p.id).padStart(3,'0')}</div>
+      <img src="${p.sprites.other['official-artwork'].front_default||p.sprites.front_default||''}" style="width:120px;height:120px;object-fit:contain;" />
+      <div style="font-family:'Cinzel',serif;font-size:20px;color:#C8960C;font-weight:900;margin:8px 0;">${nome}</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">${tipos}</div>
+    </div>
+    <div style="margin-top:16px;">${stats}</div>
+  </div>`;
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+// ============================================================
+// HISTÓRICO DE BATALHA
+// ============================================================
+let _hbatListener = null;
+
+function iniciarListenerHistorico() {
+  if (_hbatListener) { db.ref('historico_batalha').off('value', _hbatListener); }
+  _hbatListener = db.ref('historico_batalha').on('value', snap => {
+    const dados = snap.val();
+    renderHistoricoBatalha(dados ? Object.entries(dados).map(([k,v])=>({id:k,...v})).reverse() : []);
+  });
+}
+
+async function carregarHistoricoBatalha() {
+  const mp = document.getElementById('hbat-master-panel');
+  if (mp) mp.style.display = isMaster ? 'block' : 'none';
+  if (!_hbatListener) iniciarListenerHistorico();
+}
+
+function renderHistoricoBatalha(entries) {
+  const list = document.getElementById('hbat-list');
+  if (!list) return;
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="hbat-empty">⚔️ Nenhuma batalha registrada ainda...</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e => `
+    <div class="hbat-entry">
+      ${isMaster ? `<button class="hbat-del-btn" onclick="deletarBatalha('${e.id}')" title="Deletar">🗑</button>` : ''}
+      <div class="hbat-entry-header">
+        <div class="hbat-entry-titulo">⚔️ ${e.titulo||'Batalha'}</div>
+        <div class="hbat-entry-meta">
+          ${e.data ? `<span class="hbat-entry-data">📅 ${e.data}</span>` : ''}
+          ${e.resultado ? `<span class="hbat-entry-resultado">${e.resultado}</span>` : ''}
+        </div>
+      </div>
+      <div class="hbat-entry-desc">${e.desc||''}</div>
+    </div>`).join('');
+}
+
+async function adicionarBatalha() {
+  if (!isMaster) return;
+  const titulo   = document.getElementById('hbat-titulo').value.trim();
+  const data     = document.getElementById('hbat-data').value.trim();
+  const resultado= document.getElementById('hbat-resultado').value.trim();
+  const desc     = document.getElementById('hbat-desc').value.trim();
+  if (!titulo) return showToast('⚠️ Coloque um título para a batalha!', true);
+  await db.ref('historico_batalha').push({ titulo, data, resultado, desc, ts: Date.now() });
+  document.getElementById('hbat-titulo').value = '';
+  document.getElementById('hbat-data').value = '';
+  document.getElementById('hbat-resultado').value = '';
+  document.getElementById('hbat-desc').value = '';
+  showToast('⚔️ Batalha registrada!');
+}
+
+async function deletarBatalha(id) {
+  if (!isMaster) return;
+  await db.ref('historico_batalha/' + id).remove();
+  showToast('🗑️ Batalha removida.');
+}
+
+// ============================================================
+// ÚLTIMA SESSÃO
+// ============================================================
+let _sessaoListener = null;
+
+function iniciarListenerSessao() {
+  if (_sessaoListener) { db.ref('ultima_sessao').off('value', _sessaoListener); }
+  _sessaoListener = db.ref('ultima_sessao').on('value', snap => {
+    const d = snap.val();
+    renderSessao(d);
+  });
+}
+
+async function carregarSessao() {
+  const mp = document.getElementById('sessao-master-panel');
+  if (mp) mp.style.display = isMaster ? 'flex' : 'none';
+  if (!_sessaoListener) iniciarListenerSessao();
+}
+
+function renderSessao(d) {
+  const card  = document.getElementById('sessao-card');
+  const empty = document.getElementById('sessao-empty');
+  if (!d || !d.texto) {
+    if (card) card.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (card)  { card.style.display = 'block'; }
+  if (empty) { empty.style.display = 'none'; }
+  document.getElementById('sessao-card-titulo').textContent = d.titulo || 'Última Sessão';
+  document.getElementById('sessao-card-data').textContent   = d.data   ? '📅 ' + d.data : '';
+  document.getElementById('sessao-card-texto').textContent  = d.texto;
+
+  // Preenche campos do mestre se mestre
+  if (isMaster) {
+    const ti = document.getElementById('sessao-titulo');
+    const te = document.getElementById('sessao-textarea');
+    if (ti && !ti.value) ti.value = d.titulo || '';
+    if (te && !te.value) te.value = d.texto  || '';
+  }
+}
+
+async function salvarSessao() {
+  if (!isMaster) return;
+  const titulo = document.getElementById('sessao-titulo').value.trim();
+  const texto  = document.getElementById('sessao-textarea').value.trim();
+  if (!texto) return showToast('⚠️ Escreva o resumo da sessão!', true);
+  const agora = new Date().toLocaleDateString('pt-BR');
+  await fbSet('ultima_sessao', { titulo: titulo || 'Última Sessão', texto, data: agora });
+  showToast('📖 Resumo salvo!');
+}
+
+// ============================================================
+// AUTO-LOGIN — adicionar inicialização dos listeners novos
+// ============================================================
 async function autoLogin() {
   const savedUser = localStorage.getItem('poke-logged-user');
   const savedPass = localStorage.getItem('poke-logged-pass');
@@ -3556,6 +4149,8 @@ async function autoLogin() {
   aplicarPermissoesMusica();
   gerarTabelaTipos();
   iniciarListenerTipos();
+  iniciarListenerHistorico();
+  iniciarListenerSessao();
 
   // Carrega ficha da nuvem em segundo plano
   try {
