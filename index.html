@@ -7,6 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fichas de Treinadores - Segredo das Poké Esferas</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23fff' stroke='%23222' stroke-width='3'/><path d='M2 50 Q2 2 50 2 Q98 2 98 50Z' fill='%23e53935'/><rect x='2' y='47' width='96' height='6' fill='%23222'/><circle cx='50' cy='50' r='14' fill='%23fff' stroke='%23222' stroke-width='3'/></svg>" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -2327,28 +2328,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Migra contas do localStorage para o Firebase (executa uma vez)
-async function migrarContasParaFirebase() {
-  try {
-    const localAccounts = JSON.parse(localStorage.getItem('poke-accounts') || '{}');
-    if (Object.keys(localAccounts).length === 0) return;
-    const snap = await db.ref('accounts').once('value');
-    const fbAccounts = snap.val() || {};
-    // Só migra contas que ainda não existem no Firebase
-    let temNovo = false;
-    for (const [key, val] of Object.entries(localAccounts)) {
-      if (!fbAccounts[key]) { fbAccounts[key] = val; temNovo = true; }
-    }
-    if (temNovo) {
-      await db.ref('accounts').set(fbAccounts);
-      console.log('✅ Contas migradas para o Firebase com sucesso!');
-    }
-  } catch(e) {
-    console.warn('Migração de contas falhou (sem conexão):', e.message);
-  }
-}
-// Executa migração em background após 2s
-setTimeout(migrarContasParaFirebase, 2000);
 
 // Configura presença online e reconexão automática
 db.ref('.info/connected').on('value', (snap) => {
@@ -2411,14 +2390,7 @@ function showToast(msg, error = false) {
 }
 
 // ============================================================
-// CONTAS (localStorage)
-// ============================================================
-// ============================================================
-// CONTAS — Firebase (principal) + localStorage (cache local)
-// ============================================================
-// ============================================================
-// CONTAS — Firebase como fonte única de verdade
-// Token único salvo no localStorage para auto-login seguro
+// CONTAS — Firebase + Token de Sessão (auto-login)
 // ============================================================
 const TOKEN_KEY  = 'poke-session-token';
 const TOKEN_USER = 'poke-session-user';
@@ -3301,125 +3273,6 @@ async function lancarDados() {
   btn.textContent = '⚡ JOGAR';
 }
 
-async function carregarMusica() {
-  if (!isMaster) return;
-  const input  = document.getElementById('music-url-input');
-  const status = document.getElementById('music-add-status');
-  const url    = input.value.trim();
-  if (!url) { status.textContent = '⚠️ Cole um link do YouTube!'; return; }
-
-  const videoId = extrairVideoId(url);
-  if (!videoId) { status.textContent = '❌ Link inválido. Use um link de vídeo do YouTube.'; return; }
-
-  status.textContent = '⏳ Buscando informações...';
-
-  // Busca título e artista via oEmbed
-  let label    = 'Música ' + (musicSaved.length + 1);
-  let artist   = 'YouTube';
-  let duration = '';
-  try {
-    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
-    if (res.ok) {
-      const j  = await res.json();
-      label    = j.title        || label;
-      artist   = j.author_name  || artist;
-    }
-  } catch {}
-
-  // Evita duplicatas
-  const jaExiste = musicSaved.find(s => s.videoId === videoId);
-  if (!jaExiste) {
-    musicSaved.push({ videoId, label, artist, duration, url });
-    await db.ref('musica/saved').set(musicSaved);
-  }
-
-  // Define como música atual e toca
-  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
-
-  input.value = '';
-  status.textContent = '✅ Adicionado: ' + label;
-  setTimeout(() => status.textContent = '', 3000);
-}
-
-async function tocarSalva(videoId) {
-  if (!isMaster) return;
-  await db.ref('musica/estado').set({ videoId, paused: false, startTime: Date.now(), ts: Date.now() });
-}
-
-async function deletarMusica(videoId) {
-  if (!isMaster) return;
-  musicSaved = musicSaved.filter(s => s.videoId !== videoId);
-  await db.ref('musica/saved').set(musicSaved.length > 0 ? musicSaved : null);
-  renderMusicList();
-}
-
-function renderMusicList() {
-  const container = document.getElementById('music-saved-list-items');
-  const countEl   = document.getElementById('music-playlist-count');
-  const wrapEl    = document.getElementById('music-playlist-wrap');
-  if (!container) return;
-
-  // Todos veem a playlist
-  if (wrapEl) wrapEl.style.display = 'block';
-  if (countEl) countEl.textContent = (musicSaved ? musicSaved.length : 0) + ' músicas';
-
-  if (!musicSaved || musicSaved.length === 0) {
-    container.innerHTML = `<div style="color:rgba(200,150,12,0.4);font-size:12px;text-align:center;padding:24px 16px;">
-      Nenhuma música ainda<br><span style="font-size:10px;opacity:0.6;">Cole um link do YouTube acima!</span>
-    </div>`;
-    return;
-  }
-
-  container.innerHTML = '';
-  musicSaved.forEach((s, idx) => {
-    const isActive = s.videoId === currentVideoId;
-    const thumb    = `https://img.youtube.com/vi/${s.videoId}/mqdefault.jpg`;
-    const artist   = s.artist || 'YouTube';
-    const duration = s.duration || '';
-
-    const item = document.createElement('div');
-    item.className = 'music-playlist-item' + (isActive ? ' active' : '');
-
-    item.innerHTML = `
-      <div class="mpi-num ${isActive ? 'playing' : ''}">${isActive ? '▶' : (idx + 1)}</div>
-      <div class="mpi-thumb-wrap">
-        <img class="mpi-thumb" src="${thumb}" alt="" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect fill=\'%23222\' width=\'80\' height=\'50\'/%3E%3Ctext x=\'40\' y=\'28\' text-anchor=\'middle\' fill=\'%23666\' font-size=\'18\'%3E🎵%3C/text%3E%3C/svg%3E'" />
-        ${duration ? `<span class="mpi-duration">${duration}</span>` : ''}
-      </div>
-      <div class="mpi-info">
-        <div class="mpi-title ${isActive ? 'active' : ''}" title="${s.label}">${s.label}</div>
-        <div class="mpi-artist">${artist}</div>
-      </div>
-      ${isMaster ? `
-      <div class="mpi-actions">
-        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},-1)" title="Subir">↑</button>
-        <button class="mpi-btn" onclick="event.stopPropagation();moverMusica(${idx},1)"  title="Descer">↓</button>
-        <button class="mpi-btn del" onclick="event.stopPropagation();deletarMusica('${s.videoId}')" title="Remover">✕</button>
-      </div>` : ''}
-    `;
-
-    // Mestre clica para tocar; jogador só visualiza
-    if (isMaster) {
-      item.onclick = () => tocarSalva(s.videoId);
-      item.style.cursor = 'pointer';
-    } else {
-      item.style.cursor = 'default';
-      item.title = 'Só o Mestre pode trocar a música';
-    }
-    container.appendChild(item);
-  });
-}
-
-async function moverMusica(idx, dir) {
-  if (!isMaster) return;
-  const novo = idx + dir;
-  if (novo < 0 || novo >= musicSaved.length) return;
-  const tmp = musicSaved[idx];
-  musicSaved[idx]  = musicSaved[novo];
-  musicSaved[novo] = tmp;
-  await db.ref('musica/saved').set(musicSaved);
-}
-
 // ============================================================
 // MÚSICA — YouTube IFrame API
 // ============================================================
@@ -3892,16 +3745,6 @@ var RESP = {
 
   habilidades: 'Habilidades Especiais:\n\nChama/Torrente/Espessura: move do tipo +50% com HP baixo\nEstatica: 30% de paralisar ao contato fisico\nLevitacao: imune a moves de Terra\nSeca: invoca sol intenso ao entrar\nChuvarada: invoca chuva ao entrar\nIntimidacao: reduz Ataque do oponente ao entrar\nImpulso: aumenta Velocidade a cada turno\n\nMais: bulbapedia.bulbagarden.net/wiki/Ability'
 };
-
-function detectarIntencao(t) {
-  t = t.toLowerCase();
-  if (t.indexOf('tipo') >= 0 || t.indexOf('fraqueza') >= 0 || t.indexOf('efetiv') >= 0) return 'tipos';
-  if (t.indexOf('status') >= 0 || t.indexOf('paralisi') >= 0 || t.indexOf('veneno') >= 0 || t.indexOf('sono') >= 0) return 'status';
-  if (t.indexOf('lendari') >= 0 || t.indexOf('solgaleo') >= 0 || t.indexOf('lunala') >= 0 || t.indexOf('alola') >= 0) return 'lendarios';
-  if (t.indexOf('evolu') >= 0) return 'evolucao';
-  if (t.indexOf('habilidad') >= 0) return 'habilidades';
-  return null;
-}
 
 function extrairNome(texto) {
   var limpo = texto.toLowerCase()
@@ -4422,11 +4265,6 @@ async function salvarSessao() {
   await fbSet('ultima_sessao', { titulo: titulo || 'Última Sessão', texto, data: agora });
   showToast('📖 Resumo salvo!');
 }
-
-  await fbSet('ultima_sessao', { titulo: titulo || 'Última Sessão', texto, data: agora });
-  showToast('📖 Resumo salvo!');
-}
-
 // ============================================================
 // POKÉDEX NACIONAL COMPLETA
 // ============================================================
