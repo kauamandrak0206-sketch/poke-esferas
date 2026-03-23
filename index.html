@@ -2433,16 +2433,32 @@ function gerarToken() {
 async function getAccounts() {
   try {
     const snap = await db.ref('accounts').once('value');
-    const fb   = snap.val() || {};
-    if (Object.keys(fb).length > 0) {
-      // Salva cache para offline
-      try { localStorage.setItem('poke-accounts-cache', JSON.stringify(fb)); } catch {}
-      return fb;
-    }
+    let fb = snap.val() || {};
+
+    // Migra contas legadas do poke-accounts para o Firebase (silencioso)
+    try {
+      const legado = JSON.parse(localStorage.getItem('poke-accounts') || '{}');
+      let changed = false;
+      for (const [k, v] of Object.entries(legado)) {
+        if (!fb[k]) { fb[k] = v; changed = true; }
+      }
+      if (changed) {
+        await db.ref('accounts').set(fb);
+        console.log('✅ Contas legadas sincronizadas ao Firebase.');
+      }
+    } catch {}
+
+    // Salva cache local
+    try { localStorage.setItem('poke-accounts-cache', JSON.stringify(fb)); } catch {}
+    return fb;
   } catch {}
-  // Fallback: cache local
-  try { return JSON.parse(localStorage.getItem('poke-accounts-cache') || localStorage.getItem('poke-accounts') || '{}'); }
-  catch { return {}; }
+  // Offline: cache ou legado
+  try {
+    return JSON.parse(
+      localStorage.getItem('poke-accounts-cache') ||
+      localStorage.getItem('poke-accounts') || '{}'
+    );
+  } catch { return {}; }
 }
 
 // Salva contas no Firebase E cache local
@@ -2491,40 +2507,8 @@ async function validarSessao(token) {
   } catch { return null; }
 }
 
-// Migra contas legadas do localStorage para Firebase (roda 1x)
-async function migrarContasLegadas() {
-  try {
-    const legado = localStorage.getItem('poke-accounts');
-    if (!legado) return;
-    const localAcc = JSON.parse(legado);
-    if (Object.keys(localAcc).length === 0) return;
-    const snap = await db.ref('accounts').once('value');
-    const fbAcc = snap.val() || {};
-    let changed = false;
-    for (const [k, v] of Object.entries(localAcc)) {
-      if (!fbAcc[k]) { fbAcc[k] = v; changed = true; }
-    }
-    if (changed) {
-      await db.ref('accounts').set(fbAcc);
-      console.log('✅ Contas legadas migradas para Firebase.');
-    }
-    // Migra credenciais legadas para tokens
-    const legUser = localStorage.getItem('poke-logged-user');
-    const legPass = localStorage.getItem('poke-logged-pass');
-    if (legUser && legPass) {
-      const acc = fbAcc[legUser.toLowerCase()];
-      if (acc && acc.password === legPass) {
-        const token = gerarToken();
-        await salvarTokenSessao(acc.name, token);
-      }
-      localStorage.removeItem('poke-logged-user');
-      localStorage.removeItem('poke-logged-pass');
-    }
-  } catch(e) {
-    console.warn('Migração legada falhou:', e.message);
-  }
-}
-setTimeout(migrarContasLegadas, 1500);
+// Migração de contas legadas agora é feita dentro do autoLogin
+
 
 // ============================================================
 // LOGIN UI
@@ -5069,75 +5053,95 @@ function pkdxAbrirModal(p) {
 // AUTO-LOGIN — baseado em token único no Firebase
 // Funciona em qualquer dispositivo, qualquer navegador
 // ============================================================
+// ============================================================
+// AUTO-LOGIN — unificado, funciona com token novo E credenciais legadas
+// ============================================================
 async function autoLogin() {
   const token    = localStorage.getItem(TOKEN_KEY);
   const userName = localStorage.getItem(TOKEN_USER);
+  const legUser  = localStorage.getItem('poke-logged-user');
+  const legPass  = localStorage.getItem('poke-logged-pass');
 
-  // Sem token salvo → mostra login normalmente
-  if (!token || !userName) return;
+  // Nada salvo → mostra login normalmente
+  if (!token && !userName && !legUser) return;
 
   // Spinner de reconexão
   const loadingDiv = document.createElement('div');
-  loadingDiv.id = 'autologin-loading';
   loadingDiv.style.cssText = `
-    position:fixed;inset:0;background:linear-gradient(160deg,#1A1035,#2D1B5E 50%,#7B3F00 80%);
+    position:fixed;inset:0;
+    background:linear-gradient(160deg,#1A1035 0%,#2D1B5E 50%,#7B3F00 80%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     z-index:99999;gap:18px;`;
   loadingDiv.innerHTML = `
-    <div style="font-size:48px;animation:pulse-glow 1.4s ease-in-out infinite;">⚡</div>
-    <div style="width:56px;height:56px;border:4px solid rgba(200,150,12,0.25);
-      border-top-color:#C8960C;border-radius:50%;animation:spin 0.75s linear infinite;"></div>
-    <div style="font-family:'Cinzel',serif;color:#C8960C;font-size:15px;
+    <div style="font-size:52px;animation:pglow 1.4s ease-in-out infinite;">⚡</div>
+    <div style="width:56px;height:56px;border:4px solid rgba(200,150,12,0.2);
+      border-top-color:#C8960C;border-radius:50%;animation:pspin 0.75s linear infinite;"></div>
+    <div style="font-family:'Cinzel',serif;color:#C8960C;font-size:14px;
       letter-spacing:3px;text-align:center;">Reconectando...<br>
-      <span style="font-size:12px;opacity:.7;letter-spacing:1px;">${userName}</span></div>
+      <span style="font-size:11px;opacity:.6;">${userName || legUser || ''}</span></div>
     <style>
-      @keyframes spin{to{transform:rotate(360deg)}}
-      @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 8px #C8960C)}50%{filter:drop-shadow(0 0 20px #C8960C)}}
+      @keyframes pspin{to{transform:rotate(360deg)}}
+      @keyframes pglow{0%,100%{opacity:.6}50%{opacity:1}}
     </style>`;
   document.body.appendChild(loadingDiv);
 
+  const sair = () => loadingDiv.remove();
+
   try {
-    // 1. Valida token no Firebase
-    const validUser = await validarSessao(token);
+    // ── CAMINHO 1: tem token → valida no Firebase ──────────────
+    if (token && userName) {
+      const validUser = await validarSessao(token);
+      if (validUser) {
+        const accounts = await getAccounts();
+        const account  = accounts[validUser.toLowerCase()];
+        if (account) {
+          await salvarTokenSessao(account.name, token); // renova 30 dias
+          sair();
+          await entrarNoApp(account);
+          return;
+        }
+      }
+      // Token inválido — limpa e tenta credenciais legadas abaixo
+      try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_USER); } catch {}
+    }
 
-    if (validUser) {
-      // Token válido → busca dados da conta no Firebase
+    // ── CAMINHO 2: credenciais legadas (usuário/senha) ─────────
+    if (legUser && legPass) {
       const accounts = await getAccounts();
-      const account  = accounts[validUser.toLowerCase()];
-
-      if (account) {
-        // Renova o token por mais 30 dias
-        await salvarTokenSessao(account.name, token);
-        loadingDiv.remove();
+      const account  = accounts[legUser.toLowerCase()];
+      if (account && account.password === legPass) {
+        // Gera token novo para substituir as credenciais legadas
+        const novoToken = gerarToken();
+        await salvarTokenSessao(account.name, novoToken);
+        try { localStorage.removeItem('poke-logged-user'); localStorage.removeItem('poke-logged-pass'); } catch {}
+        sair();
         await entrarNoApp(account);
         return;
       }
+      // Credenciais erradas — limpa
+      try { localStorage.removeItem('poke-logged-user'); localStorage.removeItem('poke-logged-pass'); } catch {}
     }
 
-    // 2. Token inválido ou conta não encontrada → limpa e mostra login
+    // ── CAMINHO 3: tudo falhou → mostra login ─────────────────
     await removerSessao();
-    loadingDiv.remove();
+    sair();
 
   } catch(e) {
     console.error('Erro no auto-login:', e);
-
-    // 3. Firebase offline → tenta cache local como último recurso
+    // Offline? Tenta cache local como último recurso
     try {
       const cache = JSON.parse(localStorage.getItem('poke-accounts-cache') || '{}');
-      const acc   = cache[userName.toLowerCase()];
-      if (acc) {
-        loadingDiv.remove();
-        await entrarNoApp(acc);
-        return;
-      }
+      const nome  = userName || legUser || '';
+      const acc   = cache[nome.toLowerCase()];
+      if (acc) { sair(); await entrarNoApp(acc); return; }
     } catch {}
-
-    loadingDiv.remove();
+    sair();
   }
 }
 
 window.addEventListener('load', () => {
-  setTimeout(autoLogin, 200);
+  // Roda imediatamente — sem delay desnecessário
+  autoLogin();
 });
 </script>
 </body>
