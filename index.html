@@ -455,18 +455,6 @@
     font-size: 12px; color: #333; outline: none; text-align: center;
   }
   .items-table td input:focus { background: #EFE0C0; }
-  /* ===== FOTO TIME ===== */
-  .team-photo-wrap {
-    width: 72px; height: 72px; border-radius: 6px;
-    border: 2px dashed rgba(200,150,12,0.45);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; margin: 0 auto; overflow: hidden;
-    transition: border-color 0.2s, background 0.2s;
-    background: rgba(200,150,12,0.05);
-  }
-  .team-photo-wrap:hover { border-color: #C8960C; background: rgba(200,150,12,0.15); }
-  .team-photo-placeholder { font-size: 22px; pointer-events: none; }
-  .team-photo-img { width: 72px; height: 72px; object-fit: contain; }
   .toast {
     position: fixed; bottom: 30px; right: 30px; background: #2e7d32; color: #fff;
     padding: 14px 24px; border-radius: 10px; font-family: 'Exo 2', sans-serif;
@@ -1562,9 +1550,6 @@
   .pkdx-badge-hisui { background: #5d4037; color: #fff; }
   .pkdx-badge-paldea { background: #f57c00; color: #fff; }
   .pkdx-badge-special { background: #00838f; color: #fff; }
-  .pkdx-badge-ultra { background: #00695c; color: #fff; }
-  .pkdx-badge-paradox { background: #880e4f; color: #fff; }
-  .pkdx-badge-shiny { background: linear-gradient(135deg,#f57f17,#ffd600); color: #1a1035; }
   /* Modal detalhe */
   .pkdx-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.78);
@@ -1903,8 +1888,8 @@
           <div class="poke-table-wrap">
             <table class="poke-table">
               <thead>
-                <tr><th colspan="5" class="header-title">POKÉMONS NO TIME</th></tr>
-                <tr><th style="width:80px;">🖼️ Foto</th><th style="width:80px;">Sprite</th><th>NOMES</th><th>LEVEL</th><th class="hp-col">HP</th></tr>
+                <tr><th colspan="4" class="header-title">POKÉMONS NO TIME</th></tr>
+                <tr><th style="width:44px;">📷</th><th>NOMES</th><th>LEVEL</th><th class="hp-col">HP</th></tr>
               </thead>
               <tbody id="team-tbody"></tbody>
             </table>
@@ -2227,7 +2212,7 @@
 <div id="section-pokedex" style="display:none;">
   <div class="pkdx-container">
     <div class="pkdx-title">📖 Pokédex Nacional</div>
-    <div class="pkdx-subtitle">Todas as regiões • Megas • Regionais • Gigantamax • Ultra Beasts • Pokémon Paradoxo • ✨ Shinies</div>
+    <div class="pkdx-subtitle">Todas as regiões • Megas • Formas Regionais • Gigantamax • Formas Especiais</div>
     <div class="pkdx-controls">
       <input class="pkdx-search" id="pkdx-search" type="text" placeholder="🔍 Buscar por nome ou número..." oninput="pkdxFiltrar()" />
       <select class="pkdx-select" id="pkdx-regiao" onchange="pkdxFiltrar()">
@@ -2245,9 +2230,6 @@
         <option value="gmax">Gigantamax</option>
         <option value="regional">Formas Regionais</option>
         <option value="especial">Formas Especiais</option>
-        <option value="ultra">Ultra Beasts</option>
-        <option value="paradox">Pokémon Paradoxo</option>
-        <option value="shiny">✨ Versões Shiny</option>
       </select>
     </div>
     <div class="pkdx-type-row" id="pkdx-type-row"></div>
@@ -2663,16 +2645,9 @@ function buildTable() {
   for (let i = 0; i < 6; i++) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="text-align:center;padding:2px;width:80px;position:relative;">
-        <div class="team-photo-wrap" onclick="document.getElementById('team-photo-input-${i}').click()" title="Clique para adicionar foto do Pokémon">
-          <img class="team-photo-img" id="team-photo-img-${i}" src="" alt="" style="display:none;width:72px;height:72px;object-fit:contain;border-radius:6px;border:2px solid rgba(200,150,12,0.4);"/>
-          <div class="team-photo-placeholder" id="team-photo-placeholder-${i}">📷</div>
-        </div>
-        <input type="file" id="team-photo-input-${i}" accept="image/*" style="display:none;" onchange="teamPhotoChange(event,${i})"/>
-      </td>
-      <td style="text-align:center;padding:2px;width:80px;">
+      <td style="text-align:center;padding:2px;width:44px;">
         <img class="team-sprite" data-i="${i}" src="" alt="" 
-          style="width:72px;height:72px;object-fit:contain;display:block;margin:0 auto;opacity:0;transition:opacity 0.3s;"
+          style="width:38px;height:38px;object-fit:contain;display:block;margin:0 auto;opacity:0;transition:opacity 0.3s;"
           onerror="this.style.opacity='0'" />
       </td>
       <td><input type="text" class="team-name"  data-i="${i}" oninput="atualizarSprite(${i})"/></td>
@@ -2731,16 +2706,11 @@ function buildTable() {
 // ============================================================
 function getSheetData() {
   const team = [];
-  for (let i = 0; i < 6; i++) {
-    const photoImg = document.getElementById(`team-photo-img-${i}`);
-    const photoSrc = photoImg && photoImg.style.display !== 'none' ? photoImg.src : '';
-    team.push({
-      name:  document.querySelector(`.team-name[data-i="${i}"]`)?.value  || '',
-      level: document.querySelector(`.team-level[data-i="${i}"]`)?.value || '',
-      hp:    document.querySelector(`.team-hp[data-i="${i}"]`)?.value    || '',
-      photo: photoSrc
-    });
-  }
+  for (let i = 0; i < 6; i++) team.push({
+    name:  document.querySelector(`.team-name[data-i="${i}"]`)?.value  || '',
+    level: document.querySelector(`.team-level[data-i="${i}"]`)?.value || '',
+    hp:    document.querySelector(`.team-hp[data-i="${i}"]`)?.value    || ''
+  });
 
   const skills = [];
   for (let p = 0; p < 6; p++) {
@@ -2790,12 +2760,6 @@ function populateSheet(data) {
     const n = document.querySelector(`.team-name[data-i="${i}"]`);  if (n) n.value = t.name;
     const l = document.querySelector(`.team-level[data-i="${i}"]`); if (l) l.value = t.level;
     const h = document.querySelector(`.team-hp[data-i="${i}"]`);    if (h) h.value = t.hp;
-    if (t.photo) {
-      const img = document.getElementById(`team-photo-img-${i}`);
-      const ph  = document.getElementById(`team-photo-placeholder-${i}`);
-      if (img) { img.src = t.photo; img.style.display = 'block'; }
-      if (ph)  { ph.style.display = 'none'; }
-    }
   });
 
   (data.skills || []).forEach((ps, p) =>
@@ -3997,26 +3961,6 @@ function atualizarSprite(i) {
   };
 }
 
-function teamPhotoChange(evt, i) {
-  const file = evt.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById(`team-photo-img-${i}`);
-    const ph  = document.getElementById(`team-photo-placeholder-${i}`);
-    if (img) { img.src = e.target.result; img.style.display = 'block'; }
-    if (ph)  { ph.style.display = 'none'; }
-  };
-  reader.readAsDataURL(file);
-}
-
-function teamPhotoRemove(i) {
-  const img = document.getElementById(`team-photo-img-${i}`);
-  const ph  = document.getElementById(`team-photo-placeholder-${i}`);
-  if (img) { img.src = ''; img.style.display = 'none'; }
-  if (ph)  { ph.style.display = 'flex'; }
-}
-
 function atualizarTodosSprites() {
   for(let i=0;i<6;i++) atualizarSprite(i);
 }
@@ -4351,51 +4295,44 @@ const PKDX_REGIOES = {
 
 // Formas especiais que queremos incluir (slug da PokeAPI)
 const PKDX_FORMAS_ESPECIAIS = [
-  // ── MEGA EVOLUÇÕES KANTO / JOHTO ──
+  // Mega Evoluções Kanto/Johto
   'venusaur-mega','charizard-mega-x','charizard-mega-y','blastoise-mega',
   'beedrill-mega','pidgeot-mega','alakazam-mega','slowbro-mega','gengar-mega',
   'kangaskhan-mega','pinsir-mega','gyarados-mega','aerodactyl-mega',
   'mewtwo-mega-x','mewtwo-mega-y','ampharos-mega','steelix-mega',
   'scizor-mega','heracross-mega','houndoom-mega','tyranitar-mega',
-  // ── MEGA EVOLUÇÕES HOENN ──
+  // Mega Hoenn
   'blaziken-mega','camerupt-mega','swampert-mega','sceptile-mega',
   'gardevoir-mega','sableye-mega','mawile-mega','aggron-mega',
   'medicham-mega','manectric-mega','sharpedo-mega','banette-mega',
   'absol-mega','glalie-mega','salamence-mega','metagross-mega',
   'latias-mega','latios-mega','rayquaza-mega','groudon-primal','kyogre-primal',
-  // ── MEGA EVOLUÇÕES SINNOH / KALOS ──
+  // Mega Sinnoh
   'garchomp-mega','lucario-mega','lopunny-mega','gallade-mega',
-  'audino-mega','diancie-mega','abomasnow-mega',
-  // ── FORMAS REGIONAIS ALOLA ──
+  'audino-mega','diancie-mega',
+  // Mega Kalos
+  'abomasnow-mega',
+  // Formas Regionais Alola
   'rattata-alola','raticate-alola','raichu-alola','sandshrew-alola',
   'sandslash-alola','vulpix-alola','ninetales-alola','diglett-alola',
   'dugtrio-alola','meowth-alola','persian-alola','geodude-alola',
-  'graveler-alola','golem-alola','grimer-alola','muk-alola',
-  'exeggutor-alola','marowak-alola',
-  // ── FORMAS REGIONAIS GALAR ──
-  'ponyta-galar','rapidash-galar','meowth-galar','slowpoke-galar',
-  'slowbro-galar','slowking-galar','farfetchd-galar','weezing-galar',
-  'mr-mime-galar','corsola-galar','zigzagoon-galar','linoone-galar',
-  'darumaka-galar','darmanitan-galar-standard','yamask-galar','stunfisk-galar',
-  'articuno-galar','zapdos-galar','moltres-galar',
-  // ── FORMAS REGIONAIS HISUI ──
+  'graveler-alola','golem-alola','ponyta-galar','rapidash-galar',
+  'grimer-alola','muk-alola','exeggutor-alola','marowak-alola',
+  // Formas Regionais Galar
+  'meowth-galar','slowpoke-galar','slowbro-galar','slowking-galar',
+  'farfetchd-galar','weezing-galar','mr-mime-galar','corsola-galar',
+  'zigzagoon-galar','linoone-galar','darumaka-galar','darmanitan-galar',
+  'yamask-galar','stunfisk-galar','articuno-galar','zapdos-galar','moltres-galar',
+  // Formas Regionais Hisui
   'typhlosion-hisui','samurott-hisui','decidueye-hisui','braviary-hisui',
   'lilligant-hisui','sliggoo-hisui','goodra-hisui','avalugg-hisui',
   'zorua-hisui','zoroark-hisui','sneasel-hisui','sneasler',
-  'voltorb-hisui','electrode-hisui','qwilfish-hisui','overqwil',
-  'growlithe-hisui','arcanine-hisui','dialga-origin','palkia-origin',
-  'basculin-white-striped','ursaluna',
-  // ── FORMAS REGIONAIS PALDEA ──
-  'tauros-paldea-combat','tauros-paldea-blaze','tauros-paldea-aqua',
-  'wooper-paldea','clodsire',
-  // ── FORMAS ESPECIAIS ──
+  // Formas Especiais
   'greninja-ash','hoopa-unbound','zygarde-10','zygarde-complete',
   'necrozma-dusk-mane','necrozma-dawn-wings','necrozma-ultra',
   'calyrex-ice','calyrex-shadow','urshifu-rapid-strike',
-  'enamorus-therian','ogerpon-wellspring','ogerpon-hearthflame','ogerpon-cornerstone',
-  'terapagos-terastal','terapagos-stellar',
-  'pecharunt',
-  // ── GIGANTAMAX ──
+  'enamorus-therian',
+  // Gigantamax
   'charizard-gmax','butterfree-gmax','pikachu-gmax','meowth-gmax',
   'machamp-gmax','gengar-gmax','kingler-gmax','lapras-gmax',
   'eevee-gmax','snorlax-gmax','garbodor-gmax','melmetal-gmax',
@@ -4404,175 +4341,8 @@ const PKDX_FORMAS_ESPECIAIS = [
   'appletun-gmax','sandaconda-gmax','toxtricity-amped-gmax',
   'centiskorch-gmax','hatterene-gmax','grimmsnarl-gmax',
   'alcremie-gmax','copperajah-gmax','duraludon-gmax',
-  'eternatus-eternamax',
-  // ── ULTRA BEASTS ──
-  'nihilego','buzzwole','pheromosa','xurkitree','celesteela',
-  'kartana','guzzlord','poipole','naganadel','stakataka','blacephalon',
-  // ── POKÉMON PARADOXO PASSADO (Escarlate) ──
-  'great-tusk','scream-tail','brute-bonnet','flutter-mane',
-  'slither-wing','sandy-shocks','roaring-moon','walking-wake',
-  // ── POKÉMON PARADOXO FUTURO (Violeta) ──
-  'iron-treads','iron-bundle','iron-hands','iron-jugulis',
-  'iron-moth','iron-thorns','iron-valiant','iron-leaves',
-  'iron-boulder','iron-crown',
-  // ── SHINIES MEGA EVOLUÇÕES ──
-  'charizard-mega-x-shiny','charizard-mega-y-shiny','venusaur-mega-shiny',
-  'blastoise-mega-shiny','mewtwo-mega-x-shiny','mewtwo-mega-y-shiny',
-  'rayquaza-mega-shiny','lucario-mega-shiny','gardevoir-mega-shiny',
-  'gengar-mega-shiny','gyarados-mega-shiny','blaziken-mega-shiny',
-  'swampert-mega-shiny','sceptile-mega-shiny','salamence-mega-shiny',
-  'metagross-mega-shiny','garchomp-mega-shiny',
-  // ── SHINIES GIGANTAMAX ──
-  'charizard-gmax-shiny','pikachu-gmax-shiny','gengar-gmax-shiny',
-  'snorlax-gmax-shiny','melmetal-gmax-shiny',
-  // ── SHINIES ULTRA BEASTS ──
-  'nihilego-shiny','buzzwole-shiny','pheromosa-shiny','xurkitree-shiny',
-  'celesteela-shiny','kartana-shiny','guzzlord-shiny',
-  'naganadel-shiny','stakataka-shiny','blacephalon-shiny',
-  // ── SHINIES PARADOXO ──
-  'great-tusk-shiny','scream-tail-shiny','brute-bonnet-shiny',
-  'flutter-mane-shiny','slither-wing-shiny','sandy-shocks-shiny',
-  'roaring-moon-shiny','iron-treads-shiny','iron-bundle-shiny',
-  'iron-hands-shiny','iron-jugulis-shiny','iron-moth-shiny',
-  'iron-thorns-shiny','iron-valiant-shiny',
-  // ── SHINIES LENDÁRIOS / RAROS ──
-  'mewtwo-shiny','lugia-shiny','ho-oh-shiny','celebi-shiny',
-  'rayquaza-shiny','deoxys-shiny','jirachi-shiny','groudon-shiny','kyogre-shiny',
-  'dialga-shiny','palkia-shiny','giratina-shiny','darkrai-shiny','arceus-shiny',
-  'reshiram-shiny','zekrom-shiny','kyurem-shiny','xerneas-shiny','yveltal-shiny',
-  'zygarde-shiny','solgaleo-shiny','lunala-shiny','necrozma-shiny',
-  'zacian-shiny','zamazenta-shiny','eternatus-shiny','calyrex-shiny',
-  'koraidon-shiny','miraidon-shiny',
-  // ── SHINIES PSEUDO-LENDÁRIOS ──
-  'dragonite-shiny','tyranitar-shiny','salamence-shiny','metagross-shiny',
-  'garchomp-shiny','hydreigon-shiny','goodra-shiny','kommo-o-shiny',
-  'dragapult-shiny','baxcalibur-shiny',
-  // ── SHINIES STARTERS ──
-  'bulbasaur-shiny','charmander-shiny','squirtle-shiny',
-  'chikorita-shiny','cyndaquil-shiny','totodile-shiny',
-  'treecko-shiny','torchic-shiny','mudkip-shiny',
-  'turtwig-shiny','chimchar-shiny','piplup-shiny',
-  'snivy-shiny','tepig-shiny','oshawott-shiny',
-  'chespin-shiny','fennekin-shiny','froakie-shiny',
-  'rowlet-shiny','litten-shiny','popplio-shiny',
-  'grookey-shiny','scorbunny-shiny','sobble-shiny',
-  'sprigatito-shiny','fuecoco-shiny','quaxly-shiny',
-  'venusaur-shiny','charizard-shiny','blastoise-shiny',
-  'meganium-shiny','typhlosion-shiny','feraligatr-shiny',
-  'sceptile-shiny','blaziken-shiny','swampert-shiny',
-  'torterra-shiny','infernape-shiny','empoleon-shiny',
-  'serperior-shiny','emboar-shiny','samurott-shiny',
-  'chesnaught-shiny','delphox-shiny','greninja-shiny',
-  'decidueye-shiny','incineroar-shiny','primarina-shiny',
-  'rillaboom-shiny','cinderace-shiny','inteleon-shiny',
-  'meowscarada-shiny','skeledirge-shiny','quaquaval-shiny',
-  // ── SHINIES POPULARES ──
-  'pikachu-shiny','eevee-shiny','gyarados-shiny','magikarp-shiny',
-  'umbreon-shiny','espeon-shiny','vaporeon-shiny','jolteon-shiny',
-  'flareon-shiny','glaceon-shiny','leafeon-shiny','sylveon-shiny',
-  'gengar-shiny','lucario-shiny','gardevoir-shiny','mimikyu-shiny',
-  'absol-shiny','ralts-shiny','kirlia-shiny','gallade-shiny',
-  'togekiss-shiny','togetic-shiny','togepi-shiny',
-  'riolu-shiny','zoroark-shiny','zorua-shiny',
-  'volcarona-shiny','larvesta-shiny','chansey-shiny','blissey-shiny',
-  'dratini-shiny','dragonair-shiny',
-  'beldum-shiny','metang-shiny','bagon-shiny','shelgon-shiny',
-  'gible-shiny','gabite-shiny',
-  'feebas-shiny','milotic-shiny',
-  'shinx-shiny','luxio-shiny','luxray-shiny',
-  'goomy-shiny','sliggoo-shiny',
-  'dreepy-shiny','drakloak-shiny',
-  'froakie-shiny',
-  'mimikyu-shiny','hatenna-shiny','hattrem-shiny','hatterene-shiny',
-  'applin-shiny','flapple-shiny','appletun-shiny',
-  'larvitar-shiny','pupitar-shiny',
-  'deino-shiny','zweilous-shiny',
-  'jangmo-o-shiny','hakamo-o-shiny',
-  'frigibax-shiny','arctibax-shiny',
-  'pawmi-shiny','pawmo-shiny','pawmot-shiny',
-  'fidough-shiny','dachsbun-shiny',
-  'tinkatink-shiny','tinkatuff-shiny','tinkaton-shiny',
-  'ceruledge-shiny','armarouge-shiny'
+  'eternatus-eternamax'
 ];
-
-// Slugs que são shiny (para badge e filtro)
-const PKDX_SLUGS_SHINY = new Set([
-  'charizard-mega-x-shiny','charizard-mega-y-shiny','venusaur-mega-shiny',
-  'blastoise-mega-shiny','mewtwo-mega-x-shiny','mewtwo-mega-y-shiny',
-  'rayquaza-mega-shiny','lucario-mega-shiny','gardevoir-mega-shiny',
-  'gengar-mega-shiny','gyarados-mega-shiny','blaziken-mega-shiny',
-  'swampert-mega-shiny','sceptile-mega-shiny','salamence-mega-shiny',
-  'metagross-mega-shiny','garchomp-mega-shiny',
-  'charizard-gmax-shiny','pikachu-gmax-shiny','gengar-gmax-shiny',
-  'snorlax-gmax-shiny','melmetal-gmax-shiny',
-  'nihilego-shiny','buzzwole-shiny','pheromosa-shiny','xurkitree-shiny',
-  'celesteela-shiny','kartana-shiny','guzzlord-shiny',
-  'naganadel-shiny','stakataka-shiny','blacephalon-shiny',
-  'great-tusk-shiny','scream-tail-shiny','brute-bonnet-shiny',
-  'flutter-mane-shiny','slither-wing-shiny','sandy-shocks-shiny',
-  'roaring-moon-shiny','iron-treads-shiny','iron-bundle-shiny',
-  'iron-hands-shiny','iron-jugulis-shiny','iron-moth-shiny',
-  'iron-thorns-shiny','iron-valiant-shiny',
-  'mewtwo-shiny','lugia-shiny','ho-oh-shiny','celebi-shiny',
-  'rayquaza-shiny','deoxys-shiny','jirachi-shiny','groudon-shiny','kyogre-shiny',
-  'dialga-shiny','palkia-shiny','giratina-shiny','darkrai-shiny','arceus-shiny',
-  'reshiram-shiny','zekrom-shiny','kyurem-shiny','xerneas-shiny','yveltal-shiny',
-  'zygarde-shiny','solgaleo-shiny','lunala-shiny','necrozma-shiny',
-  'zacian-shiny','zamazenta-shiny','eternatus-shiny','calyrex-shiny',
-  'koraidon-shiny','miraidon-shiny',
-  'dragonite-shiny','tyranitar-shiny','salamence-shiny','metagross-shiny',
-  'garchomp-shiny','hydreigon-shiny','goodra-shiny','kommo-o-shiny',
-  'dragapult-shiny','baxcalibur-shiny',
-  'bulbasaur-shiny','charmander-shiny','squirtle-shiny',
-  'chikorita-shiny','cyndaquil-shiny','totodile-shiny',
-  'treecko-shiny','torchic-shiny','mudkip-shiny',
-  'turtwig-shiny','chimchar-shiny','piplup-shiny',
-  'snivy-shiny','tepig-shiny','oshawott-shiny',
-  'chespin-shiny','fennekin-shiny','froakie-shiny',
-  'rowlet-shiny','litten-shiny','popplio-shiny',
-  'grookey-shiny','scorbunny-shiny','sobble-shiny',
-  'sprigatito-shiny','fuecoco-shiny','quaxly-shiny',
-  'venusaur-shiny','charizard-shiny','blastoise-shiny',
-  'meganium-shiny','typhlosion-shiny','feraligatr-shiny',
-  'sceptile-shiny','blaziken-shiny','swampert-shiny',
-  'torterra-shiny','infernape-shiny','empoleon-shiny',
-  'serperior-shiny','emboar-shiny','samurott-shiny',
-  'chesnaught-shiny','delphox-shiny','greninja-shiny',
-  'decidueye-shiny','incineroar-shiny','primarina-shiny',
-  'rillaboom-shiny','cinderace-shiny','inteleon-shiny',
-  'meowscarada-shiny','skeledirge-shiny','quaquaval-shiny',
-  'pikachu-shiny','eevee-shiny','gyarados-shiny','magikarp-shiny',
-  'umbreon-shiny','espeon-shiny','vaporeon-shiny','jolteon-shiny',
-  'flareon-shiny','glaceon-shiny','leafeon-shiny','sylveon-shiny',
-  'gengar-shiny','lucario-shiny','gardevoir-shiny','mimikyu-shiny',
-  'absol-shiny','ralts-shiny','kirlia-shiny','gallade-shiny',
-  'togekiss-shiny','togetic-shiny','togepi-shiny',
-  'riolu-shiny','zoroark-shiny','zorua-shiny',
-  'volcarona-shiny','larvesta-shiny','chansey-shiny','blissey-shiny',
-  'dratini-shiny','dragonair-shiny',
-  'beldum-shiny','metang-shiny','bagon-shiny','shelgon-shiny',
-  'gible-shiny','gabite-shiny',
-  'feebas-shiny','milotic-shiny',
-  'shinx-shiny','luxio-shiny','luxray-shiny',
-  'goomy-shiny','sliggoo-shiny',
-  'dreepy-shiny','drakloak-shiny',
-  'hatenna-shiny','hattrem-shiny','hatterene-shiny',
-  'applin-shiny','flapple-shiny','appletun-shiny',
-  'larvitar-shiny','pupitar-shiny',
-  'deino-shiny','zweilous-shiny',
-  'jangmo-o-shiny','hakamo-o-shiny',
-  'frigibax-shiny','arctibax-shiny',
-  'pawmi-shiny','pawmo-shiny','pawmot-shiny',
-  'fidough-shiny','dachsbun-shiny',
-  'tinkatink-shiny','tinkatuff-shiny','tinkaton-shiny',
-  'ceruledge-shiny','armarouge-shiny'
-]);
-
-// IDs das Ultra Beasts
-const PKDX_ULTRA_BEASTS_IDS = new Set([793,794,795,796,797,798,799,803,804,805,806]);
-
-// IDs dos Pokémon Paradoxo
-const PKDX_PARADOX_IDS = new Set([984,985,986,987,988,989,990,991,992,993,994,995,1005,1006,1007,1008,1009,1010]);
 
 // Cache e estado
 let _pkdxBasicos = [];       // Pokémon base 1..1025
@@ -4869,161 +4639,17 @@ const PKDX_NOMES_FORMAS = {
   'centiskorch-gmax':'Centiskorch Gigantamax','hatterene-gmax':'Hatterene Gigantamax',
   'grimmsnarl-gmax':'Grimmsnarl Gigantamax','alcremie-gmax':'Alcremie Gigantamax',
   'copperajah-gmax':'Copperajah Gigantamax','duraludon-gmax':'Duraludon Gigantamax',
-  'eternatus-eternamax':'Eternatus Eternamax',
-  // Ultra Beasts slugs shiny
-  'nihilego-shiny':'Nihilego Shiny','buzzwole-shiny':'Buzzwole Shiny',
-  'pheromosa-shiny':'Pheromosa Shiny','xurkitree-shiny':'Xurkitree Shiny',
-  'celesteela-shiny':'Celesteela Shiny','kartana-shiny':'Kartana Shiny',
-  'guzzlord-shiny':'Guzzlord Shiny','naganadel-shiny':'Naganadel Shiny',
-  'stakataka-shiny':'Stakataka Shiny','blacephalon-shiny':'Blacephalon Shiny',
-  // Paradox slugs shiny
-  'great-tusk-shiny':'Grande Presa Shiny','scream-tail-shiny':'Cauda Gritante Shiny',
-  'brute-bonnet-shiny':'Chapéu Bruto Shiny','flutter-mane-shiny':'Juba Flutuante Shiny',
-  'slither-wing-shiny':'Asa Deslizante Shiny','sandy-shocks-shiny':'Choques Arenosos Shiny',
-  'roaring-moon-shiny':'Lua Rugidora Shiny','iron-treads-shiny':'Passadas de Ferro Shiny',
-  'iron-bundle-shiny':'Pacote de Ferro Shiny','iron-hands-shiny':'Mãos de Ferro Shiny',
-  'iron-jugulis-shiny':'Jugulis de Ferro Shiny','iron-moth-shiny':'Mariposa de Ferro Shiny',
-  'iron-thorns-shiny':'Espinhos de Ferro Shiny','iron-valiant-shiny':'Valente de Ferro Shiny',
-  // Paradox slugs
-  'great-tusk':'Grande Presa','scream-tail':'Cauda Gritante',
-  'brute-bonnet':'Chapéu Bruto','flutter-mane':'Juba Flutuante',
-  'slither-wing':'Asa Deslizante','sandy-shocks':'Choques Arenosos',
-  'roaring-moon':'Lua Rugidora','walking-wake':'Trilha Desperta',
-  'iron-treads':'Passadas de Ferro','iron-bundle':'Pacote de Ferro',
-  'iron-hands':'Mãos de Ferro','iron-jugulis':'Jugulis de Ferro',
-  'iron-moth':'Mariposa de Ferro','iron-thorns':'Espinhos de Ferro',
-  'iron-valiant':'Valente de Ferro','iron-leaves':'Folhas de Ferro',
-  'iron-boulder':'Pedra de Ferro','iron-crown':'Coroa de Ferro',
-  // Formas Paldea
-  'tauros-paldea-combat':'Tauros de Paldea (Combate)',
-  'tauros-paldea-blaze':'Tauros de Paldea (Chama)',
-  'tauros-paldea-aqua':'Tauros de Paldea (Aqua)',
-  'wooper-paldea':'Wooper de Paldea','clodsire':'Clodsire',
-  // Formas Hisui extras
-  'voltorb-hisui':'Voltorb de Hisui','electrode-hisui':'Electrode de Hisui',
-  'qwilfish-hisui':'Qwilfish de Hisui','overqwil':'Overqwil',
-  'growlithe-hisui':'Growlithe de Hisui','arcanine-hisui':'Arcanine de Hisui',
-  'dialga-origin':'Dialga (Forma Origem)','palkia-origin':'Palkia (Forma Origem)',
-  'basculin-white-striped':'Basculin (Listras Brancas)','ursaluna':'Ursaluna',
-  // Formas Scarlet/Violet
-  'ogerpon-wellspring':'Ogerpon (Máscara da Fonte)',
-  'ogerpon-hearthflame':'Ogerpon (Máscara do Lar)',
-  'ogerpon-cornerstone':'Ogerpon (Máscara da Pedra)',
-  'terapagos-terastal':'Terapagos (Forma Terastal)',
-  'terapagos-stellar':'Terapagos (Forma Estelar)',
-  'pecharunt':'Pecharunt',
-  // Starters shiny
-  'bulbasaur-shiny':'Bulbasaur Shiny','charmander-shiny':'Charmander Shiny',
-  'squirtle-shiny':'Squirtle Shiny','venusaur-shiny':'Venusaur Shiny',
-  'charizard-shiny':'Charizard Shiny','blastoise-shiny':'Blastoise Shiny',
-  'chikorita-shiny':'Chikorita Shiny','cyndaquil-shiny':'Cyndaquil Shiny',
-  'totodile-shiny':'Totodile Shiny','meganium-shiny':'Meganium Shiny',
-  'typhlosion-shiny':'Typhlosion Shiny','feraligatr-shiny':'Feraligatr Shiny',
-  'treecko-shiny':'Treecko Shiny','torchic-shiny':'Torchic Shiny',
-  'mudkip-shiny':'Mudkip Shiny','sceptile-shiny':'Sceptile Shiny',
-  'blaziken-shiny':'Blaziken Shiny','swampert-shiny':'Swampert Shiny',
-  'turtwig-shiny':'Turtwig Shiny','chimchar-shiny':'Chimchar Shiny',
-  'piplup-shiny':'Piplup Shiny','torterra-shiny':'Torterra Shiny',
-  'infernape-shiny':'Infernape Shiny','empoleon-shiny':'Empoleon Shiny',
-  'snivy-shiny':'Snivy Shiny','tepig-shiny':'Tepig Shiny','oshawott-shiny':'Oshawott Shiny',
-  'serperior-shiny':'Serperior Shiny','emboar-shiny':'Emboar Shiny','samurott-shiny':'Samurott Shiny',
-  'chespin-shiny':'Chespin Shiny','fennekin-shiny':'Fennekin Shiny','froakie-shiny':'Froakie Shiny',
-  'chesnaught-shiny':'Chesnaught Shiny','delphox-shiny':'Delphox Shiny','greninja-shiny':'Greninja Shiny',
-  'rowlet-shiny':'Rowlet Shiny','litten-shiny':'Litten Shiny','popplio-shiny':'Popplio Shiny',
-  'decidueye-shiny':'Decidueye Shiny','incineroar-shiny':'Incineroar Shiny','primarina-shiny':'Primarina Shiny',
-  'grookey-shiny':'Grookey Shiny','scorbunny-shiny':'Scorbunny Shiny','sobble-shiny':'Sobble Shiny',
-  'rillaboom-shiny':'Rillaboom Shiny','cinderace-shiny':'Cinderace Shiny','inteleon-shiny':'Inteleon Shiny',
-  'sprigatito-shiny':'Sprigatito Shiny','fuecoco-shiny':'Fuecoco Shiny','quaxly-shiny':'Quaxly Shiny',
-  'meowscarada-shiny':'Meowscarada Shiny','skeledirge-shiny':'Skeledirge Shiny','quaquaval-shiny':'Quaquaval Shiny',
-  // Lendários shiny
-  'mewtwo-shiny':'Mewtwo Shiny','lugia-shiny':'Lugia Shiny','ho-oh-shiny':'Ho-Oh Shiny',
-  'celebi-shiny':'Celebi Shiny','rayquaza-shiny':'Rayquaza Shiny','deoxys-shiny':'Deoxys Shiny',
-  'jirachi-shiny':'Jirachi Shiny','groudon-shiny':'Groudon Shiny','kyogre-shiny':'Kyogre Shiny',
-  'dialga-shiny':'Dialga Shiny','palkia-shiny':'Palkia Shiny','giratina-shiny':'Giratina Shiny',
-  'darkrai-shiny':'Darkrai Shiny','arceus-shiny':'Arceus Shiny',
-  'reshiram-shiny':'Reshiram Shiny','zekrom-shiny':'Zekrom Shiny','kyurem-shiny':'Kyurem Shiny',
-  'xerneas-shiny':'Xerneas Shiny','yveltal-shiny':'Yveltal Shiny','zygarde-shiny':'Zygarde Shiny',
-  'solgaleo-shiny':'Solgaleo Shiny','lunala-shiny':'Lunala Shiny','necrozma-shiny':'Necrozma Shiny',
-  'zacian-shiny':'Zacian Shiny','zamazenta-shiny':'Zamazenta Shiny',
-  'eternatus-shiny':'Eternatus Shiny','calyrex-shiny':'Calyrex Shiny',
-  'koraidon-shiny':'Koraidon Shiny','miraidon-shiny':'Miraidon Shiny',
-  // Pseudo-lendários shiny
-  'dragonite-shiny':'Dragonite Shiny','tyranitar-shiny':'Tyranitar Shiny',
-  'salamence-shiny':'Salamence Shiny','metagross-shiny':'Metagross Shiny',
-  'garchomp-shiny':'Garchomp Shiny','hydreigon-shiny':'Hydreigon Shiny',
-  'goodra-shiny':'Goodra Shiny','kommo-o-shiny':'Kommo-o Shiny',
-  'dragapult-shiny':'Dragapult Shiny','baxcalibur-shiny':'Baxcalibur Shiny',
-  // Populares shiny
-  'pikachu-shiny':'Pikachu Shiny','eevee-shiny':'Eevee Shiny',
-  'gyarados-shiny':'Gyarados Shiny','magikarp-shiny':'Magikarp Shiny',
-  'umbreon-shiny':'Umbreon Shiny','espeon-shiny':'Espeon Shiny',
-  'vaporeon-shiny':'Vaporeon Shiny','jolteon-shiny':'Jolteon Shiny',
-  'flareon-shiny':'Flareon Shiny','glaceon-shiny':'Glaceon Shiny',
-  'leafeon-shiny':'Leafeon Shiny','sylveon-shiny':'Sylveon Shiny',
-  'gengar-shiny':'Gengar Shiny','lucario-shiny':'Lucario Shiny',
-  'gardevoir-shiny':'Gardevoir Shiny','mimikyu-shiny':'Mimikyu Shiny',
-  'absol-shiny':'Absol Shiny','ralts-shiny':'Ralts Shiny',
-  'kirlia-shiny':'Kirlia Shiny','gallade-shiny':'Gallade Shiny',
-  'togekiss-shiny':'Togekiss Shiny','togetic-shiny':'Togetic Shiny','togepi-shiny':'Togepi Shiny',
-  'riolu-shiny':'Riolu Shiny','zoroark-shiny':'Zoroark Shiny','zorua-shiny':'Zorua Shiny',
-  'volcarona-shiny':'Volcarona Shiny','larvesta-shiny':'Larvesta Shiny',
-  'chansey-shiny':'Chansey Shiny','blissey-shiny':'Blissey Shiny',
-  'dratini-shiny':'Dratini Shiny','dragonair-shiny':'Dragonair Shiny',
-  'beldum-shiny':'Beldum Shiny','metang-shiny':'Metang Shiny',
-  'bagon-shiny':'Bagon Shiny','shelgon-shiny':'Shelgon Shiny',
-  'gible-shiny':'Gible Shiny','gabite-shiny':'Gabite Shiny',
-  'feebas-shiny':'Feebas Shiny','milotic-shiny':'Milotic Shiny',
-  'shinx-shiny':'Shinx Shiny','luxio-shiny':'Luxio Shiny','luxray-shiny':'Luxray Shiny',
-  'goomy-shiny':'Goomy Shiny','sliggoo-shiny':'Sliggoo Shiny',
-  'dreepy-shiny':'Dreepy Shiny','drakloak-shiny':'Drakloak Shiny',
-  'hatenna-shiny':'Hatenna Shiny','hattrem-shiny':'Hattrem Shiny','hatterene-shiny':'Hatterene Shiny',
-  'applin-shiny':'Applin Shiny','flapple-shiny':'Flapple Shiny','appletun-shiny':'Appletun Shiny',
-  'larvitar-shiny':'Larvitar Shiny','pupitar-shiny':'Pupitar Shiny',
-  'deino-shiny':'Deino Shiny','zweilous-shiny':'Zweilous Shiny',
-  'jangmo-o-shiny':'Jangmo-o Shiny','hakamo-o-shiny':'Hakamo-o Shiny',
-  'frigibax-shiny':'Frigibax Shiny','arctibax-shiny':'Arctibax Shiny',
-  'pawmi-shiny':'Pawmi Shiny','pawmo-shiny':'Pawmo Shiny','pawmot-shiny':'Pawmot Shiny',
-  'fidough-shiny':'Fidough Shiny','dachsbun-shiny':'Dachsbun Shiny',
-  'tinkatink-shiny':'Tinkatink Shiny','tinkatuff-shiny':'Tinkatuff Shiny','tinkaton-shiny':'Tinkaton Shiny',
-  'ceruledge-shiny':'Ceruledge Shiny','armarouge-shiny':'Armarouge Shiny',
-  // Mega shiny
-  'charizard-mega-x-shiny':'Charizard Mega X Shiny','charizard-mega-y-shiny':'Charizard Mega Y Shiny',
-  'venusaur-mega-shiny':'Venusaur Mega Shiny','blastoise-mega-shiny':'Blastoise Mega Shiny',
-  'mewtwo-mega-x-shiny':'Mewtwo Mega X Shiny','mewtwo-mega-y-shiny':'Mewtwo Mega Y Shiny',
-  'rayquaza-mega-shiny':'Rayquaza Mega Shiny','lucario-mega-shiny':'Lucario Mega Shiny',
-  'gardevoir-mega-shiny':'Gardevoir Mega Shiny','gengar-mega-shiny':'Gengar Mega Shiny',
-  'gyarados-mega-shiny':'Gyarados Mega Shiny','blaziken-mega-shiny':'Blaziken Mega Shiny',
-  'swampert-mega-shiny':'Swampert Mega Shiny','sceptile-mega-shiny':'Sceptile Mega Shiny',
-  'salamence-mega-shiny':'Salamence Mega Shiny','metagross-mega-shiny':'Metagross Mega Shiny',
-  'garchomp-mega-shiny':'Garchomp Mega Shiny',
-  // Gmax shiny
-  'charizard-gmax-shiny':'Charizard Gigantamax Shiny','pikachu-gmax-shiny':'Pikachu Gigantamax Shiny',
-  'gengar-gmax-shiny':'Gengar Gigantamax Shiny','snorlax-gmax-shiny':'Snorlax Gigantamax Shiny',
-  'melmetal-gmax-shiny':'Melmetal Gigantamax Shiny'
+  'eternatus-eternamax':'Eternatus Eternamax'
 };
 
 function pkdxGetNome(p) {
-  if (p._slug) {
-    if (PKDX_SLUGS_SHINY.has(p._slug)) {
-      // remove '-shiny' do slug para pegar o nome base
-      const base = p._slug.replace(/-shiny$/, '');
-      const nomeBase = PKDX_NOMES_FORMAS[base] || PKDX_NOMES_FORMAS[p._slug]
-        || base.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
-      return '✨ ' + nomeBase + ' Shiny';
-    }
-    return PKDX_NOMES_FORMAS[p._slug] || p._slug.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
-  }
+  if (p._slug) return PKDX_NOMES_FORMAS[p._slug] || p._slug.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
   return PKDX_NOMES[p.id] || p.name.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
 }
 
 function pkdxGetBadge(p) {
-  if (!p._slug) {
-    if (PKDX_ULTRA_BEASTS_IDS.has(p.id)) return '<span class="pkdx-card-badge pkdx-badge-ultra">Ultra Beast</span>';
-    if (PKDX_PARADOX_IDS.has(p.id)) return '<span class="pkdx-card-badge pkdx-badge-paradox">Paradoxo</span>';
-    return '';
-  }
+  if (!p._slug) return '';
   const s = p._slug;
-  if (PKDX_SLUGS_SHINY.has(s)) return '<span class="pkdx-card-badge pkdx-badge-shiny">✨ Shiny</span>';
   if (s.includes('-gmax') || s.includes('-eternamax')) return '<span class="pkdx-card-badge pkdx-badge-gmax">GMax</span>';
   if (s.includes('-mega') || s.includes('-primal')) return '<span class="pkdx-card-badge pkdx-badge-mega">Mega</span>';
   if (s.includes('-alola')) return '<span class="pkdx-card-badge pkdx-badge-alola">Alola</span>';
@@ -5034,13 +4660,6 @@ function pkdxGetBadge(p) {
 }
 
 function pkdxGetSprite(p) {
-  // Shiny: usa sprite shiny oficial ou shiny front
-  if (p._slug && PKDX_SLUGS_SHINY.has(p._slug)) {
-    return p.sprites?.other?.['official-artwork']?.front_shiny
-      || p.sprites?.front_shiny
-      || p.sprites?.other?.['official-artwork']?.front_default
-      || p.sprites?.front_default || '';
-  }
   return p.sprites?.other?.['official-artwork']?.front_default
     || p.sprites?.front_default || '';
 }
@@ -5053,8 +4672,8 @@ async function pkdxInit() {
   const grid = document.getElementById('pkdx-grid');
   grid.innerHTML = '<div class="pkdx-loading">⏳ Carregando Pokédex Nacional... (pode demorar alguns segundos)</div>';
 
-  // Carrega base (1-1025) em lotes de 50
-  const IDS_BASE = Array.from({length:1025},(_,i)=>i+1);
+  // Carrega base (1-1010) em lotes de 50
+  const IDS_BASE = Array.from({length:1010},(_,i)=>i+1);
   const LOTE = 50;
   for (let i = 0; i < IDS_BASE.length; i += LOTE) {
     const lote = IDS_BASE.slice(i, i + LOTE);
@@ -5064,26 +4683,18 @@ async function pkdxInit() {
     ));
     res.forEach(p => { if (p) _pkdxBasicos.push(p); });
     document.getElementById('pkdx-count').textContent =
-      `Carregando... ${_pkdxBasicos.length}/1025`;
+      `Carregando... ${_pkdxBasicos.length}/1010`;
   }
 
-  // Carrega formas especiais (inclusive shinies)
-  grid.innerHTML = '<div class="pkdx-loading">⏳ Carregando formas especiais, shinies e paradoxos...</div>';
-  let formaCount = 0;
+  // Carrega formas especiais
+  grid.innerHTML = '<div class="pkdx-loading">⏳ Carregando formas especiais...</div>';
   for (const slug of PKDX_FORMAS_ESPECIAIS) {
     try {
-      // Para slugs shiny, busca o Pokémon base sem '-shiny' (API não tem endpoint shiny separado)
-      const fetchSlug = PKDX_SLUGS_SHINY.has(slug) ? slug.replace(/-shiny$/, '') : slug;
-      const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${fetchSlug}`);
+      const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
       if (r.ok) {
         const p = await r.json();
-        p._slug = slug; // guarda o slug original (pode ter -shiny)
+        p._slug = slug;
         _pkdxFormas.push(p);
-        formaCount++;
-        if (formaCount % 10 === 0) {
-          document.getElementById('pkdx-count').textContent =
-            `Carregando formas... ${formaCount}/${PKDX_FORMAS_ESPECIAIS.length}`;
-        }
       }
     } catch {}
   }
@@ -5128,30 +4739,13 @@ function pkdxFiltrar() {
 
   // Filtro região
   if (regiao === 'mega') {
-    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-mega')||p._slug.includes('-primal'))&&!PKDX_SLUGS_SHINY.has(p._slug));
+    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-mega')||p._slug.includes('-primal')));
   } else if (regiao === 'gmax') {
-    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-gmax')||p._slug.includes('-eternamax'))&&!PKDX_SLUGS_SHINY.has(p._slug));
+    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-gmax')||p._slug.includes('-eternamax')));
   } else if (regiao === 'regional') {
-    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-alola')||p._slug.includes('-galar')||p._slug.includes('-hisui')||p._slug.includes('-paldea'))&&!PKDX_SLUGS_SHINY.has(p._slug));
+    lista = _pkdxFormas.filter(p=>p._slug&&(p._slug.includes('-alola')||p._slug.includes('-galar')||p._slug.includes('-hisui')||p._slug.includes('-paldea')));
   } else if (regiao === 'especial') {
-    lista = _pkdxFormas.filter(p=>p._slug&&!p._slug.includes('-mega')&&!p._slug.includes('-primal')&&!p._slug.includes('-gmax')&&!p._slug.includes('-eternamax')&&!p._slug.includes('-alola')&&!p._slug.includes('-galar')&&!p._slug.includes('-hisui')&&!p._slug.includes('-paldea')&&!PKDX_SLUGS_SHINY.has(p._slug));
-  } else if (regiao === 'ultra') {
-    lista = _pkdxBasicos.filter(p=>PKDX_ULTRA_BEASTS_IDS.has(p.id));
-  } else if (regiao === 'paradox') {
-    lista = [..._pkdxBasicos.filter(p=>PKDX_PARADOX_IDS.has(p.id)),
-             ..._pkdxFormas.filter(p=>p._slug&&(
-               p._slug.startsWith('great-tusk')||p._slug.startsWith('scream-tail')||
-               p._slug.startsWith('brute-bonnet')||p._slug.startsWith('flutter-mane')||
-               p._slug.startsWith('slither-wing')||p._slug.startsWith('sandy-shocks')||
-               p._slug.startsWith('roaring-moon')||p._slug.startsWith('walking-wake')||
-               p._slug.startsWith('iron-treads')||p._slug.startsWith('iron-bundle')||
-               p._slug.startsWith('iron-hands')||p._slug.startsWith('iron-jugulis')||
-               p._slug.startsWith('iron-moth')||p._slug.startsWith('iron-thorns')||
-               p._slug.startsWith('iron-valiant')||p._slug.startsWith('iron-leaves')||
-               p._slug.startsWith('iron-boulder')||p._slug.startsWith('iron-crown')
-             )&&!PKDX_SLUGS_SHINY.has(p._slug))];
-  } else if (regiao === 'shiny') {
-    lista = _pkdxFormas.filter(p=>p._slug&&PKDX_SLUGS_SHINY.has(p._slug));
+    lista = _pkdxFormas.filter(p=>p._slug&&!p._slug.includes('-mega')&&!p._slug.includes('-primal')&&!p._slug.includes('-gmax')&&!p._slug.includes('-eternamax')&&!p._slug.includes('-alola')&&!p._slug.includes('-galar')&&!p._slug.includes('-hisui')&&!p._slug.includes('-paldea'));
   } else if (PKDX_REGIOES[regiao]) {
     const r = PKDX_REGIOES[regiao];
     lista = _pkdxBasicos.filter(p=>p.id>=r.min&&p.id<=r.max);
@@ -5224,234 +4818,10 @@ function pkdxCarregarMais() {
   pkdxRenderPagina(false);
 }
 
-// Mapa de habilidades PT-BR
-const PKDX_HABILIDADES_PT = {
-  'overgrow':'Supercrescimento','blaze':'Chama','torrent':'Torrente','swarm':'Enxame',
-  'shield-dust':'Po Protetor','run-away':'Fuga','keen-eye':'Olhos Afiados',
-  'guts':'Entranhas','hustle':'Agitacao','marvel-scale':'Escama Prodigiosa',
-  'swift-swim':'Nado Veloz','chlorophyll':'Clorofila','trace':'Traco',
-  'download':'Download','wonder-guard':'Guarda Maravilha','levitate':'Levitar',
-  'pressure':'Pressao','intimidate':'Intimidar','static':'Estatico',
-  'lightning-rod':'Para-Raios','motor-drive':'Tracao Motora',
-  'volt-absorb':'Absorver Voltagem','water-absorb':'Absorver Agua',
-  'drought':'Seca','sand-stream':'Tempestade de Areia',
-  'snow-warning':'Aviso de Neve','slush-rush':'Pressa na Neve',
-  'sand-rush':'Pressa na Areia','sand-force':'Forca da Areia',
-  'sand-veil':'Veu de Areia','snow-cloak':'Manto de Neve',
-  'ice-body':'Corpo de Gelo','thick-fat':'Gordura Espessa',
-  'own-tempo':'Ritmo Proprio','cute-charm':'Charme Fofo',
-  'pixilate':'Pixilizar','refrigerate':'Refrigerar',
-  'aerilate':'Arializar','normalize':'Normalizar','galvanize':'Galvanizar',
-  'limber':'Agil','immunity':'Imunidade','inner-focus':'Foco Interior',
-  'steadfast':'Determinacao','justified':'Justica','rattled':'Nervoso',
-  'synchronize':'Sincronizar','pure-power':'Poder Puro','huge-power':'Super Forca',
-  'sheer-force':'Forca Bruta','reckless':'Irresponsavel',
-  'rock-head':'Cabeca de Rocha','battle-armor':'Armadura de Batalha',
-  'sturdy':'Resistente','shell-armor':'Armadura','contrary':'Contrario',
-  'simple':'Simples','unaware':'Inconsciente','serene-grace':'Graca Serena',
-  'super-luck':'Super Sorte','natural-cure':'Cura Natural',
-  'shed-skin':'Troca de Pele','magic-guard':'Guarda Magica',
-  'multiscale':'Multipla Escala','regenerator':'Regeneracao',
-  'technician':'Tecnico','skill-link':'Sequencia de Habilidades',
-  'iron-fist':'Punho de Ferro','tough-claws':'Garras Afiadas',
-  'strong-jaw':'Mandibula Forte','mega-launcher':'Megalancador',
-  'adaptability':'Adaptabilidade','analytic':'Analitico',
-  'beast-boost':'Impulso Fera','battle-bond':'Laco de Batalha',
-  'disguise':'Disfarce','power-construct':'Construcao de Poder',
-  'illusion':'Ilusao','imposter':'Impostor','infiltrator':'Infiltrador',
-  'insomnia':'Insonia','intrepid-sword':'Espada Intrepida',
-  'dauntless-shield':'Escudo Destemido','as-one-ice-rider':'Como Um (Cavaleiro do Gelo)',
-  'as-one-shadow-rider':'Como Um (Cavaleiro das Sombras)',
-  'protosynthesis':'Protointegracão','quark-drive':'Motor Quark',
-  'hadron-engine':'Motor Hadron','orichalcum-pulse':'Pulso de Oricalco',
-  'tera-shell':'Casca Tera','teraform-zero':'Terraforma Zero',
-  'poison-puppeteer':'Marionetista de Veneno','zero-to-hero':'Do Zero ao Heroi',
-  'commander':'Comandante','embody-aspect-teal':'Aspecto Lagoa',
-  'embody-aspect-wellspring':'Aspecto Fonte','embody-aspect-hearthflame':'Aspecto Lar',
-  'embody-aspect-cornerstone':'Aspecto Pedra',
-  'speed-boost':'Impulso de Velocidade','compound-eyes':'Olhos Compostos',
-  'tinted-lens':'Lente Colorida','prankster':'Pregador de Pecas',
-  'moxie':'Autoconfianca','moody':'Temperamental','defiant':'Desafiador',
-  'competitive':'Competitivo','stance-change':'Mudanca de Postura',
-  'poison-heal':'Cura de Veneno','water-bubble':'Bolha de Agua',
-  'fluffy':'Fofo','flame-body':'Corpo Flamejante',
-  'flash-fire':'Fogo Relampago','storm-drain':'Drenagem de Tempestade',
-  'dry-skin':'Pele Seca','solar-power':'Energia Solar','leaf-guard':'Guarda Folha',
-  'bad-dreams':'Sonhos Pesados','flower-gift':'Dom Floral',
-  'magic-bounce':'Reflexao Magica','harvest':'Colheita','healer':'Curador',
-  'overcoat':'Sobretudo','pickpocket':'Batedor de Carteiras','pickup':'Coleta',
-  'unburden':'Descarregado','unnerve':'Nervosismo','victory-star':'Estrela da Vitoria',
-  'vital-spirit':'Espirito Vital','white-smoke':'Fumaca Branca',
-  'wimp-out':'Fugir','wonder-skin':'Pele Prodigiosa','zen-mode':'Modo Zen',
-  'grassy-surge':'Terreno Gramado','misty-surge':'Terreno Nevoeiro',
-  'psychic-surge':'Terreno Psiquico','electric-surge':'Terreno Eletrico',
-  'gorilla-tactics':'Taticas de Gorila','mirror-armor':'Armadura Espelho',
-  'cotton-down':'Manto de Algodao','propeller-tail':'Cauda Propulsor',
-  'neutralizing-gas':'Gas Neutralizante','pastel-veil':'Veu Pastel',
-  'hunger-switch':'Troca de Fome','gulp-missile':'Missil de Engolir',
-  'ball-fetch':'Busca de Bola','ice-scales':'Escamas de Gelo',
-  'ripen':'Amadurecer','quick-draw':'Saque Rapido','libero':'Libero',
-  'stalwart':'Inflexivel','steam-engine':'Motor a Vapor',
-  'punk-rock':'Punk Rock','sand-spit':'Cuspir Areia',
-  'ice-face':'Face de Gelo','power-spot':'Ponto de Poder',
-  'mimicry':'Mimica','screen-cleaner':'Limpador de Tela',
-  'steely-spirit':'Espirito de Aco','perish-body':'Corpo Falecido',
-  'wandering-spirit':'Espirito Errante','unseen-fist':'Punho Invisivel',
-  'curious-medicine':'Medicina Curiosa','transistor':'Transistor',
-  'dragons-maw':'Mandibula do Dragao','chilling-neigh':'Relincho Glacial',
-  'grim-neigh':'Relincho Sombrio'
-};
-
-function pkdxNomeHabilidade(rawName) {
-  return PKDX_HABILIDADES_PT[rawName] || rawName.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
-}
-
-const PKDX_MOVES_PT = {
-  'tackle':'Investida','scratch':'Arranhao','pound':'Soco','cut':'Corte',
-  'vine-whip':'Chicote de Cipo','razor-leaf':'Folha Navalha','seed-bomb':'Bomba de Semente',
-  'petal-dance':'Danca das Petalas','leaf-storm':'Tempestade Folha','solar-beam':'Raio Solar',
-  'ember':'Brasa','fire-spin':'Redemunho de Fogo','flamethrower':'Lanca-Chamas',
-  'fire-blast':'Explosao de Fogo','overheat':'Superaquecimento','flare-blitz':'Blitz de Chama',
-  'water-gun':'Pistola de Agua','bubble':'Bolha','surf':'Surfar','hydro-pump':'Hidrobomba',
-  'waterfall':'Cachoeira','scald':'Escalda','bubble-beam':'Raio Bolha',
-  'thunderbolt':'Raio','thunder':'Trovao','thunder-shock':'Choque do Trovao',
-  'volt-tackle':'Ataque Eletrico','thunder-wave':'Onda Eletrica','discharge':'Descarga',
-  'ice-beam':'Raio de Gelo','blizzard':'Nevasca','ice-punch':'Soco de Gelo',
-  'icicle-crash':'Colisao de Gelo','aurora-beam':'Raio Aurora',
-  'karate-chop':'Chop de Karate','low-kick':'Chute Baixo','close-combat':'Combate Proximo',
-  'focus-blast':'Foco Total','aura-sphere':'Esfera de Aura','brick-break':'Quebra-Tijolo',
-  'superpower':'Superpotencia','high-jump-kick':'Chute Salto Alto',
-  'poison-sting':'Ferrao Venenoso','sludge-bomb':'Bomba de Lodo','sludge-wave':'Onda de Lodo',
-  'toxic':'Toxico','venoshock':'Venochoque',
-  'earthquake':'Terremoto','dig':'Escavar','earth-power':'Poder da Terra',
-  'magnitude':'Magnitude','fissure':'Fissura','sand-tomb':'Tumba de Areia',
-  'fly':'Voar','wing-attack':'Ataque de Asa','aerial-ace':'As Aereo',
-  'air-slash':'Corte de Ar','brave-bird':'Passaro Bravo','hurricane':'Furacao',
-  'confusion':'Confusao','psychic':'Psiquico','psybeam':'Raio Psiquico',
-  'psyshock':'Psicoimpacto','psycho-cut':'Corte Psiquico','future-sight':'Visao Futura',
-  'shadow-ball':'Bola-Sombra','hex':'Esconjuro','will-o-wisp':'Fogo-Fatuo',
-  'night-shade':'Sombra Noturna','shadow-claw':'Garra Sombria','destiny-bond':'Elo do Destino',
-  'rock-throw':'Arremesso de Pedra','rock-slide':'Deslizamento de Pedra',
-  'stone-edge':'Borda de Pedra','stealth-rock':'Pedra Oculta','rock-blast':'Explosao de Pedra',
-  'x-scissor':'Tesoura em X','bug-buzz':'Zunido de Inseto','signal-beam':'Raio Sinal',
-  'bite':'Mordida','crunch':'Triturar','dark-pulse':'Pulso Sombrio',
-  'sucker-punch':'Golpe Sorrateiro','knock-off':'Golpe Derrubador','foul-play':'Jogo Sujo',
-  'metal-claw':'Garra de Metal','iron-tail':'Cauda de Ferro','iron-head':'Cabecada de Ferro',
-  'flash-cannon':'Canhao de Luz','gyro-ball':'Bola Giroscopica','steel-wing':'Asa de Aco',
-  'moonblast':'Explosao Lunar','dazzling-gleam':'Brilho Deslumbrante',
-  'play-rough':'Brincadeira Selvagem','fairy-wind':'Vento de Fada','draining-kiss':'Beijo Drenante',
-  'dragon-rage':'Furia do Dragao','dragon-claw':'Garra de Dragao',
-  'dragon-pulse':'Pulso de Dragao','dragon-dance':'Danca do Dragao',
-  'outrage':'Colera','draco-meteor':'Meteoro Draconico',
-  'hyper-beam':'Hiper-Raio','giga-impact':'Giga Impacto','self-destruct':'Autodestruicao',
-  'explosion':'Explosao','double-edge':'Golpe Duplo','return':'Retribuicao',
-  'body-slam':'Slam Corporal','quick-attack':'Ataque Rapido','extreme-speed':'Velocidade Extrema',
-  'protect':'Proteger','substitute':'Substituto','rest':'Descanso','sleep-talk':'Sonambulo',
-  'growl':'Grito','roar':'Rugido','leer':'Olhar Feroz','tail-whip':'Chicote de Cauda',
-  'swords-dance':'Danca das Espadas','nasty-plot':'Plano Maligno',
-  'calm-mind':'Mente Calma','bulk-up':'Fortalecer','iron-defense':'Defesa de Ferro',
-  'amnesia':'Amnesia','agility':'Agilidade','double-team':'Equipe Dupla',
-  'recover':'Recuperar','slack-off':'Vadiar','wish':'Desejo',
-  'moonlight':'Luar','morning-sun':'Sol Matinal','synthesis':'Sintese',
-  'leech-seed':'Semente Sanguessuga','spikes':'Espinhos',
-  'toxic-spikes':'Espinhos Toxicos','sticky-web':'Teia Viscosa',
-  'reflect':'Reflexo','light-screen':'Telao de Luz','aurora-veil':'Veu de Aurora',
-  'rain-dance':'Chuva Dancante','sunny-day':'Dia Ensolarado','hail':'Granizo',
-  'sandstorm':'Tempestade de Areia','trick-room':'Sala do Truque',
-  'encore':'Encore','taunt':'Provocacao','torment':'Tormento','disable':'Desabilitar',
-  'attract':'Atrair','swagger':'Fanfarronar','skill-swap':'Troca de Habilidade',
-  'transform':'Transformar','hidden-power':'Poder Oculto',
-  'headbutt':'Cabecada','zen-headbutt':'Cabecada Zen',
-  'mach-punch':'Soco Veloz','drain-punch':'Soco Drenante','focus-punch':'Soco Focado',
-  'ice-punch':'Soco de Gelo','thunder-punch':'Soco de Trovao','fire-punch':'Soco de Fogo',
-  'sacred-sword':'Espada Sagrada','secret-sword':'Espada Secreta',
-  'sunsteel-strike':'Golpe de Aco Solar','moongeist-beam':'Feixe do Espirito da Lua',
-  'photon-geyser':'Geiser de Fotons','behemoth-blade':'Espada Behemoth',
-  'behemoth-bash':'Bash Behemoth','astral-barrage':'Barrage Astral',
-  'glacial-lance':'Lanca Glacial','eerie-spell':'Feitico Assustador',
-  'dire-claw':'Garra Terrivel','stone-axe':'Machado de Pedra',
-  'springtide-storm':'Tempestade Primaveril','mystical-power':'Poder Mistico',
-  'raging-fury':'Furia Furiosa','wave-crash':'Queda de Onda',
-  'headlong-rush':'Investida de Cabeca','barb-barrage':'Barricada de Farpas',
-  'esper-wing':'Asa Espera','bitter-malice':'Malicia Amarga',
-  'triple-arrows':'Setas Triplas','infernal-parade':'Parada Infernal',
-  'ceaseless-edge':'Gume Incessante','bleakwind-storm':'Tempestade do Vento Frio',
-  'wildbolt-storm':'Tempestade Selvagem','sandsear-storm':'Tempestade da Areia Ardente',
-  'lunar-blessing':'Bencao Lunar','take-heart':'Coragem',
-  'tera-starstorm':'Tempestade Terastelar','fickle-beam':'Raio Caprichoso',
-  'burning-bulwark':'Baluarte Ardente','thunderclap':'Trovao Repentino',
-  'mighty-cleave':'Corte Poderoso','tachyon-cutter':'Cortador Taquion',
-  'hard-press':'Pressao Extrema','dragon-cheer':'Torcida do Dragao',
-  'alluring-voice':'Voz Sedutora','temper-flare':'Chama da Raiva',
-  'supercell-slam':'Golpe da Supercelula','psychic-noise':'Ruido Psiquico',
-  'upper-hand':'Vantagem','malignant-chain':'Corrente Maligna',
-  'electro-drift':'Deriva Eletrica','collision-course':'Curso de Colisao',
-  'jet-punch':'Golpe Jato','silk-trap':'Armadilha de Seda',
-  'axe-kick':'Chute Machado','last-respects':'Ultimas Homenagens',
-  'lumina-crash':'Colisao de Lumina','order-up':'Para o Alto',
-  'jet-punch':'Golpe Jato','spicy-extract':'Extrato Picante',
-  'spin-out':'Girar para Fora','population-bomb':'Bomba Populacional',
-  'ice-spinner':'Girador de Gelo','glaive-rush':'Investida da Glaive',
-  'revival-blessing':'Bencao Revivificante','salt-cure':'Cura de Sal',
-  'triple-dive':'Mergulho Triplo','mortal-spin':'Giro Mortal',
-  'doodle':'Rabiscar','fillet-away':'Despejar','kowtow-cleave':'Corte Reverente',
-  'flower-trick':'Truque Floral','torch-song':'Cancao da Tocha',
-  'aqua-step':'Passo Aquatico','raging-bull':'Touro Furioso','make-it-rain':'Fazer Chover',
-  'ruination':'Ruinacao','ancient-power':'Poder Antigo','aura-wheel':'Roda de Aura',
-  'breaking-swipe':'Golpe de Varredura','cartwheel':'Roda Lateral',
-  'clangorous-soul':'Alma Estridente','coaching':'Treinamento',
-  'corrosive-gas':'Gas Corrosivo','flip-turn':'Giro e Fuga',
-  'jungle-healing':'Cura da Selva','lash-out':'Explodir de Raiva',
-  'misty-explosion':'Explosao Nevoenta','poltergeist':'Poltergeist',
-  'scale-shot':'Disparo de Escama','skitter-smack':'Golpe Furtivo',
-  'steel-beam':'Feixe de Aco','steel-roller':'Rolo de Aco',
-  'scorching-sands':'Areias Escaldantes','wicked-blow':'Golpe Maligno',
-  'surging-strikes':'Golpes Torrenciais','thunder-cage':'Gaiola de Trovao',
-  'dragon-energy':'Energia do Dragao','freezing-glare':'Olhar Congelante',
-  'fiery-wrath':'Furia de Fogo','thunderous-kick':'Chute do Trovao',
-  'grassy-glide':'Deslize Gramado','rising-voltage':'Voltagem Crescente',
-  'terrain-pulse':'Pulso do Terreno','burning-jealousy':'Ciume Ardente',
-  'clangorous-soulblaze':'Chama da Alma','decorate':'Decorar',
-  'no-retreat':'Sem Recuo','tar-shot':'Disparo de Alcatrao',
-  'magic-powder':'Po Magico','dragon-darts':'Dardos de Dragao',
-  'teatime':'Hora do Cha','octolock':'Trancamento de Polvo',
-  'bolt-beak':'Bico de Raio','fishious-rend':'Rasgo Piscoso',
-  'court-change':'Mudanca de Quadra','clangorous-soul':'Alma Estridente',
-  'eternabeam':'Raio Eterno','steel-beam':'Feixe de Aco',
-  'expanding-force':'Forca Expansiva','steeple-chase':'Corrida de Obstaculos',
-  'fire-lash':'Chicote de Fogo','obstruct':'Obstruir',
-  'false-surrender':'Rendição Falsa','meteor-assault':'Assalto Meteoro',
-  'sparkling-aria':'Aria Cintilante','genesis-supernova':'Supernova Genesis',
-  'mind-blown':'Mente Explodida','plasma-fists':'Punhos Plasmaticos',
-  'power-trip':'Viagem de Poder','prismatic-laser':'Laser Prismatico',
-  'spectral-thief':'Ladrao Espectral','sunsteel-strike':'Golpe de Aco Solar',
-  'searing-sunraze-smash':'Pancada Solar Ardente',
-  'menacing-moonraze-maelstrom':'Redemunho do Luar'
-};
-
-function pkdxNomeMove(rawName) {
-  return PKDX_MOVES_PT[rawName] || rawName.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ');
-}
-
 function pkdxAbrirModal(p) {
   const nome   = pkdxGetNome(p);
-  const isShiny = p._slug && PKDX_SLUGS_SHINY.has(p._slug);
-  const isUltra = PKDX_ULTRA_BEASTS_IDS.has(p.id);
-  const isParadox = PKDX_PARADOX_IDS.has(p.id) || (p._slug && (
-    p._slug.startsWith('great-tusk')||p._slug.startsWith('scream-tail')||
-    p._slug.startsWith('brute-bonnet')||p._slug.startsWith('flutter-mane')||
-    p._slug.startsWith('slither-wing')||p._slug.startsWith('sandy-shocks')||
-    p._slug.startsWith('roaring-moon')||p._slug.startsWith('walking-wake')||
-    p._slug.startsWith('iron-treads')||p._slug.startsWith('iron-bundle')||
-    p._slug.startsWith('iron-hands')||p._slug.startsWith('iron-jugulis')||
-    p._slug.startsWith('iron-moth')||p._slug.startsWith('iron-thorns')||
-    p._slug.startsWith('iron-valiant')||p._slug.startsWith('iron-leaves')||
-    p._slug.startsWith('iron-boulder')||p._slug.startsWith('iron-crown')
-  ) && !PKDX_SLUGS_SHINY.has(p._slug));
-  const spriteNormal = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
-  const spriteShiny  = p.sprites?.other?.['official-artwork']?.front_shiny   || p.sprites?.front_shiny   || spriteNormal;
-  const sprite = isShiny ? spriteShiny : spriteNormal;
-  const num = isShiny ? '✨ Shiny' : isUltra ? '🌀 Ultra Beast' : isParadox ? '⏳ Paradoxo' : (p._slug ? '✨ Forma Especial' : '#'+String(p.id).padStart(3,'0'));
+  const sprite = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
+  const num    = p._slug ? '✨ Forma Especial' : '#'+String(p.id).padStart(3,'0');
   const tipos  = p.types.map(t=>{
     const cor=PKDX_TIPO_COR[t.type.name]||'#555';
     const pt=PKDX_TIPO_PT[t.type.name]||t.type.name;
@@ -5468,60 +4838,17 @@ function pkdxAbrirModal(p) {
   }).join('');
   const totalBS = (p.stats||[]).reduce((a,s)=>a+s.base_stat,0);
 
-  // Habilidades com traducao PT-BR
-  const habilidadesHTML = (p.abilities||[]).map(a=>{
-    const nomeH = pkdxNomeHabilidade(a.ability.name);
-    const oculta = a.is_hidden
-      ? '<span style="font-size:9px;background:rgba(200,150,12,0.2);color:#C8960C;border-radius:4px;padding:1px 5px;margin-left:3px;">Oculta</span>'
-      : '';
-    return `<span style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(200,150,12,0.25);border-radius:6px;padding:3px 8px;font-size:11px;color:#E8D5A8;margin:2px;">${nomeH}${oculta}</span>`;
-  }).join('');
-
-  // Golpes apreendíveis
-  const movesRaw = (p.moves||[]);
-  const levelMoves = movesRaw
-    .filter(m => m.version_group_details.some(v => v.move_learn_method.name === 'level-up'))
-    .map(m => {
-      const lvl = Math.min(...m.version_group_details
-        .filter(v=>v.move_learn_method.name==='level-up')
-        .map(v=>v.level_learned_at));
-      return { name: m.move.name, lvl };
-    })
-    .sort((a,b)=>a.lvl-b.lvl)
-    .slice(0, 32);
-  const tmMoves = movesRaw
-    .filter(m => m.version_group_details.some(v => v.move_learn_method.name === 'machine'))
-    .map(m => ({ name: m.move.name }))
-    .slice(0, 24);
-
-  const movesHTML = (levelMoves.length===0 && tmMoves.length===0)
-    ? '<div style="color:rgba(200,150,12,0.4);font-size:12px;font-family:\'Exo 2\',sans-serif;">Nenhum golpe encontrado para este Pokémon.</div>'
-    : `${levelMoves.length>0 ? `<div style="font-size:10px;color:rgba(200,150,12,0.65);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'Cinzel',serif;">⬆️ Por Nível</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">${levelMoves.map(m=>`<span style="background:rgba(74,44,138,0.3);border:1px solid rgba(106,61,184,0.4);border-radius:6px;padding:2px 7px;font-size:10px;color:#E8D5A8;display:inline-block;"><span style="color:#C8960C;font-weight:700;">Nv${m.lvl}</span> ${pkdxNomeMove(m.name)}</span>`).join('')}</div>` : ''}${tmMoves.length>0 ? `<div style="font-size:10px;color:rgba(200,150,12,0.65);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'Cinzel',serif;">💿 Via MT/MO</div><div style="display:flex;flex-wrap:wrap;gap:4px;">${tmMoves.map(m=>`<span style="background:rgba(0,131,143,0.2);border:1px solid rgba(0,131,143,0.35);border-radius:6px;padding:2px 7px;font-size:10px;color:#E8D5A8;display:inline-block;">${pkdxNomeMove(m.name)}</span>`).join('')}</div>` : ''}`;
-
-  // Info especial
+  // Info especial por forma
   let infoEspecial = '';
-  const sl = p._slug||'';
-  if (isShiny) {
-    infoEspecial='<div style="background:rgba(245,127,23,0.12);border:1px solid rgba(255,214,0,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">✨ <strong style="color:#ffd600">Versão Shiny:</strong> Coloração alternativa extremamente rara — probabilidade base de 1/4096. Estatísticas idênticas, apenas paleta de cores diferente.</div>';
-  } else if (isUltra) {
-    infoEspecial='<div style="background:rgba(0,131,143,0.12);border:1px solid rgba(0,131,143,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🌀 <strong style="color:#4dd0e1">Ultra Beast:</strong> Criaturas de outra dimensão com poderes imensuráveis. Possuem a habilidade <strong>Impulso Fera</strong>, que amplifica sua melhor estatística a cada Pokémon nocauteado.</div>';
-  } else if (isParadox) {
-    const isPast = sl.startsWith('great-tusk')||sl.startsWith('scream-tail')||sl.startsWith('brute-bonnet')||sl.startsWith('flutter-mane')||sl.startsWith('slither-wing')||sl.startsWith('sandy-shocks')||sl.startsWith('roaring-moon')||sl.startsWith('walking-wake')||PKDX_PARADOX_IDS.has(p.id)&&p.id<=989||p.id===1005||p.id===1009;
-    infoEspecial=`<div style="background:rgba(136,14,79,0.12);border:1px solid rgba(136,14,79,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:'Exo 2',sans-serif;">⏳ <strong style="color:#f48fb1">Pokémon Paradoxo ${isPast?'Passado':'Futuro'}:</strong> ${isPast?'Forma ancestral encontrada em Paldea. Possui a habilidade <strong>Protointegração</strong>, que amplia sua melhor stat sob Sol, Areia, Granizo ou Chuva.':'Forma futurista encontrada em Paldea. Possui a habilidade <strong>Motor Quark</strong>, que amplia sua melhor stat em Terreno Elétrico.'}</div>`;
-  } else if (sl==='greninja-ash') {
-    infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🎭 <strong style="color:#C8960C">Ash-Greninja:</strong> Ativada pelo Fenômeno Sincronização — Greninja assume a aparência de Ash. Aumenta Velocidade e o poder de Shuriken de Água.</div>';
-  } else if (sl==='hoopa-unbound') {
-    infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🔮 <strong style="color:#C8960C">Hoopa Libertado:</strong> Desbloqueado com o Jarro de Sombra. Muda para Psíquico/Sombrio com stats ofensivos muito maiores.</div>';
-  } else if (sl==='zygarde-10') {
-    infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🐍 <strong style="color:#C8960C">Zygarde 10%:</strong> Apenas 10% das células — forma canina. Muito rápido mas frágil. Ativado com a habilidade Mudança de Poder.</div>';
-  } else if (sl==='zygarde-complete') {
-    infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🐉 <strong style="color:#C8960C">Zygarde Forma Completa:</strong> 100% das células reunidas — a forma definitiva. HP dobrado, defesas elevadas.</div>';
-  } else if (sl.includes('-gmax')) {
-    infoEspecial='<div style="background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🔴 <strong style="color:#e53935">Gigantamax:</strong> Forma especial do Fenômeno Dynamax — apenas alguns indivíduos podem acessá-la. Move G-Max único para cada espécie.</div>';
-  } else if (sl.includes('-mega')) {
-    infoEspecial='<div style="background:rgba(123,31,162,0.15);border:1px solid rgba(123,31,162,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">💎 <strong style="color:#ce93d8">Mega Evolução:</strong> Requer Megapedra e Megapulseira. Forma temporária com stats aumentados.</div>';
-  } else if (sl.includes('-primal')) {
-    infoEspecial='<div style="background:rgba(123,31,162,0.15);border:1px solid rgba(123,31,162,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🌊 <strong style="color:#ce93d8">Regressão Primeva:</strong> Forma ancestral com Orbes antigas. Invoca clima permanente na batalha.</div>';
+  if (p._slug) {
+    const s = p._slug;
+    if (s==='greninja-ash') infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🎭 <strong style="color:#C8960C">Ash-Greninja:</strong> Ativada pelo Fenômeno Sincronização — Greninja assume a aparência de Ash durante batalhas. Aumenta Velocidade e o poder de Shuriken d\'Água.</div>';
+    else if (s==='hoopa-unbound') infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🔮 <strong style="color:#C8960C">Hoopa Libertado:</strong> Forma desbloqueada com o Jarro de Sombra. Muda de Psíquico/Fantasma para Psíquico/Sombrio com stats ofensivos muito maiores.</div>';
+    else if (s==='zygarde-10') infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🐍 <strong style="color:#C8960C">Zygarde 10%:</strong> Apenas 10% das células — forma canina. Muito rápido mas frágil. Ativado automaticamente por HP baixo com a habilidade Mudança de Poder.</div>';
+    else if (s==='zygarde-complete') infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🐉 <strong style="color:#C8960C">Zygarde Forma Completa:</strong> 100% das células reunidas — a forma definitiva. HP dobrado, defesas muito elevadas. Só ativa quando Zygarde 50% ou 10% tem HP abaixo de 50% com a habilidade Mudança de Poder.</div>';
+    else if (s.includes('-gmax')) infoEspecial='<div style="background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🔴 <strong style="color:#e53935">Gigantamax:</strong> Forma especial do Fenômeno Dynamax — apenas alguns indivíduos podem acessá-la. Muda a aparência e o move G-Max é único para cada espécie.</div>';
+    else if (s.includes('-mega')) infoEspecial='<div style="background:rgba(123,31,162,0.15);border:1px solid rgba(123,31,162,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">💎 <strong style="color:#ce93d8">Mega Evolução:</strong> Requer Megapedra e Megapulseira. Forma temporária durante batalhas com stats significativamente aumentados.</div>';
+    else if (s.includes('-primal')) infoEspecial='<div style="background:rgba(123,31,162,0.15);border:1px solid rgba(123,31,162,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🌊 <strong style="color:#ce93d8">Regressão Primeva:</strong> Forma ancestral recuperada com as Orbes antigas. Invoca clima permanente na batalha.</div>';
   }
 
   const overlay = document.createElement('div');
@@ -5530,7 +4857,7 @@ function pkdxAbrirModal(p) {
     <button class="pkdx-modal-close" onclick="this.closest('.pkdx-modal-overlay').remove()">×</button>
     <div class="pkdx-modal-header">
       <div class="pkdx-modal-num">${num}</div>
-      ${sprite?`<img class="pkdx-modal-img" src="${sprite}" alt="${nome}" style="${isShiny?'filter:drop-shadow(0 0 14px gold);border-radius:50%;':''}">` : ''}
+      ${sprite?`<img class="pkdx-modal-img" src="${sprite}" alt="${nome}">`:''}
       <div class="pkdx-modal-name">${nome}</div>
       <div class="pkdx-modal-types">${tipos}</div>
     </div>
@@ -5540,24 +4867,20 @@ function pkdxAbrirModal(p) {
         <div class="pkdx-modal-info-grid">
           <div class="pkdx-info-item"><div class="pkdx-info-label">Altura</div><div class="pkdx-info-value">${(p.height/10).toFixed(1)}m</div></div>
           <div class="pkdx-info-item"><div class="pkdx-info-label">Peso</div><div class="pkdx-info-value">${(p.weight/10).toFixed(1)}kg</div></div>
+          <div class="pkdx-info-item"><div class="pkdx-info-label">Habilidades</div><div class="pkdx-info-value" style="font-size:11px;">${(p.abilities||[]).map(a=>a.ability.name.split('-').map(s=>s[0].toUpperCase()+s.slice(1)).join(' ')).join(', ')}</div></div>
           <div class="pkdx-info-item"><div class="pkdx-info-label">Total Base</div><div class="pkdx-info-value" style="color:#C8960C;font-size:16px;font-weight:900;">${totalBS}</div></div>
-          <div class="pkdx-info-item" style="grid-column:1/-1;"><div class="pkdx-info-label">🤝 Habilidades</div><div class="pkdx-info-value" style="margin-top:4px;">${habilidadesHTML}</div></div>
         </div>
       </div>
       <div class="pkdx-modal-section">
         <div class="pkdx-modal-section-title">📊 Estatísticas Base</div>
         ${stats}
       </div>
-      <div class="pkdx-modal-section">
-        <div class="pkdx-modal-section-title">⚔️ Golpes Aprendíveis</div>
-        <div style="font-size:11px;color:rgba(200,150,12,0.5);margin-bottom:8px;font-family:'Exo 2',sans-serif;">Versões mais recentes — até 32 por nível e 24 via MT/MO.</div>
-        ${movesHTML}
-      </div>
     </div>
   </div>`;
   overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
 }
+
 // ============================================================
 // AUTO-LOGIN — adicionar inicialização dos listeners novos
 // ============================================================
