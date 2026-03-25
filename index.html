@@ -8,10 +8,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fichas de Treinadores - Segredo das Poké Esferas</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23fff' stroke='%23222' stroke-width='3'/><path d='M2 50 Q2 2 50 2 Q98 2 98 50Z' fill='%23e53935'/><rect x='2' y='47' width='96' height='6' fill='%23222'/><circle cx='50' cy='50' r='14' fill='%23fff' stroke='%23222' stroke-width='3'/></svg>" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<!-- html2canvas e jsPDF são carregados sob demanda (só quando PDF é gerado) -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
 
@@ -178,7 +177,6 @@
   .btn-refresh { background: linear-gradient(135deg, #1B5E20, #2E7D32); color: #fff; }
   .btn-refresh:hover { background: linear-gradient(135deg, #2E7D32, #388E3C); transform: translateY(-1px); }
   .btn-refresh.loading { opacity: 0.7; pointer-events: none; }
-  .btn-new:hover { background: linear-gradient(135deg, #e67e00, #C46A00); }
   .save-status { font-size: 12px; color: #C46A00; display: none; align-items: center; gap: 5px; }
   .users-bar {
     background: linear-gradient(90deg, #F5ECD9, #EFE0C0);
@@ -1763,7 +1761,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       Salvar Ficha
     </button>
-    <button class="btn-action btn-pdf" onclick="exportPDF()">
+    <button class="btn-action btn-pdf" id="btn-pdf" onclick="exportPDF()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Exportar PDF
     </button>
@@ -2507,16 +2505,19 @@ async function fbGet(path, retries = 3) {
       const snap = await db.ref(path).once('value');
       return snap.val();
     } catch (e) {
-      console.warn(`fbGet attempt ${i+1} failed:`, e.message);
+      console.warn(`fbGet attempt ${i+1} failed [${path}]:`, e.message);
       if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
     }
   }
-  throw new Error('Falha ao carregar dados após múltiplas tentativas.');
+  throw new Error(`Falha ao carregar "${path}" após ${retries} tentativas.`);
 }
 
 // ============================================================
 // ESTADO GLOBAL
 // ============================================================
+// ⚠️  SEGURANÇA: esta senha está visível no código-fonte do cliente.
+// Qualquer pessoa com DevTools pode ler e se tornar mestre.
+// TODO: mover a validação para Firebase Security Rules ou Firebase Authentication.
 const MASTER_PASSWORD = 'pokemestre';
 let currentUser = null;
 let allData     = {};
@@ -2638,16 +2639,20 @@ function switchTab(tab) {
   document.getElementById('login-success').style.display = 'none';
 }
 
-function showError(msg) {
-  const e = document.getElementById('login-error');
-  e.textContent = msg; e.style.display = 'block';
-  document.getElementById('login-success').style.display = 'none';
+// ============================================================
+// FEEDBACK DE LOGIN — helper unificado (type: 'error' | 'success')
+// ============================================================
+function showLoginMsg(msg, type = 'error') {
+  const isErr = type === 'error';
+  const show  = document.getElementById(isErr ? 'login-error'   : 'login-success');
+  const hide  = document.getElementById(isErr ? 'login-success' : 'login-error');
+  show.textContent    = msg;
+  show.style.display  = 'block';
+  hide.style.display  = 'none';
 }
-function showSuccess(msg) {
-  const e = document.getElementById('login-success');
-  e.textContent = msg; e.style.display = 'block';
-  document.getElementById('login-error').style.display = 'none';
-}
+// Aliases de conveniência
+function showError(msg)   { showLoginMsg(msg, 'error');   }
+function showSuccess(msg) { showLoginMsg(msg, 'success'); }
 
 // ============================================================
 // CADASTRO
@@ -2656,9 +2661,10 @@ async function doRegister() {
   const name  = document.getElementById('reg-username').value.trim();
   const pass  = document.getElementById('reg-password').value;
   const pass2 = document.getElementById('reg-password2').value;
-  if (!name)           return showError('Digite seu nome de treinador!');
-  if (pass.length < 3) return showError('A senha precisa ter pelo menos 3 caracteres.');
-  if (pass !== pass2)  return showError('As senhas não coincidem!');
+  if (!name || name.length < 2) return showError('O nome de treinador precisa ter pelo menos 2 caracteres.');
+  if (name.length > 30)         return showError('O nome de treinador pode ter no máximo 30 caracteres.');
+  if (pass.length < 4)          return showError('A senha precisa ter pelo menos 4 caracteres.');
+  if (pass !== pass2)           return showError('As senhas não coincidem!');
 
   const btnReg = document.querySelector('.login-btn[onclick="doRegister()"]');
   if (btnReg) { btnReg.disabled = true; btnReg.textContent = '⏳ Criando conta...'; }
@@ -2964,7 +2970,24 @@ function clearSheet() {
 async function salvarFicha(silent = false) {
   if (!currentUser) return;
   allData[currentUser] = getSheetData();
+
+  // Indica estado "salvando..." no sync-indicator
+  const ind = document.getElementById('sync-indicator');
+  if (ind) {
+    ind.textContent = '💾 salvando...';
+    ind.style.color   = '#C8960C';
+    ind.style.opacity = '1';
+  }
+
   const ok = await fbSet('trainers', allData);
+
+  if (ind) {
+    ind.textContent  = ok ? '✓ sincronizado' : '✗ erro ao salvar';
+    ind.style.color  = ok ? '#4CAF50' : '#e53935';
+    ind.style.opacity = '1';
+    setTimeout(() => { if (ind) ind.style.opacity = '0'; }, 2500);
+  }
+
   if (!silent && ok) {
     showToast('✅ Ficha salva!');
     const s = document.getElementById('save-status');
@@ -3148,8 +3171,30 @@ function changeImage(event) {
 // ============================================================
 // EXPORT PDF
 // ============================================================
+async function _carregarScriptPDF(src) {
+  if (document.querySelector(`script[src="${src}"]`)) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
 async function exportPDF() {
+  const btn = document.getElementById('btn-pdf');
+  const btnOriginal = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Gerando...'; }
+
   showToast('⏳ Gerando PDF...');
+  // Carrega as libs apenas quando necessário (lazy loading)
+  try {
+    await _carregarScriptPDF('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await _carregarScriptPDF('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  } catch {
+    showToast('❌ Falha ao carregar dependências de PDF.', true);
+    if (btn) { btn.disabled = false; btn.innerHTML = btnOriginal; }
+    return;
+  }
   document.querySelectorAll('.img-overlay').forEach(el => el.style.opacity = '0');
   try {
     const canvas = await html2canvas(document.getElementById('trainer-sheet'), {
@@ -3170,6 +3215,8 @@ async function exportPDF() {
   } catch (e) {
     console.error(e);
     showToast('❌ Erro ao gerar PDF.', true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = btnOriginal; }
   }
 }
 
@@ -3858,22 +3905,49 @@ const STATS_PT = {
   'special-attack':'Atk.Esp', 'special-defense':'Def.Esp', speed:'Velocidade'
 };
 
-async function buscarPokemon(nome) {
+// ============================================================
+// Cache de PokéAPI — evita refetch em visitas repetidas
+// ============================================================
+const PKDX_CACHE_PREFIX = 'pkdx-v1-';
+const PKDX_CACHE_TTL    = 7 * 24 * 60 * 60 * 1000; // 7 dias
+
+function pkdxCacheGet(key) {
   try {
-    const n = nome.toLowerCase().trim().replace(/\s+/g, '-')
-      .replace(/a/g,'a').replace(/e/g,'e'); // nome simples
-    const res = await fetch(POKEAPI_BASE + '/pokemon/' + n);
+    const raw = localStorage.getItem(PKDX_CACHE_PREFIX + key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > PKDX_CACHE_TTL) { localStorage.removeItem(PKDX_CACHE_PREFIX + key); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function pkdxCacheSet(key, data) {
+  try { localStorage.setItem(PKDX_CACHE_PREFIX + key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+
+async function buscarPokemon(nome) {
+  const slug = nome.toLowerCase().trim().replace(/\s+/g, '-');
+  const cached = pkdxCacheGet('pokemon-' + slug);
+  if (cached) return cached;
+  try {
+    const res = await fetch(POKEAPI_BASE + '/pokemon/' + slug);
     if (!res.ok) return null;
-    return await res.json();
-  } catch(e) { return null; }
+    const data = await res.json();
+    pkdxCacheSet('pokemon-' + slug, data);
+    return data;
+  } catch { return null; }
 }
 
 async function buscarEspecie(id) {
+  const cached = pkdxCacheGet('species-' + id);
+  if (cached) return cached;
   try {
     const res = await fetch(POKEAPI_BASE + '/pokemon-species/' + id);
     if (!res.ok) return null;
-    return await res.json();
-  } catch(e) { return null; }
+    const data = await res.json();
+    pkdxCacheSet('species-' + id, data);
+    return data;
+  } catch { return null; }
 }
 
 function formatarPokemon(p, esp) {
@@ -5364,6 +5438,29 @@ async function pkdxInit() {
   _pkdxCarregando = true;
 
   const grid = document.getElementById('pkdx-grid');
+
+  // ── Tenta restaurar do cache local (evita 1025+ requests repetidos) ──
+  try {
+    const rawBasicos = localStorage.getItem('pkdx-v1-basicos');
+    const rawFormas  = localStorage.getItem('pkdx-v1-formas');
+    if (rawBasicos && rawFormas) {
+      const { ts: t1, data: db } = JSON.parse(rawBasicos);
+      const { ts: t2, data: df } = JSON.parse(rawFormas);
+      const TTL = 3 * 24 * 60 * 60 * 1000; // 3 dias
+      if (Date.now() - t1 < TTL && Date.now() - t2 < TTL) {
+        _pkdxBasicos = db;
+        _pkdxFormas  = df;
+        _pkdxTodos   = [..._pkdxBasicos, ..._pkdxFormas];
+        _pkdxIniciado  = true;
+        _pkdxCarregando = false;
+        grid.innerHTML = '';
+        pkdxGerarFiltrosTipo();
+        pkdxFiltrar();
+        return;
+      }
+    }
+  } catch {}
+
   grid.innerHTML = '<div class="pkdx-loading">⏳ Carregando Pokédex Nacional... (pode demorar alguns segundos)</div>';
 
   // Carrega base (1-1025) em lotes de 50
@@ -5404,6 +5501,12 @@ async function pkdxInit() {
   _pkdxTodos = [..._pkdxBasicos, ..._pkdxFormas];
   _pkdxIniciado = true;
   _pkdxCarregando = false;
+
+  // Persiste no cache para visitas futuras (evita recarregar 1000+ Pokémon)
+  try {
+    localStorage.setItem('pkdx-v1-basicos', JSON.stringify({ ts: Date.now(), data: _pkdxBasicos }));
+    localStorage.setItem('pkdx-v1-formas',  JSON.stringify({ ts: Date.now(), data: _pkdxFormas  }));
+  } catch {}
 
   pkdxGerarFiltrosTipo();
   pkdxFiltrar();
@@ -5872,17 +5975,7 @@ function pkdxAbrirModal(p) {
   document.body.appendChild(overlay);
 }
 // ============================================================
-// AUTO-LOGIN — adicionar inicialização dos listeners novos
-// ============================================================
-// ============================================================
-// AUTO-LOGIN — busca contas no Firebase, fallback no localStorage
-// ============================================================
-// ============================================================
-// AUTO-LOGIN — baseado em token único no Firebase
-// Funciona em qualquer dispositivo, qualquer navegador
-// ============================================================
-// ============================================================
-// AUTO-LOGIN — unificado, funciona com token novo E credenciais legadas
+// AUTO-LOGIN — token Firebase (30 dias) + fallback credenciais legadas
 // ============================================================
 async function autoLogin() {
   const token    = localStorage.getItem(TOKEN_KEY);
@@ -5893,13 +5986,15 @@ async function autoLogin() {
   // Nada salvo → mostra login normalmente
   if (!token && !userName && !legUser) return;
 
-  // Spinner de reconexão
+  // Spinner de reconexão (com timeout máximo de 8s para evitar tela presa)
   const loadingDiv = document.createElement('div');
   loadingDiv.style.cssText = `
     position:fixed;inset:0;
     background:linear-gradient(160deg,#1A1035 0%,#2D1B5E 50%,#7B3F00 80%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     z-index:99999;gap:18px;`;
+
+  const _sairTimeout = setTimeout(() => { loadingDiv.remove(); }, 8000);
   loadingDiv.innerHTML = `
     <div style="font-size:52px;animation:pglow 1.4s ease-in-out infinite;">⚡</div>
     <div style="width:56px;height:56px;border:4px solid rgba(200,150,12,0.2);
@@ -5913,7 +6008,7 @@ async function autoLogin() {
     </style>`;
   document.body.appendChild(loadingDiv);
 
-  const sair = () => loadingDiv.remove();
+  const sair = () => { clearTimeout(_sairTimeout); loadingDiv.remove(); };
 
   try {
     // ── CAMINHO 1: tem token → valida no Firebase ──────────────
@@ -5967,9 +6062,33 @@ async function autoLogin() {
   }
 }
 
+// Limpa entradas de cache individuais de Pokémon expiradas (TTL 7 dias)
+// Roda em segundo plano sem bloquear o carregamento
+function _limparCacheAntigo() {
+  try {
+    const TTL = 7 * 24 * 60 * 60 * 1000;
+    const keysParaRemover = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('pkdx-v1-')) continue;
+      try {
+        const { ts } = JSON.parse(localStorage.getItem(k));
+        if (Date.now() - ts > TTL) keysParaRemover.push(k);
+      } catch { keysParaRemover.push(k); }
+    }
+    keysParaRemover.forEach(k => localStorage.removeItem(k));
+    if (keysParaRemover.length > 0) console.log(`🧹 Cache PokéAPI: ${keysParaRemover.length} entradas expiradas removidas.`);
+  } catch {}
+}
+
 window.addEventListener('load', () => {
-  // Roda imediatamente — sem delay desnecessário
   autoLogin();
+  // Limpeza de cache em idle — não bloqueia nada crítico
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(_limparCacheAntigo);
+  } else {
+    setTimeout(_limparCacheAntigo, 3000);
+  }
 });
 </script>
 </body>
