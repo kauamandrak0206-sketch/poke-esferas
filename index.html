@@ -3531,7 +3531,8 @@ function criarPlayer(videoId, startSeconds) {
       controls:       1,
       enablejsapi:    1,
       start:          Math.floor(startSeconds || 0),
-      origin:         window.location.origin
+      origin:         'https://kauamandrak0206-sketch.github.io',
+      widget_referrer: 'https://kauamandrak0206-sketch.github.io'
     },
     events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
   });
@@ -4776,7 +4777,7 @@ const PKDX_FORMAS_ESPECIAIS = [
   'tauros-paldea-combat','tauros-paldea-blaze','tauros-paldea-aqua',
   'wooper-paldea','clodsire',
   // ── FORMAS ESPECIAIS ──
-  'greninja-ash','hoopa-unbound','zygarde-10','zygarde-complete',
+  'greninja-battle-bond','hoopa-unbound','zygarde-10','zygarde-complete',
   'necrozma-dusk-mane','necrozma-dawn-wings','necrozma-ultra',
   'calyrex-ice','calyrex-shadow','urshifu-rapid-strike',
   'enamorus-therian','ogerpon-wellspring','ogerpon-hearthflame','ogerpon-cornerstone',
@@ -5232,7 +5233,7 @@ const PKDX_NOMES_FORMAS = {
   'goodra-hisui':'Goodra de Hisui','avalugg-hisui':'Avalugg de Hisui',
   'zorua-hisui':'Zorua de Hisui','zoroark-hisui':'Zoroark de Hisui',
   'sneasel-hisui':'Sneasel de Hisui','sneasler':'Sneasler',
-  'greninja-ash':'Ash-Greninja','hoopa-unbound':'Hoopa Libertado',
+  'greninja-battle-bond':'Ash-Greninja','hoopa-unbound':'Hoopa Libertado',
   'zygarde-10':'Zygarde 10%','zygarde-complete':'Zygarde Forma Completa',
   'necrozma-dusk-mane':'Necrozma Crina do Crepúsculo',
   'necrozma-dawn-wings':'Necrozma Asas do Alvorecer',
@@ -5917,7 +5918,7 @@ function pkdxAbrirModal(p) {
   } else if (isParadox) {
     const isPast = sl.startsWith('great-tusk')||sl.startsWith('scream-tail')||sl.startsWith('brute-bonnet')||sl.startsWith('flutter-mane')||sl.startsWith('slither-wing')||sl.startsWith('sandy-shocks')||sl.startsWith('roaring-moon')||sl.startsWith('walking-wake')||PKDX_PARADOX_IDS.has(p.id)&&p.id<=989||p.id===1005||p.id===1009;
     infoEspecial=`<div style="background:rgba(136,14,79,0.12);border:1px solid rgba(136,14,79,0.4);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:'Exo 2',sans-serif;">⏳ <strong style="color:#f48fb1">Pokémon Paradoxo ${isPast?'Passado':'Futuro'}:</strong> ${isPast?'Forma ancestral encontrada em Paldea. Possui a habilidade <strong>Protointegração</strong>, que amplia sua melhor stat sob Sol, Areia, Granizo ou Chuva.':'Forma futurista encontrada em Paldea. Possui a habilidade <strong>Motor Quark</strong>, que amplia sua melhor stat em Terreno Elétrico.'}</div>`;
-  } else if (sl==='greninja-ash') {
+  } else if (sl==='greninja-battle-bond') {
     infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🎭 <strong style="color:#C8960C">Ash-Greninja:</strong> Ativada pelo Fenômeno Sincronização — Greninja assume a aparência de Ash. Aumenta Velocidade e o poder de Shuriken de Água.</div>';
   } else if (sl==='hoopa-unbound') {
     infoEspecial='<div style="background:rgba(200,150,12,0.1);border:1px solid rgba(200,150,12,0.3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E8D5A8;font-family:\'Exo 2\',sans-serif;">🔮 <strong style="color:#C8960C">Hoopa Libertado:</strong> Desbloqueado com o Jarro de Sombra. Muda para Psíquico/Sombrio com stats ofensivos muito maiores.</div>';
