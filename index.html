@@ -5101,15 +5101,41 @@ function pkdxGetBadge(p) {
 }
 
 function pkdxGetSprite(p) {
-  // Shiny: usa sprite shiny oficial ou shiny front
-  if (p._slug && PKDX_SLUGS_SHINY.has(p._slug)) {
-    return p.sprites?.other?.['official-artwork']?.front_shiny
-      || p.sprites?.front_shiny
-      || p.sprites?.other?.['official-artwork']?.front_default
-      || p.sprites?.front_default || '';
-  }
-  return p.sprites?.other?.['official-artwork']?.front_default
-    || p.sprites?.front_default || '';
+  const slug     = p._slug || p.name || '';
+  const isShiny  = p._slug && PKDX_SLUGS_SHINY.has(p._slug);
+  const base     = isShiny ? slug.replace(/-shiny$/, '') : slug;
+  const shinyDir = isShiny ? 'shiny/' : '';
+  const showSfx  = isShiny ? '-shiny' : '';
+
+  // Prioridade 1: Showdown GIF animado
+  // Usa data-src para lazy-load com fallback em cadeia (ver pkdxRenderCard)
+  return {
+    showdown_gif:  `https://play.pokemonshowdown.com/sprites/gen5ani${showSfx}/${base}.gif`,
+    showdown_png:  `https://play.pokemonshowdown.com/sprites/dex${showSfx}/${base}.png`,
+    pkdb_home:     `https://img.pokemondb.net/sprites/home/${shinyDir}${base}.png`,
+    pkdb_icon:     `https://img.pokemondb.net/sprites/sword-shield/icon/${base}.png`,
+    pokeapi_art:   isShiny
+                     ? (p.sprites?.other?.['official-artwork']?.front_shiny || p.sprites?.front_shiny || '')
+                     : (p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || ''),
+    isShiny
+  };
+}
+
+// Retorna o atributo onerror em cadeia para os cards do Pokédex
+function pkdxSpriteOnerror(sources, idx) {
+  idx = idx || 0;
+  const next = idx + 1;
+  if (next >= sources.length) return 'this.style.opacity=0';
+  return `this.src='${sources[next]}';this.onerror=function(){${pkdxSpriteOnerror(sources, next)}};`;
+}
+
+function pkdxBuildImgTag(p, cls, extraStyle) {
+  const sp = pkdxGetSprite(p);
+  const sources = [sp.showdown_gif, sp.showdown_png, sp.pkdb_home, sp.pkdb_icon, sp.pokeapi_art].filter(Boolean);
+  if (!sources.length) return '<div style="height:68px"></div>';
+  const onerror = pkdxSpriteOnerror(sources, 0);
+  const shinyFilter = sp.isShiny ? 'filter:drop-shadow(0 0 8px gold);' : '';
+  return `<img class="${cls}" src="${sources[0]}" alt="${pkdxGetNome(p)}" loading="lazy" style="${shinyFilter}${extraStyle||''}" onerror="${onerror.replace(/"/g,"'")}" />`;
 }
 
 async function pkdxInit() {
@@ -5260,7 +5286,6 @@ function pkdxRenderPagina(reset) {
 
   fatia.forEach(p => {
     const nome   = pkdxGetNome(p);
-    const sprite = pkdxGetSprite(p);
     const badge  = pkdxGetBadge(p);
     const tipos  = p.types.map(t=>{
       const cor = PKDX_TIPO_COR[t.type.name]||'#555';
@@ -5268,12 +5293,13 @@ function pkdxRenderPagina(reset) {
       return `<span class="pkdx-type-tag" style="background:${cor}">${pt}</span>`;
     }).join('');
     const num = p._slug ? '✨' : '#'+String(p.id).padStart(3,'0');
+    const imgTag = pkdxBuildImgTag(p, 'pkdx-card-img', '');
     const card = document.createElement('div');
     card.className = 'pkdx-card';
     card.innerHTML = `
       ${badge}
       <div class="pkdx-card-num">${num}</div>
-      ${sprite?`<img class="pkdx-card-img" src="${sprite}" alt="${nome}" loading="lazy">`:'<div style="height:68px"></div>'}
+      ${imgTag}
       <div class="pkdx-card-name">${nome}</div>
       <div class="pkdx-card-types">${tipos}</div>`;
     card.onclick = () => pkdxAbrirModal(p);
@@ -5515,9 +5541,22 @@ function pkdxAbrirModal(p) {
     p._slug.startsWith('iron-valiant')||p._slug.startsWith('iron-leaves')||
     p._slug.startsWith('iron-boulder')||p._slug.startsWith('iron-crown')
   ) && !PKDX_SLUGS_SHINY.has(p._slug));
-  const spriteNormal = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
-  const spriteShiny  = p.sprites?.other?.['official-artwork']?.front_shiny   || p.sprites?.front_shiny   || spriteNormal;
-  const sprite = isShiny ? spriteShiny : spriteNormal;
+  // Multi-source sprite para modal: Showdown > PokemonDB > PokeAPI
+  const _modalSlug = p._slug || p.name || '';
+  const _modalBase = isShiny ? _modalSlug.replace(/-shiny$/, '') : _modalSlug;
+  const _modalSfx  = isShiny ? '-shiny' : '';
+  const _modalDir  = isShiny ? 'shiny/' : '';
+  const _modalSources = [
+    `https://play.pokemonshowdown.com/sprites/gen5ani${_modalSfx}/${_modalBase}.gif`,
+    `https://play.pokemonshowdown.com/sprites/dex${_modalSfx}/${_modalBase}.png`,
+    `https://img.pokemondb.net/sprites/home/${_modalDir}${_modalBase}.png`,
+    `https://img.pokemondb.net/sprites/sword-shield/icon/${_modalBase}.png`,
+    isShiny
+      ? (p.sprites?.other?.['official-artwork']?.front_shiny || p.sprites?.front_shiny || '')
+      : (p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '')
+  ].filter(Boolean);
+  const sprite = _modalSources[0] || '';
+  const _modalOnerror = pkdxSpriteOnerror(_modalSources, 0).replace(/"/g, '&quot;');
   const num = isShiny ? '✨ Shiny' : isUltra ? '🌀 Ultra Beast' : isParadox ? '⏳ Paradoxo' : (p._slug ? '✨ Forma Especial' : '#'+String(p.id).padStart(3,'0'));
   const tipos  = p.types.map(t=>{
     const cor=PKDX_TIPO_COR[t.type.name]||'#555';
@@ -5597,7 +5636,7 @@ function pkdxAbrirModal(p) {
     <button class="pkdx-modal-close" onclick="this.closest('.pkdx-modal-overlay').remove()">×</button>
     <div class="pkdx-modal-header">
       <div class="pkdx-modal-num">${num}</div>
-      ${sprite?`<img class="pkdx-modal-img" src="${sprite}" alt="${nome}" style="${isShiny?'filter:drop-shadow(0 0 14px gold);border-radius:50%;':''}">` : ''}
+      ${sprite?`<img class="pkdx-modal-img" src="${sprite}" alt="${nome}" style="${isShiny?'filter:drop-shadow(0 0 14px gold);border-radius:50%;':''}" onerror="${_modalOnerror}">` : ''}
       <div class="pkdx-modal-name">${nome}</div>
       <div class="pkdx-modal-types">${tipos}</div>
     </div>
