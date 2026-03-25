@@ -3978,23 +3978,90 @@ Ou use os botões rápidos abaixo! 👇
 // ============================================================
 // SPRITE POKÉMON NO TIME
 // ============================================================
-function atualizarSprite(i) {
-  const nameEl = document.querySelector(`.team-name[data-i="${i}"]`);
-  const spriteEl = document.querySelector(`.team-sprite[data-i="${i}"]`);
-  if (!nameEl || !spriteEl) return;
-  const nome = nameEl.value.trim().toLowerCase()
+// ── Normaliza o slug para usar nas URLs de sprite ──────────────────────────
+function _normalizarSlug(raw) {
+  return raw.trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
-  if (!nome) { spriteEl.style.opacity = '0'; return; }
-  const url = `https://img.pokemondb.net/sprites/sword-shield/icon/${nome}.png`;
-  spriteEl.src = url;
-  spriteEl.style.opacity = '1';
-  spriteEl.onerror = () => {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${nome}`)
-      .then(r=>r.json())
-      .then(d=>{ if(d.sprites?.front_default){ spriteEl.src=d.sprites.front_default; spriteEl.style.opacity='1'; } else spriteEl.style.opacity='0'; })
-      .catch(()=>{ spriteEl.style.opacity='0'; });
-  };
+}
+function _isShinySlug(slug) { return slug.endsWith('-shiny'); }
+function _baseSlug(slug)    { return slug.replace(/-shiny$/, ''); }
+
+// Gera todas as URLs candidatas em ordem de prioridade
+function _spriteCandidatas(slug) {
+  const isShiny  = _isShinySlug(slug);
+  const base     = isShiny ? _baseSlug(slug) : slug;
+  const shinyDir = isShiny ? 'shiny/' : '';
+  const showSfx  = isShiny ? '-shiny' : '';
+  return [
+    // Showdown — GIF animado (melhor cobertura de Megas, Gmax, Paradoxo, UBs)
+    `https://play.pokemonshowdown.com/sprites/gen5ani${showSfx}/${base}.gif`,
+    // Showdown — PNG estático
+    `https://play.pokemonshowdown.com/sprites/dex${showSfx}/${base}.png`,
+    // PokemonDB — home sprites (alta qualidade, cobre formas regionais)
+    `https://img.pokemondb.net/sprites/home/${shinyDir}${base}.png`,
+    // PokemonDB — black-white animado
+    `https://img.pokemondb.net/sprites/black-white/anim/${shinyDir}${base}.gif`,
+    // PokemonDB — sword-shield icon (fallback leve)
+    `https://img.pokemondb.net/sprites/sword-shield/icon/${base}.png`,
+    // PokeSprite GitHub — repositório amplo de formas
+    `https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8/${shinyDir}${base}.png`,
+  ];
+}
+
+// Testa URLs em sequência via Image(); resolve com a 1ª que carregar
+function _tentarUrls(urls, idx) {
+  idx = idx || 0;
+  return new Promise(function(resolve) {
+    if (idx >= urls.length) { resolve(null); return; }
+    var img = new Image();
+    img.onload  = function() { resolve(urls[idx]); };
+    img.onerror = function() { _tentarUrls(urls, idx + 1).then(resolve); };
+    img.src = urls[idx];
+  });
+}
+
+// Busca sprite via PokeAPI (official-artwork + shiny)
+function _fetchPokeApiSprite(slug, isShiny) {
+  var base = isShiny ? _baseSlug(slug) : slug;
+  return fetch('https://pokeapi.co/api/v2/pokemon/' + base)
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (!d) return null;
+      var sp = d.sprites;
+      if (isShiny) return (sp && sp.other && sp.other['official-artwork'] && sp.other['official-artwork'].front_shiny) || (sp && sp.front_shiny) || null;
+      return (sp && sp.other && sp.other['official-artwork'] && sp.other['official-artwork'].front_default) || (sp && sp.front_default) || null;
+    })
+    .catch(function() { return null; });
+}
+
+async function atualizarSprite(i) {
+  const nameEl   = document.querySelector(`.team-name[data-i="${i}"]`);
+  const spriteEl = document.querySelector(`.team-sprite[data-i="${i}"]`);
+  if (!nameEl || !spriteEl) return;
+  const slug = _normalizarSlug(nameEl.value);
+  if (!slug) { spriteEl.style.opacity = '0'; return; }
+  const isShiny = _isShinySlug(slug);
+
+  // 1. Tenta fontes rápidas (img load)
+  const urlOk = await _tentarUrls(_spriteCandidatas(slug));
+  if (urlOk) {
+    spriteEl.src = urlOk;
+    spriteEl.style.opacity = '1';
+    spriteEl.style.filter = isShiny ? 'drop-shadow(0 0 6px gold)' : '';
+    return;
+  }
+
+  // 2. Fallback PokeAPI (fetch JSON)
+  const pokeUrl = await _fetchPokeApiSprite(slug, isShiny);
+  if (pokeUrl) {
+    spriteEl.src = pokeUrl;
+    spriteEl.style.opacity = '1';
+    spriteEl.style.filter = isShiny ? 'drop-shadow(0 0 6px gold)' : '';
+    return;
+  }
+
+  spriteEl.style.opacity = '0';
 }
 
 function teamPhotoChange(evt, i) {
