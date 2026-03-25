@@ -5421,15 +5421,8 @@ function pkdxGetBadge(p) {
 }
 
 function pkdxGetSprite(p) {
-  // Shiny: usa sprite shiny oficial ou shiny front
-  if (p._slug && PKDX_SLUGS_SHINY.has(p._slug)) {
-    return p.sprites?.other?.['official-artwork']?.front_shiny
-      || p.sprites?.front_shiny
-      || p.sprites?.other?.['official-artwork']?.front_default
-      || p.sprites?.front_default || '';
-  }
-  return p.sprites?.other?.['official-artwork']?.front_default
-    || p.sprites?.front_default || '';
+  // Imagens desativadas na Pokédex Nacional
+  return '';
 }
 
 async function pkdxInit() {
