@@ -1542,7 +1542,7 @@
   }
   .pkdx-card:hover { transform: translateY(-4px); border-color: #C8960C; box-shadow: 0 8px 22px rgba(200,150,12,0.28); }
   .pkdx-card-num { font-size: 9px; color: rgba(200,150,12,0.45); font-family: 'Cinzel',serif; margin-bottom: 3px; letter-spacing: 1px; }
-  .pkdx-card-img { width: 68px; height: 68px; object-fit: contain; image-rendering: pixelated; }
+  .pkdx-card-img { width: 80px; height: 80px; object-fit: contain; image-rendering: auto; }
   .pkdx-card-name { font-family: 'Exo 2',sans-serif; font-size: 11px; font-weight: 700; color: #fff; margin: 5px 0 4px; line-height: 1.2; }
   .pkdx-card-types { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
   .pkdx-type-tag {
@@ -1587,7 +1587,7 @@
   .pkdx-modal-close:hover { color: #fff; }
   .pkdx-modal-header { text-align: center; padding: 24px 24px 14px; }
   .pkdx-modal-num { font-size: 11px; color: rgba(200,150,12,0.5); font-family: 'Cinzel',serif; letter-spacing: 2px; }
-  .pkdx-modal-img { width: 130px; height: 130px; object-fit: contain; margin: 4px auto; display: block; }
+  .pkdx-modal-img { width: 150px; height: 150px; object-fit: contain; margin: 4px auto; display: block; image-rendering: auto; }
   .pkdx-modal-name { font-family: 'Cinzel',serif; font-size: 22px; color: #C8960C; font-weight: 900; margin: 8px 0 6px; text-shadow: 0 0 12px rgba(200,150,12,0.4); }
   .pkdx-modal-types { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 6px; }
   .pkdx-modal-type-tag { padding: 4px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #fff; font-family: 'Exo 2',sans-serif; }
@@ -4891,7 +4891,7 @@ const PKDX_NOMES_FORMAS = {
   'raichu-alola':'Raichu de Alola','sandshrew-alola':'Sandshrew de Alola',
   'sandslash-alola':'Sandslash de Alola','vulpix-alola':'Vulpix de Alola',
   'ninetales-alola':'Ninetales de Alola','diglett-alola':'Diglett de Alola',
-  'dugtrio-alola':'Dugtrio de Alola','meowth-alola':'Meowth de Alola',
+  'dugtrio-alola':'dugtrioalola','meowth-alola':'Meowth de Alola',
   'persian-alola':'Persian de Alola','geodude-alola':'Geodude de Alola',
   'graveler-alola':'Graveler de Alola','golem-alola':'Golem de Alola',
   'grimer-alola':'Grimer de Alola','muk-alola':'Muk de Alola',
@@ -5100,20 +5100,121 @@ function pkdxGetBadge(p) {
   return '<span class="pkdx-card-badge pkdx-badge-special">Esp.</span>';
 }
 
+// ============================================================
+// SPRITE SYSTEM — Showdown GIF animado para TODOS os Pokémon
+// Megas • Gmax • Regionais • Paradoxo • Ultra Beasts • Shinies
+// ============================================================
+
+// Mapa slug PokeAPI → nome Showdown (para formas que têm nome diferente)
+const PKDX_SHOWDOWN_MAP = {
+  // Mega Evoluções
+  'venusaur-mega':'venusaurmega','charizard-mega-x':'charizardmegax','charizard-mega-y':'charizardmegay',
+  'blastoise-mega':'blastoisemega','beedrill-mega':'beedrillmega','pidgeot-mega':'pidgeotmega',
+  'alakazam-mega':'alakazammega','slowbro-mega':'slowbromega','gengar-mega':'gengarmega',
+  'kangaskhan-mega':'kangaskhanmega','pinsir-mega':'pinsirmega','gyarados-mega':'gyaradosmega',
+  'aerodactyl-mega':'aerodactylmega','mewtwo-mega-x':'mewtwoasmegax','mewtwo-mega-y':'mewtwoasmegay',
+  'ampharos-mega':'ampharosmega','steelix-mega':'steelixmega','scizor-mega':'scizormega',
+  'heracross-mega':'heracrossmega','houndoom-mega':'houndoommega','tyranitar-mega':'tyranitarmega',
+  'blaziken-mega':'blazikenmega','camerupt-mega':'cameruptmega','swampert-mega':'swampertmega',
+  'sceptile-mega':'sceptilemega','gardevoir-mega':'gardevoirmega','sableye-mega':'sableyemega',
+  'mawile-mega':'mawilemega','aggron-mega':'aggronmega','medicham-mega':'medichammega',
+  'manectric-mega':'manectricmega','sharpedo-mega':'sharpedomega','banette-mega':'banettemega',
+  'absol-mega':'absolmega','glalie-mega':'glaliemega','salamence-mega':'salamencemega',
+  'metagross-mega':'metagrossmega','latias-mega':'latiasmega','latios-mega':'latiosmega',
+  'rayquaza-mega':'rayquazamega','groudon-primal':'groudonprimal','kyogre-primal':'kyogreprimal',
+  'garchomp-mega':'garchompmega','lucario-mega':'lucariomega','lopunny-mega':'lopunnymega',
+  'gallade-mega':'galladamega','audino-mega':'audinomega','diancie-mega':'dianciemega',
+  'abomasnow-mega':'abomasnowmega',
+  // Gigantamax
+  'charizard-gmax':'charizardgmax','butterfree-gmax':'butterfreegmax','pikachu-gmax':'pikachugmax',
+  'meowth-gmax':'meowthgmax','machamp-gmax':'machampgmax','gengar-gmax':'gengargmax',
+  'kingler-gmax':'kinglergmax','lapras-gmax':'laprasgmax','eevee-gmax':'eeveegmax',
+  'snorlax-gmax':'snorlaxgmax','garbodor-gmax':'garbodorgmax','melmetal-gmax':'melmetalgmax',
+  'rillaboom-gmax':'rillaboomgmax','cinderace-gmax':'cinderacegmax','inteleon-gmax':'inteleongmax',
+  'corviknight-gmax':'corviknightgmax','orbeetle-gmax':'orbeetlegmax','drednaw-gmax':'drednawgmax',
+  'coalossal-gmax':'coalossalgmax','flapple-gmax':'flapplegmax','appletun-gmax':'appletungmax',
+  'sandaconda-gmax':'sandacondagmax','toxtricity-amped-gmax':'toxtricitygmax',
+  'centiskorch-gmax':'centiskorchgmax','hatterene-gmax':'hatterenegmax',
+  'grimmsnarl-gmax':'grimmsarlgmax','alcremie-gmax':'alcremiegmax',
+  'copperajah-gmax':'copperajahgmax','duraludon-gmax':'duraludongmax',
+  'eternatus-eternamax':'eternatuseternalmax',
+  // Formas Regionais Alola
+  'rattata-alola':'rattataalola','raticate-alola':'raticatealola',
+  'raichu-alola':'raichualola','sandshrew-alola':'sandshrewalola',
+  'sandslash-alola':'sandslashalola','vulpix-alola':'vulpixalola',
+  'ninetales-alola':'ninetalesalola','diglett-alola':'diglettalola',
+  'dugtrio-alola':'dugtrioalola','meowth-alola':'meowthalola',
+  'persian-alola':'persianalola','geodude-alola':'geodudealola',
+  'graveler-alola':'graveleralola','golem-alola':'golemalola',
+  'grimer-alola':'grimeralola','muk-alola':'mukalola',
+  'exeggutor-alola':'exeggutoralola','marowak-alola':'marowakalola',
+  // Formas Regionais Galar
+  'ponyta-galar':'ponytogalar','rapidash-galar':'rapidashgalar',
+  'meowth-galar':'meowthgalar','slowpoke-galar':'slowpokegalar',
+  'slowbro-galar':'slowbrogalar','slowking-galar':'slowkinggalar',
+  'farfetchd-galar':'farfetchdgalar','weezing-galar':'weezinggalar',
+  'mr-mime-galar':'mrmimegalar','corsola-galar':'corsolagalar',
+  'zigzagoon-galar':'zigzagoongalar','linoone-galar':'linoonegalar',
+  'darumaka-galar':'darumakagalar','darmanitan-galar-standard':'darmanitangalar',
+  'yamask-galar':'yamaskgalar','stunfisk-galar':'stunfiskgalar',
+  'articuno-galar':'articunogalar','zapdos-galar':'zapdosgalar','moltres-galar':'moltresgalar',
+  // Formas Regionais Hisui
+  'typhlosion-hisui':'typhlosionhisui','samurott-hisui':'samurotthisui',
+  'decidueye-hisui':'decidueyehisui','braviary-hisui':'braviaryhisui',
+  'lilligant-hisui':'lilliganthisui','sliggoo-hisui':'sliggoohisui',
+  'goodra-hisui':'goodrahisui','avalugg-hisui':'avalugghisui',
+  'zorua-hisui':'zoruahisui','zoroark-hisui':'zoroarkhisui',
+  'sneasel-hisui':'sneaselhisui','voltorb-hisui':'voltorbhisui',
+  'electrode-hisui':'electrodehisui','qwilfish-hisui':'qwilfishhisui',
+  'growlithe-hisui':'growlithehisui','arcanine-hisui':'arcaninehisui',
+  'dialga-origin':'dialogaorigin','palkia-origin':'palkiaorigin',
+  // Formas Especiais
+  'greninja-ash':'greninjaash','hoopa-unbound':'hoopabound',
+  'zygarde-10':'zygarde10','zygarde-complete':'zygardecomplete',
+  'necrozma-dusk-mane':'necrozmaduskmane','necrozma-dawn-wings':'necrozmadawnwings',
+  'necrozma-ultra':'necrozmaultra','calyrex-ice':'calyexice',
+  'calyrex-shadow':'calyexshadow','urshifu-rapid-strike':'urshifurapidstrike',
+  // Pokémon Paradoxo
+  'great-tusk':'greattusk','scream-tail':'screamtail','brute-bonnet':'brutebonnet',
+  'flutter-mane':'fluttermane','slither-wing':'slitherwing','sandy-shocks':'sandyshocks',
+  'roaring-moon':'roaringmoon','walking-wake':'walkingwake','iron-treads':'irontreads',
+  'iron-bundle':'ironbundle','iron-hands':'ironhands','iron-jugulis':'ironjugulis',
+  'iron-moth':'ironmoth','iron-thorns':'ironthorns','iron-valiant':'ironvaliant',
+  'iron-leaves':'ironleaves','iron-boulder':'ironboulder','iron-crown':'ironcrown',
+};
+
+// Gera o slug Showdown a partir do slug PokeAPI
+function pkdxShowdownSlug(slug, isShiny) {
+  const base = isShiny ? slug.replace(/-shiny$/, '') : slug;
+  // Usa o mapa se existir, senão usa o slug direto (sem hífens)
+  const sdBase = PKDX_SHOWDOWN_MAP[base] || base.replace(/-/g, '');
+  return { sdBase, isShiny };
+}
+
 function pkdxGetSprite(p) {
-  const slug     = p._slug || p.name || '';
-  const isShiny  = p._slug && PKDX_SLUGS_SHINY.has(p._slug);
-  const base     = isShiny ? slug.replace(/-shiny$/, '') : slug;
+  const slug    = p._slug || p.name || '';
+  const isShiny = p._slug && PKDX_SLUGS_SHINY.has(p._slug);
+  const base    = isShiny ? slug.replace(/-shiny$/, '') : slug;
   const shinyDir = isShiny ? 'shiny/' : '';
   const showSfx  = isShiny ? '-shiny' : '';
 
-  // Prioridade 1: Showdown GIF animado
-  // Usa data-src para lazy-load com fallback em cadeia (ver pkdxRenderCard)
+  // Slug showdown (sem hífens, com mapa especial)
+  const sdSlug  = PKDX_SHOWDOWN_MAP[base] || base.replace(/-/g, '');
+
   return {
-    showdown_gif:  `https://play.pokemonshowdown.com/sprites/gen5ani${showSfx}/${base}.gif`,
-    showdown_png:  `https://play.pokemonshowdown.com/sprites/dex${showSfx}/${base}.png`,
+    // GIF animado — prioridade máxima
+    showdown_gif:  `https://play.pokemonshowdown.com/sprites/gen5ani${showSfx}/${sdSlug}.gif`,
+    // PNG animado alternativo do Showdown
+    showdown_png:  `https://play.pokemonshowdown.com/sprites/dex${showSfx}/${sdSlug}.png`,
+    // GIF animado usando slug original com hífens (fallback)
+    showdown_gif2: `https://play.pokemonshowdown.com/sprites/gen5ani${showSfx}/${base}.gif`,
+    // PokemonDB home sprite
     pkdb_home:     `https://img.pokemondb.net/sprites/home/${shinyDir}${base}.png`,
+    // PokemonDB BW animado
+    pkdb_bw:       `https://img.pokemondb.net/sprites/black-white/anim/${shinyDir}${base}.gif`,
+    // PokemonDB ícone leve
     pkdb_icon:     `https://img.pokemondb.net/sprites/sword-shield/icon/${base}.png`,
+    // PokeAPI official-artwork
     pokeapi_art:   isShiny
                      ? (p.sprites?.other?.['official-artwork']?.front_shiny || p.sprites?.front_shiny || '')
                      : (p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || ''),
@@ -5131,12 +5232,16 @@ function pkdxSpriteOnerror(sources, idx) {
 
 function pkdxBuildImgTag(p, cls, extraStyle) {
   const sp = pkdxGetSprite(p);
-  const sources = [sp.showdown_gif, sp.showdown_png, sp.pkdb_home, sp.pkdb_icon, sp.pokeapi_art].filter(Boolean);
+  const sources = [
+    sp.showdown_gif, sp.showdown_png, sp.showdown_gif2,
+    sp.pkdb_home, sp.pkdb_bw, sp.pkdb_icon, sp.pokeapi_art
+  ].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i); // deduplica
   if (!sources.length) return '<div style="height:68px"></div>';
   const onerror = pkdxSpriteOnerror(sources, 0);
   const shinyFilter = sp.isShiny ? 'filter:drop-shadow(0 0 8px gold);' : '';
   return `<img class="${cls}" src="${sources[0]}" alt="${pkdxGetNome(p)}" loading="lazy" style="${shinyFilter}${extraStyle||''}" onerror="${onerror.replace(/"/g,"'")}" />`;
 }
+
 
 async function pkdxInit() {
   if (_pkdxIniciado) { pkdxFiltrar(); return; }
